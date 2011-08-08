@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>PONG :: Turbo</title>
+	<link rel="stylesheet" type="text/css" href="styles/pong.css">
+	<link href='http://fonts.googleapis.com/css?family=Play:700&v2' rel='stylesheet' type='text/css'>
+</head>
+<body>
+<div id="wrap">
+
+	<header>
+		<h1>PONG <span>Turbo</span></h1>
+	</header>
+
+	<span id="playerscore">&nbsp;</span>
+
+	<section id="loading">
+		<p id="loadingMessage">Loading game data, please wait...</p>
+		<button id="startGame" disabled>Start game</button>
+		<p id="paddleInstructions">Use the up and down arrows on your keyboard to move the paddle.</p>
+		<p id="ghostInstructions">Kill all ghosts to move to the next level!</p>
+		
+	</section>
+
+	<section id="game">
+
+		<ul id="balls">
+			<li><span class="ball">1</span></li>
+			<li><span class="ball">2</span></li>
+			<li><span class="ball">3</span></li>
+			<li><span class="ball">4</span></li>
+			<li><span class="ball">5</span></li>
+		</ul>
+
+		<canvas id="pongBoard" width="600" height="400">
+			<p>
+				It appears you are using a browser that does not support the canvas element. 
+				You can install a modern web browser for free from any of the below companies.
+				<ol>
+					<li><a href="http://www.google.com/chrome/">Google Chrome (recommended)</a></li>
+					<li><a href="http://www.mozilla.com/en-US/firefox/new/">Mozilla Firefox</a></li>
+					<li><a href="http://internet-explorer.uk.msn.com/">Microsoft Internet Explorer</a></li>
+				</ol>
+			</p>
+		</canvas>
+
+		<section id="gameSounds">
+			<audio id="soundtrack" preload="auto" loop="loop">
+				<source src="sound/mp3/ChipOnYourShoulder.mp3"></source>
+				<source src="sound/ogg/ChipOnYourShoulder.ogg"></source>
+			</audio>
+			<button id="toggleSound"></button>
+		</section>
+
+	</section>
+
+	<footer>
+		Bought to you by <a href="http://www.profilepicture.co.uk">Phil Parsons</a> with thanks to 
+		<a href="http://www.8bitweapon.com/">8 bit Weapon</a> for the soundtrack.
+	</footer>
+
+</div>
+
+<a href="https://github.com/p-m-p/Pong-Turbo" id="githubForkRibbon">
+	<img src="https://a248.e.akamai.net/assets.github.com/img/6429057dfef9e98189338d22e7f6646c6694f032/687474703a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f6c6566745f6f72616e67655f6666373630302e706e67" alt="Fork me on GitHub">
+</a>
+
+<script src="build/pong.min.js"></script>
+</body>
+</html>
