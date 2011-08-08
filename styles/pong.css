@@ -1,0 +1,173 @@
+html {
+	background: black;
+	color: #eee;
+	font: bold 14px 'Play', helvetica, arial, sans-serif;
+}
+
+#wrap {
+	width: 680px;
+	margin: 0 auto;
+	position: relative;
+}
+
+header {
+	margin: 0 0 30px;
+}
+
+h1 {
+	font-size: 38px;
+	margin: 0;
+	padding: 0;
+	position: relative;
+}
+	h1 span {
+		font-size: 20px;
+		color: red;
+		-moz-transform: rotate(-15deg);
+		-webkit-transform: rotate(-15deg);
+		position: absolute;
+		left: 74px;
+		top: 22px;
+		text-shadow: 0 0 2px black;
+	}
+
+#playerscore {
+	display: block;
+	position: absolute;
+	top: 10px;
+	left: 0;
+	width: 100%;
+	text-align: right;
+	color: orange;
+	font-size: 48px;
+	line-height: 48px;
+	border-bottom: solid 2px #555;
+}
+
+#loading {
+	height: 400px;
+	width: 680px;
+	padding: 40px 10px 10px;
+	position: relative;
+}
+
+#loadingMessage {
+	width: 400px;
+	height: 50px;
+	text-align: center;
+	background: url(../images/loading.gif) center 25px no-repeat;
+}
+
+#paddleInstructions {
+	height: 260px;
+	width: 160px;
+	position: absolute;
+	top: 0;
+	right: 70px;
+	background: url(../images/instructions_bg.png) right top no-repeat;
+	padding: 140px 40px 0 0;
+}
+
+#ghostInstructions {
+	height: 170px;
+	width: 125px;
+	padding: 10px 0 0 155px;
+	position: absolute;
+	bottom: 70px;
+	left: 80px;
+	background: url(../images/ghost_instructions_bg.png) no-repeat;
+}
+
+#startGame {
+	display: none;
+	border: solid 2px orange;
+	padding: 10px 20px 12px;
+	border-radius: 8px;
+	background: black;
+	color: orange;
+	margin: 30px 0 0 120px;
+	font: bold 24px/24px 'Play', helvetica, arial, sans-serif;
+	cursor: pointer;
+}
+	#startGame[disabled] {
+		color: #555;
+		border-color: #555;
+	}
+
+#game {
+	overflow: hidden;
+	padding: 10px 0;
+	position: relative;
+	display: none;
+}
+
+#balls {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	float: left;
+	width: 40px;
+}
+	#balls li {
+		margin: 0 0 20px;
+		padding: 0;
+	}
+	
+.ball {
+	width: 38px;
+	border: solid 2px orange;
+	border-radius: 20px;
+	display: block;
+	font-size: 20px;
+	line-height: 20px;
+	padding: 9px 0;
+	text-align: center;
+	background-color: orange;
+	color: black;
+}
+
+.dead {
+	border-color: #555;
+	background-color: black;
+	color: #555;
+}
+
+#pongBoard {
+	border: solid 1px orange;
+	box-shadow: 0 0 10px orange;
+	margin: 0 10px;
+	float: right;
+}
+
+#gameSounds {
+	position: absolute;
+	bottom: 10px;
+	left: 10px;
+}
+
+#toggleSound {
+	width: 32px;
+	height: 32px;
+	display: inline-block;
+	background: url(../images/audio.png) 0 0 no-repeat transparent;
+	border: none;
+	cursor: pointer;
+}
+	#toggleSound.muted {
+		background-position: -32px 0;
+	}
+
+footer {
+	text-align: right;
+	color: #555;
+}
+	footer a {
+		color: #666;
+	}
+
+#githubForkRibbon {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: block;
+}
