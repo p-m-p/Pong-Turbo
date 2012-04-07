@@ -162,10 +162,30 @@ var PONG = (function (ghosts) {
 		this.player.loseLife();
 	};
 
+	this.getHighScores = function () {
+		XHR2Ajax.getJSON(
+				"server/high_score.php?type=poo"
+			,	{
+						getScores: true
+				}
+			, function (res) {
+					var scores = res
+						,	scoreList = document.getElementById("highScoreList");
+					for (var i = 0; i < scores.length; ++i) {
+						var li = document.createElement("li");
+						li.innerHTML = '<span class="username">' + scores[i].user + 
+							'</span><span class="score">' + scores[i].score + '</span>';
+						scoreList.appendChild(li);
+					}
+				}
+			);
+	}
+
 	return this;
 
 })(GHOSTS);
 
 window.onload = function () {
 	PONG.init();
+	PONG.getHighScores();
 }
