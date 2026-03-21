@@ -19,8 +19,13 @@ const MAX_FRAME_MS    = 50;        // cap delta to avoid spiral-of-death on tab 
 const INITIAL_LIVES   = 5;
 
 // ── Ball spin from paddle velocity ─────────────────────────────────────────
-// Fraction of paddle.vy added to ball dy on hit; capped at ±60% of gameSpeed
+// Fraction of paddle.vy added to ball dy on hit; capped at ±60% of ballSpeed
 const SPIN_FACTOR = 0.25;
+
+// ── Per-rally ball speed ramp ───────────────────────────────────────────────
+// Each paddle return nudges the ball a little faster; resets on each new rally
+const RALLY_INCREMENT = 0.5;  // virtual units added per hit
+const RALLY_CAP       = 6;    // max units above gameSpeed within a rally
 
 // ── Paddle stun (ghost contact) ────────────────────────────────────────────
 const STUN_DURATION_MS         = 2500;
@@ -52,6 +57,7 @@ export function initGame() {
   let lives;
   let level;
   let gameSpeed;
+  let ballSpeed;             // current rally speed — ramps up per hit, resets each rally
   let rafId              = null;
   let lastTimestamp      = null;
   let paddleStunnedUntil = 0; // performance.now() timestamp; 0 = not stunned
@@ -196,6 +202,7 @@ export function initGame() {
     lives              = INITIAL_LIVES;
     level              = 1;
     gameSpeed          = INITIAL_SPEED;
+    ballSpeed          = INITIAL_SPEED;
     lastTimestamp      = null;
     paddleStunnedUntil = 0;
 
@@ -252,6 +259,7 @@ export function initGame() {
     if (ghostSystem.allDead()) {
       level++;
       gameSpeed += 2;
+      ballSpeed  = gameSpeed; // new level resets the rally ramp
       score += level * 1000;
       scoreboard.updateScore(score);
       play('levelUp');
@@ -321,17 +329,20 @@ export function initGame() {
       if (getPaddlePulseAlpha() < STUN_PASSTHROUGH_ALPHA) return false;
     }
 
+    // Ramp ball speed each hit, capped RALLY_CAP units above the base level speed
+    ballSpeed = Math.min(gameSpeed + RALLY_CAP, ballSpeed + RALLY_INCREMENT);
+
     const x = Math.max(
-      gameSpeed / 2,
-      Math.abs(Math.round(gameSpeed * Math.random())),
+      ballSpeed / 2,
+      Math.abs(Math.round(ballSpeed * Math.random())),
     );
-    b.dy = b.dy < 0 ? -(gameSpeed - x) : (gameSpeed - x);
+    b.dy = b.dy < 0 ? -(ballSpeed - x) : (ballSpeed - x);
     b.dx = -x;
 
     // Paddle velocity imparts spin: moving paddle adds/subtracts from dy,
-    // capped so the ball can't go faster than 1.5× the base game speed.
-    const spin  = Math.max(-gameSpeed * 0.6, Math.min(gameSpeed * 0.6, paddle.vy * SPIN_FACTOR));
-    const maxDy = gameSpeed * 1.5;
+    // capped so the ball can't go faster than 1.5× the current rally speed.
+    const spin  = Math.max(-ballSpeed * 0.6, Math.min(ballSpeed * 0.6, paddle.vy * SPIN_FACTOR));
+    const maxDy = ballSpeed * 1.5;
     b.dy = Math.max(-maxDy, Math.min(maxDy, b.dy + spin));
 
     score += gameSpeed;
@@ -359,10 +370,11 @@ export function initGame() {
   }
 
   function resetBall() {
-    ball.x  = 60;
-    ball.y  = Math.floor((VIRTUAL_H - ball.h * 2) * Math.random());
-    ball.dx = gameSpeed / 2;
-    ball.dy = gameSpeed / 2;
+    ball.x    = 60;
+    ball.y    = Math.floor((VIRTUAL_H - ball.h * 2) * Math.random());
+    ball.dx   = gameSpeed / 2;
+    ball.dy   = gameSpeed / 2;
+    ballSpeed = gameSpeed; // lost the rally — speed resets
   }
 
   function gameOver() {
