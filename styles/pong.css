@@ -1,173 +1,237 @@
-html {
-	background: black;
-	color: #eee;
-	font: bold 14px 'Play', helvetica, arial, sans-serif;
+/* ── Catppuccin Mocha palette ────────────────────────────────────────────── */
+:root {
+  --base:      #1e1e2e;
+  --mantle:    #181825;
+  --crust:     #11111b;
+  --surface-0: #313244;
+  --surface-1: #45475a;
+  --overlay-0: #6c7086;
+  --subtext:   #a6adc8;
+  --text:      #cdd6f4;
+  --lavender:  #b4befe;
+  --mauve:     #cba6f7;
+  --green:     #a6e3a1;
 }
 
-#wrap {
-	width: 680px;
-	margin: 0 auto;
-	position: relative;
+/* ── Reset & base ─────────────────────────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
+html, body {
+  height: 100%;
+}
+
+body {
+  background: var(--base);
+  color: var(--text);
+  font-family: 'Play', helvetica, arial, sans-serif;
+  font-weight: 700;
+}
+
+/* ── App shell ────────────────────────────────────────────────────────────── */
+#app {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100dvh;
+  padding: 0 1.25rem;
+}
+
+/* ── Header ───────────────────────────────────────────────────────────────── */
 header {
-	margin: 0 0 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.875rem 0;
+  border-bottom: 1px solid var(--surface-0);
+  gap: 1rem;
 }
 
-h1 {
-	font-size: 38px;
-	margin: 0;
-	padding: 0;
-	position: relative;
+#logo {
+  font-size: 2rem;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  flex-shrink: 0;
 }
-	h1 span {
-		font-size: 20px;
-		color: red;
-		-moz-transform: rotate(-15deg);
-		-webkit-transform: rotate(-15deg);
-		position: absolute;
-		left: 74px;
-		top: 22px;
-		text-shadow: 0 0 2px black;
-	}
+
+#logo span {
+  font-size: 1rem;
+  color: var(--mauve);
+  margin-left: 0.375rem;
+  vertical-align: middle;
+  letter-spacing: 0.05em;
+}
+
+/* ── HUD (score + lives + sound) ──────────────────────────────────────────── */
+#hud {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+#score-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.375rem;
+}
 
 #playerscore {
-	display: block;
-	position: absolute;
-	top: 10px;
-	left: 0;
-	width: 100%;
-	text-align: right;
-	color: orange;
-	font-size: 48px;
-	line-height: 48px;
-	border-bottom: solid 2px #555;
+  font-size: clamp(1.5rem, 4vw, 2.75rem);
+  line-height: 1;
+  color: var(--mauve);
+  letter-spacing: -0.02em;
+  min-width: 5ch;
+  text-align: right;
 }
 
-#loading {
-	height: 400px;
-	width: 680px;
-	padding: 40px 10px 10px;
-	position: relative;
+/* ── Lives dots ───────────────────────────────────────────────────────────── */
+#lives {
+  display: flex;
+  gap: 5px;
+  list-style: none;
 }
 
-#loadingMessage {
-	width: 400px;
-	height: 50px;
-	text-align: center;
-	background: url(../images/loading.gif) center 25px no-repeat;
+.life {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 2px solid var(--green);
+  transition: background 0.2s ease;
 }
 
-#paddleInstructions {
-	height: 260px;
-	width: 160px;
-	position: absolute;
-	top: 0;
-	right: 70px;
-	background: url(../images/instructions_bg.png) right top no-repeat;
-	padding: 140px 40px 0 0;
+.life.active {
+  background: var(--green);
 }
 
-#ghostInstructions {
-	height: 170px;
-	width: 125px;
-	padding: 10px 0 0 155px;
-	position: absolute;
-	bottom: 70px;
-	left: 80px;
-	background: url(../images/ghost_instructions_bg.png) no-repeat;
+/* ── Sound toggle ─────────────────────────────────────────────────────────── */
+#toggleSound {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  background: url(../images/audio.png) 0 0 no-repeat transparent;
+  border: none;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s ease;
+}
+
+#toggleSound:hover {
+  opacity: 1;
+}
+
+#toggleSound.muted {
+  background-position: -32px 0;
+  opacity: 0.4;
+}
+
+/* ── Canvas wrapper ───────────────────────────────────────────────────────── */
+#canvas-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: 1rem 0;
+  overflow: hidden;
+}
+
+/* ── Game canvas ──────────────────────────────────────────────────────────── */
+#pongBoard {
+  display: block;
+  background: var(--mantle);
+  border-radius: 6px;
+  border: 1px solid var(--surface-0);
+  box-shadow:
+    0 0 0 1px var(--surface-0),
+    0 0 40px rgba(180, 190, 254, 0.07);
+}
+
+/* ── Start screen overlay ─────────────────────────────────────────────────── */
+#start-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+#start-screen.hidden {
+  display: none;
 }
 
 #startGame {
-	display: none;
-	border: solid 2px orange;
-	padding: 10px 20px 12px;
-	border-radius: 8px;
-	background: black;
-	color: orange;
-	margin: 30px 0 0 120px;
-	font: bold 24px/24px 'Play', helvetica, arial, sans-serif;
-	cursor: pointer;
-}
-	#startGame[disabled] {
-		color: #555;
-		border-color: #555;
-	}
-
-#game {
-	overflow: hidden;
-	padding: 10px 0;
-	position: relative;
-	display: none;
+  font-family: 'Play', helvetica, arial, sans-serif;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--base);
+  background: var(--mauve);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 3.5rem;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
 }
 
-#balls {
-	margin: 0;
-	padding: 0;
-	list-style: none;
-	float: left;
-	width: 40px;
-}
-	#balls li {
-		margin: 0 0 20px;
-		padding: 0;
-	}
-	
-.ball {
-	width: 38px;
-	border: solid 2px orange;
-	border-radius: 20px;
-	display: block;
-	font-size: 20px;
-	line-height: 20px;
-	padding: 9px 0;
-	text-align: center;
-	background-color: orange;
-	color: black;
+#startGame:hover {
+  background: var(--lavender);
+  transform: scale(1.03);
 }
 
-.dead {
-	border-color: #555;
-	background-color: black;
-	color: #555;
+#startGame:active {
+  transform: scale(0.97);
 }
 
-#pongBoard {
-	border: solid 1px orange;
-	box-shadow: 0 0 10px orange;
-	margin: 0 10px;
-	float: right;
-}
-
-#gameSounds {
-	position: absolute;
-	bottom: 10px;
-	left: 10px;
-}
-
-#toggleSound {
-	width: 32px;
-	height: 32px;
-	display: inline-block;
-	background: url(../images/audio.png) 0 0 no-repeat transparent;
-	border: none;
-	cursor: pointer;
-}
-	#toggleSound.muted {
-		background-position: -32px 0;
-	}
-
+/* ── Footer ───────────────────────────────────────────────────────────────── */
 footer {
-	text-align: right;
-	color: #555;
+  padding: 0.75rem 0;
+  text-align: right;
+  color: var(--overlay-0);
+  font-size: 0.75rem;
+  border-top: 1px solid var(--surface-0);
 }
-	footer a {
-		color: #666;
-	}
 
-#githubForkRibbon {
-	position: absolute;
-	top: 0;
-	left: 0;
-	display: block;
+footer a {
+  color: var(--subtext);
+  text-decoration: none;
+}
+
+footer a:hover {
+  color: var(--text);
+}
+
+/* ── Landscape mobile ─────────────────────────────────────────────────────── */
+@media (max-height: 480px) and (orientation: landscape) {
+  header {
+    padding: 0.5rem 0;
+  }
+
+  #logo {
+    font-size: 1.25rem;
+  }
+
+  #logo span {
+    font-size: 0.75rem;
+  }
+
+  #playerscore {
+    font-size: 1.25rem;
+  }
+
+  .life {
+    width: 8px;
+    height: 8px;
+  }
+
+  #canvas-wrap {
+    padding: 0.5rem 0;
+  }
+
+  footer {
+    display: none;
+  }
 }

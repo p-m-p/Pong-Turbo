@@ -9,49 +9,46 @@
   <link href="https://fonts.googleapis.com/css2?family=Play:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
-<div id="wrap">
+<div id="app">
 
   <header>
-    <h1>PONG <span>Turbo</span></h1>
+    <h1 id="logo">PONG <span>Turbo</span></h1>
+    <div id="hud">
+      <div id="score-display">
+        <span id="playerscore">0</span>
+        <ul id="lives" role="list" aria-label="Lives remaining">
+          <li class="life active" aria-label="Life 1"></li>
+          <li class="life active" aria-label="Life 2"></li>
+          <li class="life active" aria-label="Life 3"></li>
+          <li class="life active" aria-label="Life 4"></li>
+          <li class="life active" aria-label="Life 5"></li>
+        </ul>
+      </div>
+      <button id="toggleSound" aria-label="Toggle sound"></button>
+    </div>
   </header>
 
-  <span id="playerscore">&nbsp;</span>
-
-  <section id="loading">
-    <p id="loadingMessage">Loading game data, please wait...</p>
-    <button id="startGame" disabled>Start game</button>
-    <p id="paddleInstructions">Use the up and down arrows on your keyboard to move the paddle.</p>
-    <p id="ghostInstructions">Kill all ghosts to move to the next level!</p>
-  </section>
-
-  <section id="game">
-
-    <ul id="balls">
-      <li><span class="ball">1</span></li>
-      <li><span class="ball">2</span></li>
-      <li><span class="ball">3</span></li>
-      <li><span class="ball">4</span></li>
-      <li><span class="ball">5</span></li>
-    </ul>
-
-    <canvas id="pongBoard" width="600" height="400">
+  <main id="canvas-wrap">
+    <div id="start-screen">
+      <button id="startGame">Play</button>
+    </div>
+    <canvas id="pongBoard">
       <p>Your browser does not support HTML5 Canvas. Please update to a modern browser.</p>
     </canvas>
-
-    <section id="gameSounds">
-      <audio id="soundtrack" preload="auto" loop>
-        <source src="sound/mp3/ChipOnYourShoulder.mp3">
-      </audio>
-      <button id="toggleSound" aria-label="Toggle sound"></button>
-    </section>
-
-  </section>
+  </main>
 
   <footer>
     Brought to you by <a href="https://philparsons.co.uk">Phil Parsons</a> with thanks to
     <a href="http://www.8bitweapon.com/">8 Bit Weapon</a> for the soundtrack.
   </footer>
 
+</div>
+
+<div hidden>
+  <audio id="soundtrack" preload="auto" loop>
+    <source src="sound/mp3/ChipOnYourShoulder.mp3">
+  </audio>
+  <div id="gameSounds"></div>
 </div>
 
 <script type="module" src="src/main.js"></script>

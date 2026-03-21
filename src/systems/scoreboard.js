@@ -4,16 +4,18 @@ export class Scoreboard {
 
   constructor() {
     this.#scoreEl = document.getElementById('playerscore');
-    this.#lifeEls = document.querySelectorAll('.ball');
+    this.#lifeEls = document.querySelectorAll('.life');
   }
 
   updateScore(score) {
-    this.#scoreEl.textContent = score;
+    this.#scoreEl.textContent = score.toLocaleString();
   }
 
   updateLives(lives) {
     this.#lifeEls.forEach((el, i) => {
-      el.className = i < lives ? 'ball' : 'ball dead';
+      const active = i < lives;
+      el.classList.toggle('active', active);
+      el.setAttribute('aria-label', `Life ${i + 1}${active ? '' : ' (lost)'}`);
     });
   }
 

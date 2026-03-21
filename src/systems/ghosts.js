@@ -3,13 +3,13 @@ import { Ghost } from '../entities/ghost.js';
 const GHOST_SIZE = 32;
 const DEFAULT_COUNT = 5;
 
-// Palette chosen to pop against the orange/black game aesthetic
+// Catppuccin Mocha accent colours — all read well against the dark base
 const GHOST_COLOURS = [
-  '#74b9ff', // sky blue
-  '#a29bfe', // lavender
-  '#fd79a8', // coral pink
-  '#55efc4', // mint
-  '#00cec9', // teal
+  '#cba6f7', // mauve
+  '#f5c2e7', // pink
+  '#89dceb', // sky
+  '#a6e3a1', // green
+  '#f9e2af', // yellow
 ];
 
 export class GhostSystem {
@@ -33,9 +33,9 @@ export class GhostSystem {
     }
   }
 
-  draw(ctx) {
+  draw(ctx, drawScale) {
     for (const ghost of this.#ghosts) {
-      ghost.draw(ctx);
+      ghost.draw(ctx, drawScale);
     }
   }
 
