@@ -1,0 +1,18 @@
+{
+  "name": "pong-turbo",
+  "version": "1.0.0",
+  "description": "Pong Turbo — a canvas-based pong game with a Pac-Man twist",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.32.1",
+  "devDependencies": {
+    "vite": "^8.0.1"
+  }
+}
