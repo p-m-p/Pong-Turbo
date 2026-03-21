@@ -42,6 +42,11 @@
     <canvas id="pongBoard">
       <p>Your browser does not support HTML5 Canvas. Please update to a modern browser.</p>
     </canvas>
+    <!-- Touch paddle control — visible only on coarse-pointer landscape devices -->
+    <div id="touch-control" aria-label="Drag to move paddle" role="slider" aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+      <div id="touch-track"></div>
+      <div id="touch-knob"><span class="knob-lines"></span></div>
+    </div>
   </main>
 
   <footer>

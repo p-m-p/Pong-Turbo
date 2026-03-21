@@ -48,15 +48,23 @@ export function initGame() {
   initAudio();
   setupResizeObserver();
   setupControls();
+  setupTouchControl();
   setupSoundToggle();
   setupStartScreen();
 
   // ── Responsive canvas ──────────────────────────────────────────────────
 
   function resizeCanvas() {
-    const wrap    = document.getElementById('canvas-wrap');
-    const availW  = wrap.clientWidth;
-    const availH  = wrap.clientHeight;
+    const wrap      = document.getElementById('canvas-wrap');
+    const touchZone = document.getElementById('touch-control');
+
+    // Subtract touch control width when it's visible so the canvas fits cleanly
+    const touchZoneW = touchZone && getComputedStyle(touchZone).display !== 'none'
+      ? touchZone.offsetWidth
+      : 0;
+
+    const availW = wrap.clientWidth - touchZoneW;
+    const availH = wrap.clientHeight;
 
     // Fit inside available space at ASPECT_RATIO, capped at MAX_PHYS dimensions
     let physW, physH;
@@ -74,6 +82,11 @@ export function initGame() {
     canvas.height = Math.round(physH * dpr);
     canvas.style.width  = `${physW}px`;
     canvas.style.height = `${physH}px`;
+
+    // Size the touch zone to exactly match the canvas height
+    if (touchZone) {
+      touchZone.style.height = `${physH}px`;
+    }
 
     drawScale = physW / VIRTUAL_W;
   }
@@ -113,6 +126,41 @@ export function initGame() {
     window.addEventListener('keyup', () => {
       if (paddle) paddle.moveY = null;
     });
+  }
+
+  // ── Touch control ──────────────────────────────────────────────────────
+
+  function setupTouchControl() {
+    const zone = document.getElementById('touch-control');
+    if (!zone) return;
+
+    function onTouch(ev) {
+      if (!paddle) return;
+      const touch = ev.touches[0];
+      const rect  = zone.getBoundingClientRect();
+      // Clamp to zone bounds, map directly to virtual paddle Y
+      const relY  = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
+      paddle.y    = relY * (VIRTUAL_H - paddle.h);
+    }
+
+    zone.addEventListener('touchstart', onTouch, { passive: true });
+    zone.addEventListener('touchmove',  onTouch, { passive: true });
+  }
+
+  function updateTouchKnob() {
+    const knob = document.getElementById('touch-knob');
+    const zone = document.getElementById('touch-control');
+    if (!knob || !zone || !paddle) return;
+    if (getComputedStyle(zone).display === 'none') return;
+
+    const knobH  = knob.offsetHeight;
+    const zoneH  = zone.offsetHeight;
+    const relY   = paddle.y / (VIRTUAL_H - paddle.h);
+    knob.style.top = `${relY * (zoneH - knobH)}px`;
+
+    // Update ARIA value for assistive technology
+    const pct = Math.round(relY * 100);
+    zone.setAttribute('aria-valuenow', pct);
   }
 
   function setupSoundToggle() {
@@ -301,6 +349,8 @@ export function initGame() {
   // ── Rendering ──────────────────────────────────────────────────────────
 
   function draw() {
+    updateTouchKnob();
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.save();
