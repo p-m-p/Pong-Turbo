@@ -182,8 +182,20 @@ export function initGame() {
 
   function setupSoundToggle() {
     const soundtrack = document.getElementById('soundtrack');
-    document.getElementById('toggleSound').addEventListener('click', function () {
-      soundtrack.muted    = !soundtrack.muted;
+    const btn        = document.getElementById('toggleSound');
+    const STORAGE_KEY = 'pongTurbo.muted';
+
+    // Restore saved preference before first user interaction
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === 'true') {
+      soundtrack.muted = true;
+      btn.classList.add('muted');
+      btn.setAttribute('aria-label', 'Unmute sound');
+    }
+
+    btn.addEventListener('click', function () {
+      soundtrack.muted = !soundtrack.muted;
+      localStorage.setItem(STORAGE_KEY, soundtrack.muted);
       this.classList.toggle('muted', soundtrack.muted);
       this.setAttribute('aria-label', soundtrack.muted ? 'Unmute sound' : 'Mute sound');
       this.blur();
