@@ -83,8 +83,8 @@ export class Ghost extends GameItem {
     if (!suppressCharge && Math.random() < CHARGE_PROB) {
       this.#state   = 'charging';
       this.#vx      = 1;
-      // Stop with right edge just touching paddle's left face
-      this.#chargeX = paddleX - this.w;
+      // Overlap paddle by 4px so the AABB collision in GhostSystem fires
+      this.#chargeX = paddleX - this.w + 4;
     }
   }
 
