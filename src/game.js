@@ -118,8 +118,9 @@ export function initGame() {
   function setupSoundToggle() {
     const soundtrack = document.getElementById('soundtrack');
     document.getElementById('toggleSound').addEventListener('click', function () {
-      soundtrack.muted = !soundtrack.muted;
-      this.className   = soundtrack.muted ? 'muted' : '';
+      soundtrack.muted    = !soundtrack.muted;
+      this.classList.toggle('muted', soundtrack.muted);
+      this.setAttribute('aria-label', soundtrack.muted ? 'Unmute sound' : 'Mute sound');
       this.blur();
     });
   }

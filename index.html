@@ -24,7 +24,14 @@
           <li class="life active" aria-label="Life 5"></li>
         </ul>
       </div>
-      <button id="toggleSound" aria-label="Toggle sound"></button>
+      <button id="toggleSound" aria-label="Mute sound">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
+          <!-- Musical note (Heroicons musical-note-solid) -->
+          <path fill-rule="evenodd" d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.403-4.909l2.311-.66a1.5 1.5 0 001.088-1.442V6.994l-9 2.572v9.737a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.402-4.909l2.31-.66a1.5 1.5 0 001.088-1.442V9.994a.75.75 0 01.544-.721l10.5-3a.75.75 0 01.658.096z" clip-rule="evenodd"/>
+          <!-- Mute slash — hidden by default, shown via CSS when .muted -->
+          <line class="mute-slash" x1="3" y1="21" x2="21" y2="3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
   </header>
 
