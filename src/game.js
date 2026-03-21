@@ -1,6 +1,8 @@
 import { Ball } from './entities/ball.js';
 import { Paddle } from './entities/paddle.js';
 import { GhostSystem } from './systems/ghosts.js';
+import { PowerUpSystem } from './systems/powerups.js';
+import { AlienSystem } from './systems/aliens.js';
 import { Scoreboard } from './systems/scoreboard.js';
 import { initAudio, play } from './systems/audio.js';
 
@@ -22,10 +24,21 @@ const INITIAL_LIVES   = 5;
 // Fraction of paddle.vy added to ball dy on hit; capped at ±60% of ballSpeed
 const SPIN_FACTOR = 0.25;
 
+// ── New-life serve animation ───────────────────────────────────────────────
+const READY_PAUSE_MS = 600;   // brief stationary pulse before ball moves
+
 // ── Per-rally ball speed ramp ───────────────────────────────────────────────
 // Each paddle return nudges the ball a little faster; resets on each new rally
 const RALLY_INCREMENT = 0.5;  // virtual units added per hit
 const RALLY_CAP       = 6;    // max units above gameSpeed within a rally
+
+// ── Power-up effects ───────────────────────────────────────────────────────
+const WIDE_DURATION_MS = 8_000;
+const WIDE_SCALE       = 1.75;  // paddle height multiplier
+const PADDLE_BASE_H    = 60;    // must match startNewGame() paddle constructor
+
+// ── Bonus round (every 3rd level) ─────────────────────────────────────────
+const BONUS_COMPLETION_SCORE = 2000; // × level awarded on clearing all aliens
 
 // ── Paddle stun (ghost contact) ────────────────────────────────────────────
 const STUN_DURATION_MS         = 2500;
@@ -42,8 +55,10 @@ const CLR_CANVAS_BG  = '#181825'; // mantle
 export function initGame() {
   const canvas = document.getElementById('pongBoard');
   const ctx    = canvas.getContext('2d');
-  const scoreboard  = new Scoreboard();
-  const ghostSystem = new GhostSystem();
+  const scoreboard   = new Scoreboard();
+  const ghostSystem  = new GhostSystem();
+  const powerUpSystem = new PowerUpSystem();
+  const alienSystem  = new AlienSystem();
 
   // ── Rendering state ────────────────────────────────────────────────────
   let drawScale = 1;
@@ -61,6 +76,20 @@ export function initGame() {
   let rafId              = null;
   let lastTimestamp      = null;
   let paddleStunnedUntil = 0; // performance.now() timestamp; 0 = not stunned
+
+  // ── Power-up effect state ───────────────────────────────────────────────
+  let wideUntil    = 0;    // timestamp when wide-paddle expires; 0 = inactive
+  let shieldActive = false; // absorbs the next stun
+  // 'slow' is instantaneous (resets ballSpeed) so needs no persistent state
+
+  // ── Bonus round state ───────────────────────────────────────────────────
+  let isBonusRound = false;
+
+  // ── Serve / ready state ─────────────────────────────────────────────────
+  // 'ready': ball pulses at left end then drifts right; first paddle hit launches it
+  // 'live' : normal play
+  let ballState      = 'live';
+  let ballReadySince = 0;
 
   initAudio();
   setupResizeObserver();
@@ -217,6 +246,10 @@ export function initGame() {
     ballSpeed          = INITIAL_SPEED;
     lastTimestamp      = null;
     paddleStunnedUntil = 0;
+    wideUntil          = 0;
+    shieldActive       = false;
+    isBonusRound       = false;
+    powerUpSystem.clear();
 
     paddle = new Paddle(
       VIRTUAL_W - 15,
@@ -225,14 +258,10 @@ export function initGame() {
       60,
     );
 
-    ball = new Ball(
-      60,
-      20,
-      10,
-      10,
-      gameSpeed / 2,
-      gameSpeed / 2,
-    );
+    // Ball is created at a placeholder position; resetBall() sets the real state
+    ball = new Ball(40, VIRTUAL_H / 2, 10, 10, 0, 0);
+    ballState = 'live'; // resetBall will set to 'ready'
+    resetBall();
 
     scoreboard.reset(lives);
     ghostSystem.spawn();
@@ -259,35 +288,129 @@ export function initGame() {
   }
 
   function update(timeScale) {
-    const ballResult = moveBall(timeScale);
+    if (ballState === 'ready') {
+      updateReadyBall(timeScale);
+    } else {
+      const ballResult = moveBall(timeScale);
+      if (ballResult === 'out') {
+        handleBallOut();
+        return;
+      }
+    }
 
-    if (ballResult === 'out') {
-      handleBallOut();
-      return;
+    // ── Power-up collection & movement (live ball only) ───────────────────
+    if (ballState === 'live') {
+      const collected = powerUpSystem.checkCollision(ball);
+      if (collected) applyPowerUp(collected);
+    }
+    powerUpSystem.move(VIRTUAL_H, timeScale);
+
+    // Expire wide paddle
+    if (wideUntil > 0 && performance.now() > wideUntil) {
+      wideUntil = 0;
+      paddle.h  = PADDLE_BASE_H;
     }
 
     paddle.move(VIRTUAL_H, 1.2 * gameSpeed * timeScale);
 
-    if (ghostSystem.allDead()) {
+    // ── Bonus round ───────────────────────────────────────────────────────
+    if (isBonusRound) {
+      alienSystem.move(VIRTUAL_H, timeScale);
+      const alienScore = ballState === 'live' ? alienSystem.checkCollision(ball, level) : 0;
+      if (alienScore > 0) {
+        score += alienScore;
+        scoreboard.updateScore(score);
+        play('ghost');
+      }
+      // Formation reached the paddle — end round, no bonus, no life lost
+      const aliensBreach = alienSystem.reachedX(paddle.x);
+      if (alienSystem.allDead() || aliensBreach) {
+        isBonusRound = false;
+        level++;
+        gameSpeed += 2;
+        ballSpeed  = gameSpeed;
+        if (alienSystem.allDead()) {
+          score += BONUS_COMPLETION_SCORE * level;
+          scoreboard.updateScore(score);
+        }
+        play('levelUp');
+        ghostSystem.spawn();
+      }
+    } else if (ghostSystem.allDead()) {
+      // ── Level complete ────────────────────────────────────────────────
       level++;
       gameSpeed += 2;
-      ballSpeed  = gameSpeed; // new level resets the rally ramp
-      score += level * 1000;
+      ballSpeed  = gameSpeed;
+      score     += level * 1000;
       scoreboard.updateScore(score);
       play('levelUp');
-      ghostSystem.spawn();
+      if (level % 3 === 0) {
+        isBonusRound = true;
+        powerUpSystem.clear();
+        alienSystem.spawn(VIRTUAL_H);
+      } else {
+        ghostSystem.spawn();
+      }
     } else {
       ghostSystem.move(VIRTUAL_H, VIRTUAL_W, paddle.x, (gameSpeed / 4) * timeScale);
 
-      // Ghost touching the paddle stuns it: ball may pass through while stunned
+      // Ghost touching the paddle stuns it; shield absorbs the first stun
       if (ghostSystem.checkPaddleCollision(paddle)) {
-        if (paddleStunnedUntil < performance.now()) {
+        if (shieldActive) {
+          shieldActive = false; // shield consumed
+        } else if (paddleStunnedUntil < performance.now()) {
           paddleStunnedUntil = performance.now() + STUN_DURATION_MS;
         }
       }
     }
 
     draw();
+  }
+
+  function applyPowerUp(type) {
+    switch (type) {
+      case 'wide':
+        wideUntil = performance.now() + WIDE_DURATION_MS;
+        paddle.h  = PADDLE_BASE_H * WIDE_SCALE;
+        break;
+      case 'shield':
+        shieldActive = true;
+        break;
+      case 'slow':
+        ballSpeed = gameSpeed; // reset rally ramp to base level speed
+        break;
+    }
+  }
+
+  // ── Ball movement & collisions ─────────────────────────────────────────
+
+  // ── Ready / serve state ────────────────────────────────────────────────
+
+  function updateReadyBall(timeScale) {
+    const age = performance.now() - ballReadySince;
+    if (age > READY_PAUSE_MS) {
+      ball.x += (gameSpeed / 2) * timeScale;
+    }
+
+    // Ball reached paddle zone — if player has it lined up, launch; otherwise
+    // reset to the left so they can try again (no life lost).
+    if (ball.x + ball.w >= paddle.x) {
+      const overlapsY = ball.y + ball.h > paddle.y && ball.y < paddle.y + paddle.h;
+      if (overlapsY) {
+        launchBall();
+      } else {
+        ball.x         = 40;
+        ballReadySince = performance.now();
+      }
+    }
+  }
+
+  function launchBall() {
+    ballState = 'live';
+    ball.dx   = -(gameSpeed / 2);
+    ball.dy   = (Math.random() > 0.5 ? 1 : -1) * (gameSpeed / 2);
+    ballSpeed = gameSpeed;
+    play('paddle');
   }
 
   // ── Ball movement & collisions ─────────────────────────────────────────
@@ -313,10 +436,16 @@ export function initGame() {
 
     if (b.dx > 0 && checkPaddleHit()) {
       play('paddle');
-    } else if (ghostSystem.checkCollision(b)) {
-      score += level * gameSpeed;
-      scoreboard.updateScore(score);
-      play('ghost');
+    } else {
+      const killResult = ghostSystem.checkCollision(b);
+      if (killResult) {
+        const { count, cx, cy } = killResult;
+        // Exponential multi-kill score: level × gameSpeed × count × 2^(count-1)
+        score += level * gameSpeed * count * Math.pow(2, count - 1);
+        scoreboard.updateScore(score);
+        play('ghost');
+        powerUpSystem.trySpawn(cx, cy, count);
+      }
     }
 
     b.x += b.dx * timeScale;
@@ -382,11 +511,13 @@ export function initGame() {
   }
 
   function resetBall() {
-    ball.x    = 60;
-    ball.y    = Math.floor((VIRTUAL_H - ball.h * 2) * Math.random());
-    ball.dx   = gameSpeed / 2;
-    ball.dy   = gameSpeed / 2;
-    ballSpeed = gameSpeed; // lost the rally — speed resets
+    ball.x         = 40;
+    ball.y         = VIRTUAL_H / 2 - ball.h / 2;
+    ball.dx        = 0;
+    ball.dy        = 0;
+    ballSpeed      = gameSpeed;
+    ballState      = 'ready';
+    ballReadySince = performance.now();
   }
 
   function gameOver() {
@@ -417,11 +548,16 @@ export function initGame() {
     ctx.save();
     ctx.scale(drawScale * dpr, drawScale * dpr);
 
-    // Ball — mauve with glow
+    // Ball — mauve with glow; pulses during ready/serve state
+    const ballAlpha = ballState === 'ready'
+      ? 0.25 + 0.75 * Math.abs(Math.sin((performance.now() - ballReadySince) * 0.005))
+      : 1;
+    ctx.globalAlpha = ballAlpha;
     ctx.shadowBlur  = 10 * drawScale;
     ctx.shadowColor = CLR_BALL;
     ctx.fillStyle   = CLR_BALL;
     ball.draw(ctx);
+    ctx.globalAlpha = 1;
 
     // Paddle — lavender with glow; pulses when stunned by a ghost touch
     const paddleAlpha = paddleStunnedUntil > performance.now()
@@ -435,6 +571,26 @@ export function initGame() {
 
     ctx.shadowBlur = 0;
     ghostSystem.draw(ctx, drawScale);
+
+    // Power-ups
+    powerUpSystem.draw(ctx, drawScale);
+
+    // Bonus round aliens
+    if (isBonusRound) {
+      alienSystem.draw(ctx, drawScale);
+    }
+
+    // Shield glow around paddle when active
+    if (shieldActive) {
+      ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(performance.now() * 0.004));
+      ctx.shadowBlur  = 16 * drawScale;
+      ctx.shadowColor = '#89dceb';
+      ctx.strokeStyle = '#89dceb';
+      ctx.lineWidth   = 2;
+      ctx.strokeRect(paddle.x - 3, paddle.y - 3, paddle.w + 6, paddle.h + 6);
+      ctx.globalAlpha = 1;
+      ctx.shadowBlur  = 0;
+    }
 
     ctx.restore();
   }

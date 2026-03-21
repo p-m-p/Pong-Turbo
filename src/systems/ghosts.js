@@ -69,20 +69,26 @@ export class GhostSystem {
     return false;
   }
 
-  // Returns true and removes ghost on AABB hit with the ball, false otherwise
+  /**
+   * Checks all ghosts for simultaneous AABB hits with the ball.
+   * Removes killed ghosts and returns { count, cx, cy } (centroid of killed ghosts),
+   * or null if no hit occurred.
+   */
   checkCollision(ball) {
-    for (let i = 0; i < this.#ghosts.length; i++) {
+    const killed = [];
+    for (let i = this.#ghosts.length - 1; i >= 0; i--) {
       const g = this.#ghosts[i];
       if (
-        ball.x + ball.w > g.x &&
-        ball.x < g.x + g.w &&
-        ball.y + ball.h > g.y &&
-        ball.y < g.y + g.h
+        ball.x + ball.w > g.x && ball.x < g.x + g.w &&
+        ball.y + ball.h > g.y && ball.y < g.y + g.h
       ) {
+        killed.push(g);
         this.#ghosts.splice(i, 1);
-        return true;
       }
     }
-    return false;
+    if (killed.length === 0) return null;
+    const cx = killed.reduce((s, g) => s + g.x + g.w / 2, 0) / killed.length;
+    const cy = killed.reduce((s, g) => s + g.y + g.h / 2, 0) / killed.length;
+    return { count: killed.length, cx, cy };
   }
 }
