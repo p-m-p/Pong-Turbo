@@ -1,27 +1,115 @@
 import { GameItem } from './gameItem.js';
 
+// Ghosts roam freely in the left 45% of the canvas
+const ROAM_BOUNDARY_RATIO = 0.45;
+// Probability per frame that a roaming ghost starts a charge run
+const CHARGE_PROB         = 0.001; // ~1 charge per ghost per ~33s; GhostSystem limits to 1 at a time
+const CHARGE_SPEED_MULT   = 1.6;
+const RETREAT_SPEED_MULT  = 1.4;
+// Horizontal drift is a fraction of vertical speed so diagonals feel natural
+const H_SPEED_RATIO       = 0.7;
+
 export class Ghost extends GameItem {
   #color;
+  #vx;      // horizontal direction: −1 left, +1 right
+  #vy;      // vertical direction magnitude (−1…+1.2 for slight variation)
+  #state;   // 'roaming' | 'charging' | 'retreating'
+  #chargeX; // target left-edge X when charging (just in front of paddle)
 
   constructor(x, y, size, color) {
     super(x, y, size, size);
-    this.direction = 'down';
-    this.#color = color;
+    this.#color   = color;
+    this.#vx      = 1; // start moving right so ghosts spread out from spawn
+    this.#vy      = Math.random() > 0.5 ? 1 : -1;
+    this.#state   = 'roaming';
+    this.#chargeX = 0;
   }
 
-  move(canvasHeight, speed) {
-    if (this.direction === 'down') {
-      if (this.y + this.h + speed <= canvasHeight) {
-        this.y += speed;
-      } else {
-        this.direction = 'up';
-      }
+  get isCharging() {
+    return this.#state === 'charging';
+  }
+
+  /** Called by GhostSystem when this ghost overlaps the paddle. */
+  retreat() {
+    this.#state = 'retreating';
+    this.#vx    = -1;
+  }
+
+  /**
+   * @param {number}  canvasH        - VIRTUAL_H
+   * @param {number}  canvasW        - VIRTUAL_W
+   * @param {number}  paddleX        - paddle's left edge X (virtual units)
+   * @param {number}  speed          - pre-scaled speed (timeScale already applied)
+   * @param {boolean} suppressCharge - true when another ghost is already charging
+   */
+  move(canvasH, canvasW, paddleX, speed, suppressCharge = false) {
+    const roamBound = canvasW * ROAM_BOUNDARY_RATIO;
+
+    // Top / bottom wall bounce applies in every state
+    if (this.y <= 0)                    this.#vy = Math.abs(this.#vy);
+    if (this.y + this.h >= canvasH)     this.#vy = -Math.abs(this.#vy);
+
+    if (this.#state === 'roaming') {
+      this.#stepRoaming(canvasH, roamBound, paddleX, speed, suppressCharge);
+    } else if (this.#state === 'charging') {
+      this.#stepCharging(canvasH, speed);
     } else {
-      if (this.y - speed >= 0) {
-        this.y -= speed;
-      } else {
-        this.direction = 'down';
-      }
+      this.#stepRetreating(canvasH, roamBound, speed);
+    }
+  }
+
+  #stepRoaming(canvasH, roamBound, paddleX, speed, suppressCharge) {
+    // Bounce off left wall and roam boundary
+    if (this.x <= 0)                          this.#vx = 1;
+    if (this.x + this.w >= roamBound)         this.#vx = -1;
+
+    // Small random nudge to vertical direction when bouncing off right limit,
+    // keeping the movement from feeling mechanical
+    if (this.x + this.w >= roamBound) {
+      this.#vy += (Math.random() - 0.5) * 0.6;
+      // Keep vy in a sensible range and never exactly zero
+      this.#vy = Math.max(-1.2, Math.min(1.2, this.#vy));
+      if (Math.abs(this.#vy) < 0.25) this.#vy = this.#vy >= 0 ? 0.25 : -0.25;
+    }
+
+    this.x += this.#vx * speed * H_SPEED_RATIO;
+    this.y += this.#vy * speed;
+
+    // Clamp within roam zone
+    this.x = Math.max(0, Math.min(roamBound - this.w, this.x));
+    this.y = Math.max(0, Math.min(canvasH - this.h, this.y));
+
+    // Random lunge toward the paddle (one ghost at a time)
+    if (!suppressCharge && Math.random() < CHARGE_PROB) {
+      this.#state   = 'charging';
+      this.#vx      = 1;
+      // Stop with right edge just touching paddle's left face
+      this.#chargeX = paddleX - this.w;
+    }
+  }
+
+  #stepCharging(canvasH, speed) {
+    this.x += speed * CHARGE_SPEED_MULT;
+    this.y += this.#vy * speed;
+    this.y   = Math.max(0, Math.min(canvasH - this.h, this.y));
+
+    // Reached (or overshot) the paddle edge — begin retreat
+    if (this.x >= this.#chargeX) {
+      this.x = this.#chargeX;
+      this.retreat();
+    }
+  }
+
+  #stepRetreating(canvasH, roamBound, speed) {
+    this.x -= speed * RETREAT_SPEED_MULT;
+    this.y += this.#vy * speed;
+    this.y   = Math.max(0, Math.min(canvasH - this.h, this.y));
+
+    // Back inside the roam zone — resume normal diagonal movement
+    if (this.x + this.w <= roamBound) {
+      this.#state = 'roaming';
+      // Randomise horizontal direction so re-entry feels natural
+      this.#vx = Math.random() > 0.5 ? 1 : -1;
     }
   }
 

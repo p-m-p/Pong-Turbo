@@ -1,6 +1,6 @@
 import { Ghost } from '../entities/ghost.js';
 
-const GHOST_SIZE = 32;
+const GHOST_SIZE    = 32;
 const DEFAULT_COUNT = 5;
 
 // Catppuccin Mocha accent colours — all read well against the dark base
@@ -27,9 +27,22 @@ export class GhostSystem {
     return this.#ghosts.length === 0;
   }
 
-  move(canvasHeight, speed) {
+  /**
+   * @param {number} canvasH  - VIRTUAL_H
+   * @param {number} canvasW  - VIRTUAL_W
+   * @param {number} paddleX  - paddle's left edge X (virtual units)
+   * @param {number} speed    - pre-scaled speed (timeScale already applied)
+   */
+  move(canvasH, canvasW, paddleX, speed) {
+    // Only allow one ghost to charge at a time so the player isn't overwhelmed
+    let chargingCount = this.#ghosts.filter(g => g.isCharging).length;
+
     for (const ghost of this.#ghosts) {
-      ghost.move(canvasHeight, speed);
+      const wasCharging = ghost.isCharging;
+      ghost.move(canvasH, canvasW, paddleX, speed, chargingCount > 0);
+      // If this ghost just started charging, count it so later ghosts in
+      // the loop are suppressed this frame too
+      if (!wasCharging && ghost.isCharging) chargingCount++;
     }
   }
 
@@ -39,7 +52,24 @@ export class GhostSystem {
     }
   }
 
-  // Returns true and removes ghost on AABB hit, false otherwise
+  /**
+   * Checks whether any ghost overlaps the paddle (AABB).
+   * If so, forces that ghost to retreat and returns true.
+   * Game code should apply a paddle stun on true.
+   */
+  checkPaddleCollision(paddle) {
+    for (const ghost of this.#ghosts) {
+      const overlapsX = ghost.x + ghost.w > paddle.x && ghost.x < paddle.x + paddle.w;
+      const overlapsY = ghost.y + ghost.h > paddle.y && ghost.y < paddle.y + paddle.h;
+      if (overlapsX && overlapsY) {
+        ghost.retreat();
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Returns true and removes ghost on AABB hit with the ball, false otherwise
   checkCollision(ball) {
     for (let i = 0; i < this.#ghosts.length; i++) {
       const g = this.#ghosts[i];

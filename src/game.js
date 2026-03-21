@@ -18,6 +18,12 @@ const TARGET_FRAME_MS = 1000 / 30; // normalise movement to original 30fps feel
 const MAX_FRAME_MS    = 50;        // cap delta to avoid spiral-of-death on tab resume
 const INITIAL_LIVES   = 5;
 
+// ── Paddle stun (ghost contact) ────────────────────────────────────────────
+const STUN_DURATION_MS         = 2500;
+const STUN_PULSE_ANGULAR_FREQ  = 0.019;  // ~3 Hz — visible flicker
+// Ball passes through the paddle when pulse alpha drops below this value
+const STUN_PASSTHROUGH_ALPHA   = 0.4;
+
 // ── Colours (Catppuccin Mocha) ─────────────────────────────────────────────
 const CLR_BALL       = '#cba6f7'; // mauve
 const CLR_PADDLE     = '#b4befe'; // lavender
@@ -42,8 +48,9 @@ export function initGame() {
   let lives;
   let level;
   let gameSpeed;
-  let rafId         = null;
-  let lastTimestamp = null;
+  let rafId              = null;
+  let lastTimestamp      = null;
+  let paddleStunnedUntil = 0; // performance.now() timestamp; 0 = not stunned
 
   initAudio();
   setupResizeObserver();
@@ -179,11 +186,12 @@ export function initGame() {
       rafId = null;
     }
 
-    score         = 0;
-    lives         = INITIAL_LIVES;
-    level         = 1;
-    gameSpeed     = INITIAL_SPEED;
-    lastTimestamp = null;
+    score              = 0;
+    lives              = INITIAL_LIVES;
+    level              = 1;
+    gameSpeed          = INITIAL_SPEED;
+    lastTimestamp      = null;
+    paddleStunnedUntil = 0;
 
     paddle = new Paddle(
       VIRTUAL_W - 15,
@@ -243,7 +251,14 @@ export function initGame() {
       play('levelUp');
       ghostSystem.spawn();
     } else {
-      ghostSystem.move(VIRTUAL_H, (gameSpeed / 4) * timeScale);
+      ghostSystem.move(VIRTUAL_H, VIRTUAL_W, paddle.x, (gameSpeed / 4) * timeScale);
+
+      // Ghost touching the paddle stuns it: ball may pass through while stunned
+      if (ghostSystem.checkPaddleCollision(paddle)) {
+        if (paddleStunnedUntil < performance.now()) {
+          paddleStunnedUntil = performance.now() + STUN_DURATION_MS;
+        }
+      }
     }
 
     draw();
@@ -293,6 +308,13 @@ export function initGame() {
 
     if (!overlapsX || !overlapsY) return false;
 
+    // Stunned paddle: if currently in the low-opacity phase the ball passes
+    // through — moveBall will then see the ball exit the right edge and call
+    // handleBallOut() to lose a life.
+    if (paddleStunnedUntil > performance.now()) {
+      if (getPaddlePulseAlpha() < STUN_PASSTHROUGH_ALPHA) return false;
+    }
+
     const x = Math.max(
       gameSpeed / 2,
       Math.abs(Math.round(gameSpeed * Math.random())),
@@ -303,6 +325,11 @@ export function initGame() {
     score += gameSpeed;
     scoreboard.updateScore(score);
     return true;
+  }
+
+  /** Returns 0…1 pulse alpha for the paddle while it is stunned (~3 Hz). */
+  function getPaddlePulseAlpha() {
+    return 0.55 + 0.45 * Math.sin(performance.now() * STUN_PULSE_ANGULAR_FREQ);
   }
 
   // ── Life / game-over handling ──────────────────────────────────────────
@@ -360,10 +387,15 @@ export function initGame() {
     ctx.fillStyle   = CLR_BALL;
     ball.draw(ctx);
 
-    // Paddle — lavender with glow
+    // Paddle — lavender with glow; pulses when stunned by a ghost touch
+    const paddleAlpha = paddleStunnedUntil > performance.now()
+      ? getPaddlePulseAlpha()
+      : 1;
+    ctx.globalAlpha = paddleAlpha;
     ctx.shadowColor = CLR_PADDLE;
     ctx.fillStyle   = CLR_PADDLE;
     paddle.draw(ctx);
+    ctx.globalAlpha = 1;
 
     ctx.shadowBlur = 0;
     ghostSystem.draw(ctx, drawScale);
