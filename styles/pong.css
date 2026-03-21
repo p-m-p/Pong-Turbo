@@ -68,7 +68,7 @@ header {
 /* ── HUD (score + lives + sound) ──────────────────────────────────────────── */
 #hud {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 1.25rem;
 }
 
@@ -109,15 +109,19 @@ header {
 
 /* ── Sound toggle ─────────────────────────────────────────────────────────── */
 #toggleSound {
-  width: 28px;
-  height: 28px;
+  width: 36px;
+  height: 36px;
   flex-shrink: 0;
-  background: none;
-  border: none;
-  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-0);
+  border: 1px solid var(--surface-1);
+  border-radius: 8px;
+  padding: 6px;
   cursor: pointer;
-  color: var(--overlay-0);
-  transition: color 0.15s ease;
+  color: var(--subtext);
+  transition: color 0.15s ease, background 0.15s ease;
 }
 
 #toggleSound svg {
@@ -128,10 +132,11 @@ header {
 
 #toggleSound:hover {
   color: var(--text);
+  background: var(--surface-1);
 }
 
 #toggleSound.muted {
-  color: var(--surface-1);
+  color: var(--overlay-0);
 }
 
 .mute-slash {
