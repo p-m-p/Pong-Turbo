@@ -18,6 +18,10 @@ const TARGET_FRAME_MS = 1000 / 30; // normalise movement to original 30fps feel
 const MAX_FRAME_MS    = 50;        // cap delta to avoid spiral-of-death on tab resume
 const INITIAL_LIVES   = 5;
 
+// ── Ball spin from paddle velocity ─────────────────────────────────────────
+// Fraction of paddle.vy added to ball dy on hit; capped at ±60% of gameSpeed
+const SPIN_FACTOR = 0.25;
+
 // ── Paddle stun (ghost contact) ────────────────────────────────────────────
 const STUN_DURATION_MS         = 2500;
 const STUN_PULSE_ANGULAR_FREQ  = 0.019;  // ~3 Hz — visible flicker
@@ -141,9 +145,11 @@ export function initGame() {
       if (!paddle) return;
       const touch = ev.touches[0];
       const rect  = zone.getBoundingClientRect();
-      // Clamp to zone bounds, map directly to virtual paddle Y
       const relY  = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
-      paddle.y    = relY * (VIRTUAL_H - paddle.h);
+      const newY  = relY * (VIRTUAL_H - paddle.h);
+      // Capture swipe velocity (clamped) so fast swipes impart spin on the ball
+      paddle.vy = Math.max(-gameSpeed * 2, Math.min(gameSpeed * 2, newY - paddle.y));
+      paddle.y  = newY;
     }
 
     zone.addEventListener('touchstart', onTouch, { passive: true });
@@ -321,6 +327,12 @@ export function initGame() {
     );
     b.dy = b.dy < 0 ? -(gameSpeed - x) : (gameSpeed - x);
     b.dx = -x;
+
+    // Paddle velocity imparts spin: moving paddle adds/subtracts from dy,
+    // capped so the ball can't go faster than 1.5× the base game speed.
+    const spin  = Math.max(-gameSpeed * 0.6, Math.min(gameSpeed * 0.6, paddle.vy * SPIN_FACTOR));
+    const maxDy = gameSpeed * 1.5;
+    b.dy = Math.max(-maxDy, Math.min(maxDy, b.dy + spin));
 
     score += gameSpeed;
     scoreboard.updateScore(score);
