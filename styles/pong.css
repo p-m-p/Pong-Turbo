@@ -215,32 +215,37 @@ header {
 /* ── Touch paddle control ─────────────────────────────────────────────────── */
 #touch-control {
   display: none; /* hidden by default; shown via media query below */
-  position: relative;
+  position: fixed;
+  right: 0;
+  top: 0;
+  bottom: 0;
   width: 64px;
-  flex-shrink: 0;
+  padding: 1.5rem 0; /* vertical breathing room — matches knob JS calc */
   touch-action: none;
   user-select: none;
   cursor: ns-resize;
 }
 
-/* Vertical track line — runs along the right-hand side of the zone */
+/* Vertical track line */
 #touch-track {
   position: absolute;
-  right: 19px;
-  top: 8%;
-  bottom: 8%;
+  left: 50%;
+  top: 1.5rem;    /* match parent padding */
+  bottom: 1.5rem;
   width: 2px;
+  transform: translateX(-50%);
   background: var(--surface-1);
   border-radius: 2px;
 }
 
-/* Draggable knob — anchored to right edge, positioned vertically by JS */
+/* Draggable knob — centred horizontally, positioned vertically by JS */
 #touch-knob {
   position: absolute;
-  right: 0;
+  left: 50%;
   top: 0; /* overridden by JS */
   width: 38px;
   height: 56px;
+  transform: translateX(-50%);
   background: var(--surface-0);
   border: 1.5px solid var(--lavender);
   border-radius: 19px;
@@ -268,14 +273,18 @@ header {
     display: block;
   }
 
-  /* Ensure canvas has breathing room from device edges */
-  #canvas-wrap {
-    padding: 0.5rem 0;
+  /* Keep header content clear of the fixed touch zone */
+  header {
+    position: relative;
+    z-index: 1;
+    padding-right: 68px;
   }
 
-  #app {
-    padding-left: max(0.75rem, env(safe-area-inset-left));
-    padding-right: max(0.75rem, env(safe-area-inset-right));
+  /* Equal horizontal padding centres the canvas on the full device screen.
+     Right padding matches the fixed touch-control width (64px) so the canvas
+     doesn't render beneath the knob zone. Left padding mirrors it. */
+  #canvas-wrap {
+    padding: 0.75rem 64px;
   }
 }
 
@@ -308,6 +317,13 @@ footer a:hover {
     padding: 0.2rem 0;
     gap: 0.5rem;
     border-bottom: none;
+  }
+
+  /* Re-apply right padding on compact touch-landscape to clear the fixed knob zone */
+  @media (pointer: coarse) and (orientation: landscape) {
+    header {
+      padding-right: 68px;
+    }
   }
 
   #logo {
@@ -353,8 +369,10 @@ footer a:hover {
     border-radius: 6px;
   }
 
+  /* Only tighten vertical padding — horizontal 64px stays from touch query */
   #canvas-wrap {
-    padding: 0.25rem 0;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
   }
 
   footer {

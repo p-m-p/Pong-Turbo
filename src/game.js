@@ -55,16 +55,17 @@ export function initGame() {
   // ── Responsive canvas ──────────────────────────────────────────────────
 
   function resizeCanvas() {
-    const wrap      = document.getElementById('canvas-wrap');
-    const touchZone = document.getElementById('touch-control');
+    const wrap  = document.getElementById('canvas-wrap');
+    const style = getComputedStyle(wrap);
 
-    // Subtract touch control width when it's visible so the canvas fits cleanly
-    const touchZoneW = touchZone && getComputedStyle(touchZone).display !== 'none'
-      ? touchZone.offsetWidth
-      : 0;
-
-    const availW = wrap.clientWidth - touchZoneW;
-    const availH = wrap.clientHeight;
+    // Use CSS padding to determine usable space — the touch control is fixed
+    // and the canvas-wrap uses symmetric horizontal padding to centre the canvas.
+    const availW = wrap.clientWidth
+      - parseFloat(style.paddingLeft)
+      - parseFloat(style.paddingRight);
+    const availH = wrap.clientHeight
+      - parseFloat(style.paddingTop)
+      - parseFloat(style.paddingBottom);
 
     // Fit inside available space at ASPECT_RATIO, capped at MAX_PHYS dimensions
     let physW, physH;
@@ -82,11 +83,6 @@ export function initGame() {
     canvas.height = Math.round(physH * dpr);
     canvas.style.width  = `${physW}px`;
     canvas.style.height = `${physH}px`;
-
-    // Size the touch zone to exactly match the canvas height
-    if (touchZone) {
-      touchZone.style.height = `${physH}px`;
-    }
 
     drawScale = physW / VIRTUAL_W;
   }
@@ -153,14 +149,16 @@ export function initGame() {
     if (!knob || !zone || !paddle) return;
     if (getComputedStyle(zone).display === 'none') return;
 
-    const knobH  = knob.offsetHeight;
-    const zoneH  = zone.offsetHeight;
-    const relY   = paddle.y / (VIRTUAL_H - paddle.h);
-    knob.style.top = `${relY * (zoneH - knobH)}px`;
+    const zoneStyle = getComputedStyle(zone);
+    const padTop    = parseFloat(zoneStyle.paddingTop);
+    const padBot    = parseFloat(zoneStyle.paddingBottom);
+    const knobH     = knob.offsetHeight;
+    const trackH    = zone.offsetHeight - padTop - padBot;
+    const relY      = paddle.y / (VIRTUAL_H - paddle.h);
+    knob.style.top  = `${padTop + relY * (trackH - knobH)}px`;
 
     // Update ARIA value for assistive technology
-    const pct = Math.round(relY * 100);
-    zone.setAttribute('aria-valuenow', pct);
+    zone.setAttribute('aria-valuenow', Math.round(relY * 100));
   }
 
   function setupSoundToggle() {
