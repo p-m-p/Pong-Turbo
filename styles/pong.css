@@ -223,26 +223,24 @@ header {
   cursor: ns-resize;
 }
 
-/* Vertical track line */
+/* Vertical track line — runs along the right-hand side of the zone */
 #touch-track {
   position: absolute;
-  left: 50%;
+  right: 19px;
   top: 8%;
   bottom: 8%;
   width: 2px;
-  transform: translateX(-50%);
   background: var(--surface-1);
   border-radius: 2px;
 }
 
-/* Draggable knob — positioned by JS */
+/* Draggable knob — anchored to right edge, positioned vertically by JS */
 #touch-knob {
   position: absolute;
-  left: 50%;
+  right: 0;
   top: 0; /* overridden by JS */
   width: 38px;
   height: 56px;
-  transform: translateX(-50%);
   background: var(--surface-0);
   border: 1.5px solid var(--lavender);
   border-radius: 19px;
@@ -269,6 +267,16 @@ header {
   #touch-control {
     display: block;
   }
+
+  /* Ensure canvas has breathing room from device edges */
+  #canvas-wrap {
+    padding: 0.5rem 0;
+  }
+
+  #app {
+    padding-left: max(0.75rem, env(safe-area-inset-left));
+    padding-right: max(0.75rem, env(safe-area-inset-right));
+  }
 }
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
@@ -293,52 +301,54 @@ footer a:hover {
 /* Collapses the header to a single tight row to maximise canvas height.     */
 @media (max-height: 480px) and (orientation: landscape) {
   #app {
-    padding: 0 0.75rem;
+    padding: 0 0.5rem;
   }
 
   header {
-    padding: 0.3rem 0;
-    gap: 0.75rem;
+    padding: 0.2rem 0;
+    gap: 0.5rem;
+    border-bottom: none;
   }
 
   #logo {
-    font-size: 1rem;
+    font-size: 0.875rem;
   }
 
   #logo span {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
+    margin-left: 0.25rem;
   }
 
   /* Flatten score-display to a row: lives — score side by side */
   #hud {
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
   #score-display {
     flex-direction: row;
     align-items: center;
-    gap: 0.625rem;
+    gap: 0.5rem;
   }
 
   #playerscore {
-    font-size: 1.125rem;
+    font-size: 1rem;
     min-width: auto;
   }
 
   #lives {
-    gap: 4px;
+    gap: 3px;
   }
 
   .life {
-    width: 7px;
-    height: 7px;
+    width: 6px;
+    height: 6px;
     border-width: 1.5px;
   }
 
   #toggleSound {
-    width: 28px;
-    height: 28px;
+    width: 26px;
+    height: 26px;
     padding: 4px;
     border-radius: 6px;
   }
