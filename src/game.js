@@ -1,26 +1,17 @@
-import { GameLoop }             from './domain/GameLoop.js';
-import { CanvasRenderAdapter }  from './adapters/browser/CanvasRenderAdapter.js';
-import { WebAudioAdapter }      from './adapters/browser/WebAudioAdapter.js';
-import { KeyboardInputAdapter } from './adapters/browser/KeyboardInputAdapter.js';
-import { TouchInputAdapter }    from './adapters/browser/TouchInputAdapter.js';
-import { DOMScoreAdapter }      from './adapters/browser/DOMScoreAdapter.js';
+import { GameLoop }        from './domain/GameLoop.js';
+import { WebAudioAdapter } from './adapters/browser/WebAudioAdapter.js';
 import { TARGET_FRAME_MS, MAX_FRAME_MS, PADDLE_BASE_H } from './domain/constants.js';
+import './components/PongCanvas.js';
+import './components/PongHud.js';
+import './components/PongSoundToggle.js';
 
 export function initGame() {
-  // ── Adapters ────────────────────────────────────────────────────────────
-  const render   = new CanvasRenderAdapter();
+  const canvasEl = document.querySelector('pong-canvas');
+  const hudEl    = document.querySelector('pong-hud');
   const audio    = new WebAudioAdapter();
-  const keyboard = new KeyboardInputAdapter();
-  const touch    = new TouchInputAdapter(keyboard);
-  const score    = new DOMScoreAdapter();
-
-  render.init();
   audio.init();
-  keyboard.init();
-  score.init();
 
-  // ── Game loop ───────────────────────────────────────────────────────────
-  const loop = new GameLoop(render, audio, touch, score);
+  const loop = new GameLoop(canvasEl.renderAdapter, audio, canvasEl.inputAdapter, hudEl);
 
   let rafId         = null;
   let lastTimestamp = null;
@@ -32,7 +23,7 @@ export function initGame() {
     }
     lastTimestamp = null;
     loop.startNewGame(performance.now());
-    touch.init(PADDLE_BASE_H);
+    canvasEl.initInput(PADDLE_BASE_H);
     rafId = requestAnimationFrame(gameLoop);
   }
 
@@ -42,58 +33,18 @@ export function initGame() {
       : TARGET_FRAME_MS;
     lastTimestamp = timestamp;
 
-    const timeScale = elapsed / TARGET_FRAME_MS;
-    const result    = loop.tick(timestamp, timeScale);
+    const result = loop.tick(timestamp, elapsed / TARGET_FRAME_MS);
 
     if (result === 'gameover') {
-      render.drawGameOver();
+      canvasEl.renderAdapter.drawGameOver();
       rafId = null;
       return;
     }
-
     rafId = requestAnimationFrame(gameLoop);
   }
 
-  // ── Start screen ─────────────────────────────────────────────────────────
-  function setupStartScreen() {
-    document
-      .getElementById('startGame')
-      .addEventListener('click', onStartClick, { once: true });
-  }
-
-  function onStartClick() {
-    document.getElementById('start-screen').classList.add('hidden');
-    document.getElementById('soundtrack').play().catch(() => {});
-    startNewGame();
-  }
-
-  // ── Restart on Enter after game over ─────────────────────────────────────
+  canvasEl.addEventListener('game-start', () => startNewGame());
   window.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter' && rafId === null) startNewGame();
   });
-
-  // ── Sound toggle ─────────────────────────────────────────────────────────
-  function setupSoundToggle() {
-    const soundtrack = document.getElementById('soundtrack');
-    const btn        = document.getElementById('toggleSound');
-    const STORAGE_KEY = 'pongTurbo.muted';
-
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === 'true') {
-      soundtrack.muted = true;
-      btn.classList.add('muted');
-      btn.setAttribute('aria-label', 'Unmute sound');
-    }
-
-    btn.addEventListener('click', function () {
-      soundtrack.muted = !soundtrack.muted;
-      localStorage.setItem(STORAGE_KEY, soundtrack.muted);
-      this.classList.toggle('muted', soundtrack.muted);
-      this.setAttribute('aria-label', soundtrack.muted ? 'Unmute sound' : 'Mute sound');
-      this.blur();
-    });
-  }
-
-  setupSoundToggle();
-  setupStartScreen();
 }

@@ -14,8 +14,7 @@ export class TouchInputAdapter {
     this.#keyboard = keyboardAdapter;
   }
 
-  init(paddleH) {
-    const zone = document.getElementById('touch-control');
+  init(zone, paddleH) {
     if (!zone) return;
 
     const onTouch = (ev) => {

@@ -12,25 +12,39 @@ const MAX_PHYS_H   = 800;
 
 export class CanvasRenderAdapter {
   #canvas;
+  #wrap;
+  #knob;
+  #zone;
   #ctx;
   #drawScale = 1;
   #dpr       = 1;
 
-  init() {
-    this.#canvas = document.getElementById('pongBoard');
-    this.#ctx    = this.#canvas.getContext('2d');
-    this.#dpr    = window.devicePixelRatio || 1;
+  /**
+   * @param {HTMLCanvasElement} canvas
+   * @param {HTMLElement}       wrap    - observed for resize (the pong-canvas host element)
+   * @param {HTMLElement|null}  knob    - touch knob element (optional)
+   * @param {HTMLElement|null}  zone    - touch zone element (optional)
+   */
+  constructor(canvas, wrap, knob = null, zone = null) {
+    this.#canvas = canvas;
+    this.#wrap   = wrap;
+    this.#knob   = knob;
+    this.#zone   = zone;
+  }
 
-    const wrap = document.getElementById('canvas-wrap');
-    const ro   = new ResizeObserver(() => this.#resize());
-    ro.observe(wrap);
+  init() {
+    this.#ctx = this.#canvas.getContext('2d');
+    this.#dpr = window.devicePixelRatio || 1;
+
+    const ro = new ResizeObserver(() => this.#resize());
+    ro.observe(this.#wrap);
     this.#resize();
   }
 
   get drawScale() { return this.#drawScale; }
 
   #resize() {
-    const wrap  = document.getElementById('canvas-wrap');
+    const wrap  = this.#wrap;
     const style = getComputedStyle(wrap);
 
     const availW = wrap.clientWidth
@@ -429,8 +443,8 @@ export class CanvasRenderAdapter {
   }
 
   #updateTouchKnob({ paddle }) {
-    const knob = document.getElementById('touch-knob');
-    const zone = document.getElementById('touch-control');
+    const knob = this.#knob;
+    const zone = this.#zone;
     if (!knob || !zone || !paddle) return;
     if (getComputedStyle(zone).display === 'none') return;
 

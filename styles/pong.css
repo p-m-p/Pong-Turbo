@@ -20,9 +20,7 @@
   padding: 0;
 }
 
-html, body {
-  height: 100%;
-}
+html, body { height: 100%; }
 
 body {
   background: var(--base);
@@ -32,8 +30,6 @@ body {
 }
 
 /* ── App shell ────────────────────────────────────────────────────────────── */
-/* height (not min-height) + overflow:hidden is what constrains the grid so
-   the canvas-wrap 1fr row never exceeds the viewport. */
 #app {
   display: grid;
   grid-template-rows: auto 1fr auto;
@@ -68,225 +64,11 @@ header {
   letter-spacing: 0.05em;
 }
 
-/* ── HUD (score + lives + sound) ──────────────────────────────────────────── */
-#hud {
-  display: flex;
-  align-items: flex-start;
-  gap: 1.25rem;
-}
+/* pong-hud fills remaining header space and pushes sound toggle to the right */
+pong-hud { flex: 1; justify-content: flex-end; }
 
-#score-display {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.375rem;
-}
-
-#playerscore {
-  font-size: clamp(1.5rem, 4vw, 2.75rem);
-  line-height: 1;
-  color: var(--mauve);
-  letter-spacing: -0.02em;
-  min-width: 5ch;
-  text-align: right;
-}
-
-/* ── Lives dots ───────────────────────────────────────────────────────────── */
-#lives {
-  display: flex;
-  gap: 5px;
-  list-style: none;
-}
-
-.life {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 2px solid var(--green);
-  transition: background 0.2s ease;
-}
-
-.life.active {
-  background: var(--green);
-}
-
-/* ── Sound toggle ─────────────────────────────────────────────────────────── */
-#toggleSound {
-  width: 36px;
-  height: 36px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--surface-0);
-  border: 1px solid var(--surface-1);
-  border-radius: 8px;
-  padding: 6px;
-  cursor: pointer;
-  color: var(--subtext);
-  transition: color 0.15s ease, background 0.15s ease;
-}
-
-#toggleSound svg {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-#toggleSound:hover {
-  color: var(--text);
-  background: var(--surface-1);
-}
-
-#toggleSound.muted {
-  color: var(--overlay-0);
-}
-
-.mute-slash {
-  display: none;
-}
-
-#toggleSound.muted .mute-slash {
-  display: block;
-}
-
-/* ── Canvas wrapper ───────────────────────────────────────────────────────── */
-#canvas-wrap {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 0.75rem 0;
-  gap: 0;
-  overflow: hidden;
-  min-height: 0; /* required for grid children to shrink below content size */
-}
-
-/* ── Game canvas ──────────────────────────────────────────────────────────── */
-#pongBoard {
-  display: block;
-  background: var(--mantle);
-  border-radius: 6px;
-  border: 1px solid var(--surface-0);
-  box-shadow:
-    0 0 0 1px var(--surface-0),
-    0 0 40px rgba(180, 190, 254, 0.07);
-  flex-shrink: 0;
-}
-
-/* ── Start screen overlay ─────────────────────────────────────────────────── */
-#start-screen {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-}
-
-#start-screen.hidden {
-  display: none;
-}
-
-#startGame {
-  font-family: 'Play', helvetica, arial, sans-serif;
-  font-size: 1.375rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--base);
-  background: var(--mauve);
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 3.5rem;
-  cursor: pointer;
-  transition: background 0.15s ease, transform 0.1s ease;
-}
-
-#startGame:hover {
-  background: var(--lavender);
-  transform: scale(1.03);
-}
-
-#startGame:active {
-  transform: scale(0.97);
-}
-
-/* ── Touch paddle control ─────────────────────────────────────────────────── */
-#touch-control {
-  display: none; /* hidden by default; shown via media query below */
-  position: fixed;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 64px;
-  padding: 1.5rem 0; /* vertical breathing room — matches knob JS calc */
-  touch-action: none;
-  user-select: none;
-  cursor: ns-resize;
-}
-
-/* Vertical track line */
-#touch-track {
-  position: absolute;
-  left: 50%;
-  top: 1.5rem;    /* match parent padding */
-  bottom: 1.5rem;
-  width: 2px;
-  transform: translateX(-50%);
-  background: var(--surface-1);
-  border-radius: 2px;
-}
-
-/* Draggable knob — centred horizontally, positioned vertically by JS */
-#touch-knob {
-  position: absolute;
-  left: 50%;
-  top: 0; /* overridden by JS */
-  width: 38px;
-  height: 56px;
-  transform: translateX(-50%);
-  background: var(--surface-0);
-  border: 1.5px solid var(--lavender);
-  border-radius: 19px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 10px rgba(180, 190, 254, 0.2);
-}
-
-/* Three-line drag handle indicator */
-.knob-lines {
-  display: block;
-  width: 14px;
-  height: 1.5px;
-  background: var(--overlay-0);
-  border-radius: 1px;
-  box-shadow:
-    0 -5px 0 var(--overlay-0),
-    0  5px 0 var(--overlay-0);
-}
-
-/* Show touch control on coarse-pointer (touch) landscape devices only */
-@media (pointer: coarse) and (orientation: landscape) {
-  #touch-control {
-    display: block;
-  }
-
-  /* Keep header content clear of the fixed touch zone */
-  header {
-    position: relative;
-    z-index: 1;
-    padding-right: 68px;
-  }
-
-  /* Equal horizontal padding centres the canvas on the full device screen.
-     Right padding matches the fixed touch-control width (64px) so the canvas
-     doesn't render beneath the knob zone. Left padding mirrors it. */
-  #canvas-wrap {
-    padding: 0.75rem 64px;
-  }
-}
+/* ── Canvas host (grid 1fr row) ───────────────────────────────────────────── */
+pong-canvas { min-height: 0; }
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 footer {
@@ -297,85 +79,27 @@ footer {
   border-top: 1px solid var(--surface-0);
 }
 
-footer a {
-  color: var(--subtext);
-  text-decoration: none;
-}
+footer a { color: var(--subtext); text-decoration: none; }
+footer a:hover { color: var(--text); }
 
-footer a:hover {
-  color: var(--text);
+/* ── Touch landscape — keep header clear of fixed touch zone ─────────────── */
+@media (pointer: coarse) and (orientation: landscape) {
+  header {
+    position: relative;
+    z-index: 1;
+    padding-right: 68px;
+  }
 }
 
 /* ── Compact landscape mobile ─────────────────────────────────────────────── */
-/* Collapses the header to a single tight row to maximise canvas height.     */
 @media (max-height: 480px) and (orientation: landscape) {
-  #app {
-    padding: 0 0.5rem;
-  }
+  #app    { padding: 0 0.5rem; }
+  header  { padding: 0.2rem 0; gap: 0.5rem; border-bottom: none; }
+  #logo   { font-size: 0.875rem; }
+  #logo span { font-size: 0.55rem; margin-left: 0.25rem; }
+  footer  { display: none; }
 
-  header {
-    padding: 0.2rem 0;
-    gap: 0.5rem;
-    border-bottom: none;
-  }
-
-  /* Re-apply right padding on compact touch-landscape to clear the fixed knob zone */
   @media (pointer: coarse) and (orientation: landscape) {
-    header {
-      padding-right: 68px;
-    }
-  }
-
-  #logo {
-    font-size: 0.875rem;
-  }
-
-  #logo span {
-    font-size: 0.55rem;
-    margin-left: 0.25rem;
-  }
-
-  /* Flatten score-display to a row: lives — score side by side */
-  #hud {
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  #score-display {
-    flex-direction: row;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  #playerscore {
-    font-size: 1rem;
-    min-width: auto;
-  }
-
-  #lives {
-    gap: 3px;
-  }
-
-  .life {
-    width: 6px;
-    height: 6px;
-    border-width: 1.5px;
-  }
-
-  #toggleSound {
-    width: 26px;
-    height: 26px;
-    padding: 4px;
-    border-radius: 6px;
-  }
-
-  /* Only tighten vertical padding — horizontal 64px stays from touch query */
-  #canvas-wrap {
-    padding-top: 0.25rem;
-    padding-bottom: 0.25rem;
-  }
-
-  footer {
-    display: none;
+    header { padding-right: 68px; }
   }
 }
