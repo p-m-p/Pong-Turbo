@@ -1,6 +1,7 @@
 export const TYPES = ['wide', 'shield', 'slow'];
 
 const LIFESPAN_MS = 10_000;
+const GRACE_MS    = 2_000;   // uncollectable spawn window — orb pulses in
 const WARN_AT_MS  = 7_000;   // pulse warning starts 3s before expiry
 const ORB_RADIUS  = 10;      // virtual units
 const ROAM_RIGHT  = 280;     // right boundary — keeps orbs in the ghost zone
@@ -30,6 +31,7 @@ export class PowerUp {
 
   get type()  { return this.#type; }
   expired()   { return performance.now() - this.#born >= LIFESPAN_MS; }
+  isLive()    { return performance.now() - this.#born >= GRACE_MS; }
 
   move(canvasH, timeScale) {
     this.x += this.#vx * timeScale;
@@ -43,10 +45,17 @@ export class PowerUp {
 
   draw(ctx, drawScale) {
     const age   = performance.now() - this.#born;
-    let   alpha = 1;
-    if (age > WARN_AT_MS) {
+    let   alpha;
+    if (age < GRACE_MS) {
+      // Spawn pulse: fades in from transparent, faster flicker
+      const t = age / GRACE_MS; // 0→1
+      alpha = t * (0.4 + 0.6 * Math.abs(Math.sin(age * 0.012)));
+    } else if (age > WARN_AT_MS) {
+      // Expiry warning pulse
       const t = (age - WARN_AT_MS) / (LIFESPAN_MS - WARN_AT_MS); // 0→1
       alpha = 0.3 + 0.7 * Math.abs(Math.sin(age * (0.008 + t * 0.016)));
+    } else {
+      alpha = 1;
     }
 
     const cx    = this.x + this.w / 2;

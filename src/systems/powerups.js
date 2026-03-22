@@ -28,6 +28,7 @@ export class PowerUpSystem {
     for (let i = 0; i < this.#powerUps.length; i++) {
       const p = this.#powerUps[i];
       if (
+        p.isLive() &&
         ball.x + ball.w > p.x && ball.x < p.x + p.w &&
         ball.y + ball.h > p.y && ball.y < p.y + p.h
       ) {
