@@ -130,47 +130,139 @@ export class CanvasRenderAdapter {
   }
 
   #drawGhosts(ctx, { ghosts }, s) {
-    ctx.shadowBlur = 8 * s;
     for (const g of ghosts) {
-      ctx.shadowColor = g.color;
-      ctx.fillStyle   = g.color;
+      ctx.save();
       ctx.globalAlpha = g.state === 'retreating' ? 0.5 : 1;
-      ctx.fillRect(g.x, g.y, g.w, g.h);
+      this.#drawGhostShape(ctx, g, s);
+      ctx.restore();
     }
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur  = 0;
+  }
+
+  #drawGhostShape(ctx, { x, y, w, h, color }, s) {
+    const cx       = x + w / 2;
+    const domeR    = w / 2;
+    const domeBaseY = y + domeR;
+    const skirtY   = y + h * 0.76;
+
+    // Glow
+    ctx.shadowBlur  = 14 * s;
+    ctx.shadowColor = color;
+
+    // Body
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(cx, domeBaseY, domeR, Math.PI, 0);
+    ctx.lineTo(x + w, skirtY);
+    ctx.quadraticCurveTo(x + w * (5 / 6), y + h, x + w * (2 / 3), skirtY);
+    ctx.quadraticCurveTo(x + w * (1 / 2), y + h, x + w * (1 / 3), skirtY);
+    ctx.quadraticCurveTo(x + w * (1 / 6), y + h, x,                skirtY);
+    ctx.lineTo(x, domeBaseY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Dome highlight
+    ctx.shadowBlur = 0;
+    const hl = ctx.createRadialGradient(
+      cx - domeR * 0.2, y + domeR * 0.3, domeR * 0.05,
+      cx,               y + domeR,        domeR,
+    );
+    hl.addColorStop(0, 'rgba(255,255,255,0.28)');
+    hl.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = hl;
+    ctx.beginPath();
+    ctx.arc(cx, domeBaseY, domeR, Math.PI, 0);
+    ctx.lineTo(x + w, skirtY);
+    ctx.quadraticCurveTo(x + w * (5 / 6), y + h, x + w * (2 / 3), skirtY);
+    ctx.quadraticCurveTo(x + w * (1 / 2), y + h, x + w * (1 / 3), skirtY);
+    ctx.quadraticCurveTo(x + w * (1 / 6), y + h, x,                skirtY);
+    ctx.lineTo(x, domeBaseY);
+    ctx.closePath();
+    ctx.fill();
+
+    // Eyes
+    const eyeY    = y + h * 0.40;
+    const eyeR    = w * 0.11;
+    const pupilR  = w * 0.060;
+    const leftEX  = x + w * 0.30;
+    const rightEX = x + w * 0.70;
+
+    ctx.fillStyle = 'white';
+    ctx.beginPath();
+    ctx.arc(leftEX,  eyeY, eyeR, 0, Math.PI * 2);
+    ctx.arc(rightEX, eyeY, eyeR, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = '#0d0d1a';
+    ctx.beginPath();
+    ctx.arc(leftEX  + w * 0.03, eyeY + eyeR * 0.2, pupilR, 0, Math.PI * 2);
+    ctx.arc(rightEX - w * 0.03, eyeY + eyeR * 0.2, pupilR, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   #drawPowerUps(ctx, { powerUps }, s, now) {
-    ctx.shadowBlur = 6 * s;
     for (const p of powerUps) {
       const age     = now - p.born;
-      const grace   = 2000; // POWERUP_GRACE_MS
-      const warning = 7000; // POWERUP_WARN_AT_MS
-      const lifespan = 10000;
+      const grace   = 2000;
+      const warning = 7000;
 
-      let alpha = 1;
+      let alpha;
       if (age < grace) {
-        // Pulse during grace period — not yet collectable
-        alpha = 0.2 + 0.4 * Math.abs(Math.sin(age * 0.006));
+        const t = age / grace;
+        alpha = t * (0.4 + 0.6 * Math.abs(Math.sin(age * 0.012)));
       } else if (age > warning) {
-        // Flicker near expiry
-        alpha = 0.4 + 0.6 * Math.abs(Math.sin(age * 0.012));
+        const t = (age - warning) / (10000 - warning);
+        alpha = 0.3 + 0.7 * Math.abs(Math.sin(age * (0.008 + t * 0.016)));
+      } else {
+        alpha = 1;
       }
 
-      const color = p.type === 'wide'   ? '#a6e3a1'  // green
-                  : p.type === 'shield' ? '#89dceb'  // sky
-                  :                       '#f9e2af'; // yellow (slow)
+      const color = p.type === 'wide'   ? '#a6e3a1'
+                  : p.type === 'shield' ? '#89dceb'
+                  :                       '#f9e2af';
 
+      const cx = p.x + p.w / 2;
+      const cy = p.y + p.h / 2;
+
+      ctx.save();
       ctx.globalAlpha = alpha;
+      ctx.shadowBlur  = 12 * s;
       ctx.shadowColor = color;
       ctx.fillStyle   = color;
       ctx.beginPath();
-      ctx.arc(p.x + p.w / 2, p.y + p.h / 2, p.w / 2, 0, Math.PI * 2);
+      ctx.arc(cx, cy, p.w / 2, 0, Math.PI * 2);
       ctx.fill();
+
+      // Symbol
+      ctx.shadowBlur  = 0;
+      ctx.strokeStyle = '#1e1e2e';
+      ctx.lineWidth   = 1.5;
+      ctx.lineCap     = 'round';
+      ctx.lineJoin    = 'round';
+
+      switch (p.type) {
+        case 'wide':
+          ctx.beginPath(); ctx.moveTo(cx - 5.5, cy); ctx.lineTo(cx + 5.5, cy); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx - 3, cy - 2.5); ctx.lineTo(cx - 6, cy); ctx.lineTo(cx - 3, cy + 2.5); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx + 3, cy - 2.5); ctx.lineTo(cx + 6, cy); ctx.lineTo(cx + 3, cy + 2.5); ctx.stroke();
+          break;
+        case 'shield':
+          ctx.beginPath();
+          ctx.moveTo(cx,     cy - 5.5);
+          ctx.lineTo(cx + 4, cy);
+          ctx.lineTo(cx,     cy + 5.5);
+          ctx.lineTo(cx - 4, cy);
+          ctx.closePath();
+          ctx.stroke();
+          break;
+        case 'slow':
+          ctx.beginPath(); ctx.arc(cx, cy, 4.5, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - 3); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 2.2, cy); ctx.stroke();
+          break;
+      }
+
+      ctx.restore();
     }
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur  = 0;
   }
 
   #drawAliens(ctx, { aliens, alienOffsetX, alienOffsetY }) {
