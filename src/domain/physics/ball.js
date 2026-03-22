@@ -19,7 +19,7 @@ import { aabb } from './collision.js';
  * @param {number} timeScale
  * @returns {'ok'|'out'}
  */
-export function moveBall(ball, timeScale) {
+export function moveBall(ball, timeScale, fieldW = VIRTUAL_W) {
   // Top / bottom wall bounce
   if (ball.y <= 0)                   ball.dy =  Math.abs(ball.dy);
   if (ball.y + ball.h >= VIRTUAL_H)  ball.dy = -Math.abs(ball.dy);
@@ -28,7 +28,7 @@ export function moveBall(ball, timeScale) {
   if (ball.x <= 0) ball.dx = Math.abs(ball.dx);
 
   // Right edge exit
-  if (ball.x + ball.w >= VIRTUAL_W) return 'out';
+  if (ball.x + ball.w >= fieldW) return 'out';
 
   ball.x += ball.dx * timeScale;
   ball.y += ball.dy * timeScale;

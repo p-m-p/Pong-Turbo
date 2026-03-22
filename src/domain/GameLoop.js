@@ -49,6 +49,9 @@ export class GameLoop {
   #alienSystem;
   #powerUpSystem;
 
+  // ── Field dimensions ────────────────────────────────────────────────────
+  #fieldW = VIRTUAL_W;
+
   // ── Per-game state ──────────────────────────────────────────────────────
   #ball;
   #paddle;
@@ -78,6 +81,9 @@ export class GameLoop {
     this.#powerUpSystem = new PowerUpSystem();
   }
 
+  /** Set the virtual field width before starting a new game. */
+  setFieldW(w) { this.#fieldW = w; }
+
   /** Getters expose state to tests without mutation risk */
   get lives()       { return this.#lives; }
   get scoreValue()  { return this.#score; }
@@ -103,7 +109,7 @@ export class GameLoop {
     this.#powerUpSystem.clear();
 
     this.#paddle = createPaddle(
-      PADDLE_X,
+      this.#fieldW - 15,
       VIRTUAL_H / 2 - PADDLE_BASE_H / 2,
       PADDLE_W,
       PADDLE_BASE_H,
@@ -148,7 +154,7 @@ export class GameLoop {
         this.#ballReadySince = now;
       }
     } else {
-      const moveResult = moveBall(this.#ball, timeScale);
+      const moveResult = moveBall(this.#ball, timeScale, this.#fieldW);
       if (moveResult === 'out') {
         return this.#handleBallOut(now);
       }
@@ -228,7 +234,7 @@ export class GameLoop {
   }
 
   #tickNormalRound(now, timeScale) {
-    this.#ghostSystem.move(VIRTUAL_H, VIRTUAL_W, this.#paddle.x, (this.#gameSpeed / 4) * timeScale);
+    this.#ghostSystem.move(VIRTUAL_H, this.#fieldW, this.#paddle.x, (this.#gameSpeed / 4) * timeScale);
 
     if (this.#ghostSystem.checkPaddleCollision(this.#paddle)) {
       if (this.#shieldActive) {

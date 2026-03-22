@@ -6,9 +6,8 @@ const CLR_PADDLE    = '#b4befe'; // lavender
 const CLR_TEXT      = '#cdd6f4'; // text
 const CLR_SHIELD    = '#89dceb'; // sky
 
-const ASPECT_RATIO = VIRTUAL_W / VIRTUAL_H; // 3:2
-const MAX_PHYS_W   = 1200;
-const MAX_PHYS_H   = 800;
+const MAX_PHYS_W = 1200;
+const MAX_PHYS_H = 800;
 
 export class CanvasRenderAdapter {
   #canvas;
@@ -16,8 +15,9 @@ export class CanvasRenderAdapter {
   #knob;
   #zone;
   #ctx;
-  #drawScale = 1;
-  #dpr       = 1;
+  #scale    = 1;
+  #virtualW = VIRTUAL_W;
+  #dpr      = 1;
 
   /**
    * @param {HTMLCanvasElement} canvas
@@ -41,7 +41,8 @@ export class CanvasRenderAdapter {
     this.#resize();
   }
 
-  get drawScale() { return this.#drawScale; }
+  get drawScale() { return this.#scale; }
+  get virtualW()  { return this.#virtualW; }
 
   #resize() {
     const wrap  = this.#wrap;
@@ -54,21 +55,17 @@ export class CanvasRenderAdapter {
       - parseFloat(style.paddingTop)
       - parseFloat(style.paddingBottom);
 
-    let physW, physH;
-    if (availW / availH > ASPECT_RATIO) {
-      physH = Math.min(availH, MAX_PHYS_H);
-      physW = physH * ASPECT_RATIO;
-    } else {
-      physW = Math.min(availW, MAX_PHYS_W);
-      physH = physW / ASPECT_RATIO;
-    }
+    const physH = Math.min(Math.max(availH, 1), MAX_PHYS_H);
+    const physW = Math.min(Math.max(availW, 1), MAX_PHYS_W);
 
-    this.#dpr = window.devicePixelRatio || 1;
+    this.#dpr     = window.devicePixelRatio || 1;
+    this.#scale   = physH / VIRTUAL_H;          // uniform, height-based
+    this.#virtualW = physW / this.#scale;       // field width adapts to canvas
+
     this.#canvas.width  = Math.round(physW * this.#dpr);
     this.#canvas.height = Math.round(physH * this.#dpr);
     this.#canvas.style.width  = `${physW}px`;
     this.#canvas.style.height = `${physH}px`;
-    this.#drawScale = physW / VIRTUAL_W;
   }
 
   /**
@@ -76,7 +73,7 @@ export class CanvasRenderAdapter {
    */
   drawFrame(snapshot) {
     const ctx = this.#ctx;
-    const s   = this.#drawScale;
+    const s   = this.#scale;
     const dpr = this.#dpr;
     const now = snapshot.now;
 
@@ -98,7 +95,7 @@ export class CanvasRenderAdapter {
 
   drawGameOver() {
     const ctx = this.#ctx;
-    const s   = this.#drawScale;
+    const s   = this.#scale;
     const dpr = this.#dpr;
 
     ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
@@ -110,7 +107,7 @@ export class CanvasRenderAdapter {
     ctx.textBaseline = 'middle';
     ctx.shadowBlur   = 12 * s;
     ctx.shadowColor  = CLR_BALL;
-    ctx.fillText('Game over  ·  press Enter to play again', VIRTUAL_W / 2, VIRTUAL_H / 2);
+    ctx.fillText('Game over  ·  press Enter to play again', this.#virtualW / 2, VIRTUAL_H / 2);
     ctx.restore();
   }
 

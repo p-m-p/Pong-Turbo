@@ -40,11 +40,11 @@ template.innerHTML = `
       background: var(--green);
     }
     @media (max-height: 480px) and (orientation: landscape) {
-      :host         { align-items: center; gap: 0.5rem; }
+      :host          { align-items: center; gap: 0.5rem; }
       #score-display { flex-direction: row; align-items: center; gap: 0.5rem; }
-      #score        { font-size: 1rem; min-width: auto; }
-      #lives        { gap: 3px; }
-      .life         { width: 6px; height: 6px; border-width: 1.5px; }
+      #score         { font-size: 1rem; min-width: auto; }
+      #lives         { gap: 3px; }
+      .life          { width: 6px; height: 6px; border-width: 1.5px; }
     }
   </style>
   <div id="score-display">

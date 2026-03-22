@@ -10,7 +10,7 @@ template.innerHTML = `
       align-items: center;
       justify-content: center;
       position: relative;
-      padding: 0.75rem 0;
+      padding: 8px;
       overflow: hidden;
       min-height: 0;
     }
@@ -85,11 +85,7 @@ template.innerHTML = `
       box-shadow: 0 -5px 0 var(--overlay-0), 0 5px 0 var(--overlay-0);
     }
     @media (pointer: coarse) and (orientation: landscape) {
-      :host          { padding: 0.75rem 64px; }
-      #touch-control { display: block; }
-    }
-    @media (max-height: 480px) and (orientation: landscape) {
-      :host { padding-top: 0.25rem; padding-bottom: 0.25rem; }
+      :host([playing]) #touch-control { display: block; width: 72px; }
     }
   </style>
   <div id="start-screen">

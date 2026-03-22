@@ -53,8 +53,10 @@ export function initGame() {
     gameToken     = null;
     checkpoints   = [];
     trackedLevel  = 1;
+    loop.setFieldW(canvasEl.renderAdapter.virtualW);
     loop.startNewGame(performance.now());
     canvasEl.initInput(PADDLE_BASE_H);
+    canvasEl.setAttribute('playing', '');
     document.getElementById('soundtrack')?.play().catch(() => {});
     fetchToken();
     rafId = requestAnimationFrame(gameLoop);
@@ -76,6 +78,7 @@ export function initGame() {
 
     if (result === 'gameover') {
       canvasEl.renderAdapter.drawGameOver();
+      canvasEl.removeAttribute('playing');
       rafId = null;
       scoreboardEl?.showResult(loop.scoreValue, gameToken, checkpoints);
       return;
