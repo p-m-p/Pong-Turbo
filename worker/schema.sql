@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS scores (
+  id    INTEGER PRIMARY KEY AUTOINCREMENT,
+  name  TEXT    NOT NULL CHECK(length(name) BETWEEN 1 AND 5),
+  score INTEGER NOT NULL CHECK(score >= 0),
+  ts    INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_score ON scores(score DESC, ts ASC);

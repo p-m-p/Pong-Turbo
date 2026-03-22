@@ -1,0 +1,8 @@
+name               = "pong-turbo-scores"
+main               = "src/index.js"
+compatibility_date = "2025-03-22"
+
+[[d1_databases]]
+binding       = "DB"
+database_name = "pong-turbo-scores"
+database_id   = "TO_BE_REPLACED"

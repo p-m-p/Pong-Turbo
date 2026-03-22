@@ -4,11 +4,13 @@ import { TARGET_FRAME_MS, MAX_FRAME_MS, PADDLE_BASE_H } from './domain/constants
 import './components/PongCanvas.js';
 import './components/PongHud.js';
 import './components/PongSoundToggle.js';
+import './components/PongScoreboard.js';
 
 export function initGame() {
-  const canvasEl = document.querySelector('pong-canvas');
-  const hudEl    = document.querySelector('pong-hud');
-  const audio    = new WebAudioAdapter();
+  const canvasEl     = document.querySelector('pong-canvas');
+  const hudEl        = document.querySelector('pong-hud');
+  const scoreboardEl = document.querySelector('pong-scoreboard');
+  const audio        = new WebAudioAdapter();
   audio.init();
 
   const loop = new GameLoop(canvasEl.renderAdapter, audio, canvasEl.inputAdapter, hudEl);
@@ -28,7 +30,7 @@ export function initGame() {
   }
 
   function gameLoop(timestamp) {
-    const elapsed   = lastTimestamp
+    const elapsed = lastTimestamp
       ? Math.min(timestamp - lastTimestamp, MAX_FRAME_MS)
       : TARGET_FRAME_MS;
     lastTimestamp = timestamp;
@@ -38,13 +40,31 @@ export function initGame() {
     if (result === 'gameover') {
       canvasEl.renderAdapter.drawGameOver();
       rafId = null;
+      scoreboardEl?.showResult(loop.scoreValue);
       return;
     }
     rafId = requestAnimationFrame(gameLoop);
   }
 
-  canvasEl.addEventListener('game-start', () => startNewGame());
+  // Show scoreboard on load
+  scoreboardEl?.showTopScores();
+
+  // Canvas Play button → hide scoreboard and start
+  canvasEl.addEventListener('game-start', () => {
+    scoreboardEl?.hide();
+    startNewGame();
+  });
+
+  // Scoreboard Play / Play Again button
+  document.addEventListener('play-requested', () => {
+    scoreboardEl?.hide();
+    startNewGame();
+  });
+
+  // Keyboard Enter — only when scoreboard is hidden (avoid firing during name entry)
   window.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter' && rafId === null) startNewGame();
+    if (ev.key === 'Enter' && rafId === null && scoreboardEl?.hidden) {
+      startNewGame();
+    }
   });
 }

@@ -67,8 +67,16 @@ header {
 /* pong-hud fills remaining header space and pushes sound toggle to the right */
 pong-hud { flex: 1; justify-content: flex-end; }
 
-/* ── Canvas host (grid 1fr row) ───────────────────────────────────────────── */
-pong-canvas { min-height: 0; }
+/* ── Canvas + scoreboard share the same grid cell (row 2) ────────────────── */
+pong-canvas,
+pong-scoreboard {
+  grid-row: 2;
+  grid-column: 1;
+  min-height: 0;
+  position: relative;
+}
+
+pong-scoreboard[hidden] { display: none !important; }
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 footer {
