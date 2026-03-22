@@ -10,6 +10,7 @@ import {
   INITIAL_LIVES,
   INITIAL_SPEED,
   TARGET_FRAME_MS,
+  ALIEN_HP,
 } from '../../src/domain/constants.js';
 
 // Helpers
@@ -34,6 +35,59 @@ function runTicks(loop, n, startNow = 0) {
     if (result === 'gameover') break;
   }
   return result;
+}
+
+/**
+ * Advance until the ball is in 'live' state (auto-launches after ~85 ticks).
+ * Returns the next 'now' value to use.
+ */
+function waitForLaunch(loop, startNow = 0) {
+  let now = startNow;
+  for (let i = 0; i < 120; i++) {
+    loop.tick(now, 1);
+    now += TARGET_FRAME_MS;
+    if (loop.ballState === 'live') break;
+  }
+  return now;
+}
+
+/**
+ * Kill all ghosts for the current level (stops when level increments).
+ * Returns the next 'now' value.
+ */
+function killAllGhosts(loop, adapters, startNow) {
+  let now = startNow;
+  const startLevel = loop.level;
+  loop.tick(now++, 1);
+  while (loop.level === startLevel && adapters.render.lastFrame().ghosts.length > 0) {
+    const g = adapters.render.lastFrame().ghosts[0];
+    loop.ball.x  = g.x + 2;
+    loop.ball.y  = g.y + 5;
+    loop.ball.dx = 0;
+    loop.ball.dy = 0;
+    loop.tick(now++, 1);
+  }
+  return now;
+}
+
+/**
+ * Kill every alien by re-reading frame offsets each hit to stay accurate.
+ * Returns the next 'now' value.
+ */
+function killAllAliens(loop, adapters, startNow) {
+  let now = startNow;
+  loop.tick(now++, 1);
+  while (true) {
+    const frame = adapters.render.lastFrame();
+    if (frame.aliens.length === 0) break;
+    const al = frame.aliens[0];
+    loop.ball.x  = al.x + frame.alienOffsetX + 5;
+    loop.ball.y  = al.y + frame.alienOffsetY + 5;
+    loop.ball.dx = 0;
+    loop.ball.dy = 0;
+    loop.tick(now++, 1);
+  }
+  return now;
 }
 
 describe('GameLoop startNewGame', () => {
@@ -144,5 +198,97 @@ describe('GameLoop integration — score adapter', () => {
     const loop = makeLoop(a);
     loop.startNewGame(0);
     expect(a.score.lives).toBe(INITIAL_LIVES);
+  });
+});
+
+describe('GameLoop — gameover', () => {
+  it('returns gameover when all lives are exhausted', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let result = 'playing';
+    let now    = 0;
+    for (let life = 0; life < INITIAL_LIVES; life++) {
+      now    = waitForLaunch(loop, now);
+      loop.ball.x  = VIRTUAL_W;
+      loop.ball.dx = 1;
+      loop.ball.dy = 0;
+      result = loop.tick(now++, 1);
+      if (result === 'gameover') break;
+    }
+    expect(result).toBe('gameover');
+  });
+});
+
+describe('GameLoop — touch input', () => {
+  it('positions paddle directly via paddleAbsoluteY', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    loop.tick(TARGET_FRAME_MS, 1, { paddleAbsoluteY: 120, paddleDirection: null });
+    expect(loop.paddle.y).toBe(120);
+  });
+});
+
+describe('GameLoop — ghost scoring', () => {
+  it('awards score when a ghost is killed', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    loop.tick(now++, 1);
+    const g = a.render.lastFrame().ghosts[0];
+    loop.ball.x  = g.x + 2;
+    loop.ball.y  = g.y + 5;
+    loop.ball.dx = 0;
+    loop.ball.dy = 0;
+    loop.tick(now++, 1);
+    expect(loop.scoreValue).toBeGreaterThan(0);
+    expect(a.score.score).toBeGreaterThan(0);
+  });
+});
+
+describe('GameLoop — level progression', () => {
+  it('increments level when all ghosts are cleared', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    now = killAllGhosts(loop, a, now);
+    expect(loop.level).toBe(2);
+  });
+
+  it('plays levelUp audio on level clear', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    killAllGhosts(loop, a, now);
+    expect(a.audio.played('levelUp')).toBe(true);
+  });
+
+  it('triggers bonus round on 3rd level clear', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    now = killAllGhosts(loop, a, now); // level 1 → 2
+    now = killAllGhosts(loop, a, now); // level 2 → 3 (bonus round)
+    expect(loop.isBonusRound).toBe(true);
+  });
+});
+
+describe('GameLoop — bonus round', () => {
+  it('exits bonus round and advances level when all aliens are killed', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    now = killAllGhosts(loop, a, now); // level 1 → 2
+    now = killAllGhosts(loop, a, now); // level 2 → 3 (bonus round starts)
+    expect(loop.isBonusRound).toBe(true);
+    now = killAllAliens(loop, a, now);
+    expect(loop.isBonusRound).toBe(false);
+    expect(loop.level).toBe(4);
   });
 });
