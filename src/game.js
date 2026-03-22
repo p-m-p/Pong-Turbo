@@ -46,14 +46,14 @@ export function initGame() {
     rafId = requestAnimationFrame(gameLoop);
   }
 
-  // Show scoreboard on load
-  scoreboardEl?.showTopScores();
-
-  // Canvas Play button → hide scoreboard and start
-  canvasEl.addEventListener('game-start', () => {
-    scoreboardEl?.hide();
-    startNewGame();
-  });
+  if (scoreboardEl) {
+    // Scoreboard owns the Play button — hide the canvas start screen
+    canvasEl.hideStartScreen();
+    scoreboardEl.showTopScores();
+  } else {
+    // Fallback: use canvas start screen directly
+    canvasEl.addEventListener('game-start', () => startNewGame(), { once: true });
+  }
 
   // Scoreboard Play / Play Again button
   document.addEventListener('play-requested', () => {

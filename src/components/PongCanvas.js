@@ -139,6 +139,10 @@ export class PongCanvas extends HTMLElement {
   get renderAdapter() { return this.#render; }
   get inputAdapter()  { return this.#touch; }
 
+  hideStartScreen() {
+    this.shadowRoot?.getElementById('start-screen')?.classList.add('hidden');
+  }
+
   /** Wire touch zone events — call after startNewGame sets the paddle height. */
   initInput(paddleH) {
     this.#touch.init(
