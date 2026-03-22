@@ -216,11 +216,13 @@ template.innerHTML = `
 `;
 
 export class PongScoreboard extends HTMLElement {
-  #adapter   = new ScoreboardAdapter(null);
-  #state     = 'hidden';   // 'hidden' | 'start' | 'result-pending' | 'result-confirmed'
-  #score     = 0;
-  #topCache  = null;
-  #nameInput = null;       // persistent <input> element moved into table rows
+  #adapter     = new ScoreboardAdapter(null);
+  #state       = 'hidden';   // 'hidden' | 'start' | 'result-pending' | 'result-confirmed'
+  #score       = 0;
+  #token       = null;
+  #checkpoints = [];
+  #topCache    = null;
+  #nameInput   = null;       // persistent <input> element moved into table rows
 
   static get observedAttributes() { return ['api']; }
 
@@ -275,8 +277,10 @@ export class PongScoreboard extends HTMLElement {
     this.#fetchAndRenderTopScores();
   }
 
-  showResult(score) {
-    this.#score = score;
+  showResult(score, token = null, checkpoints = []) {
+    this.#score       = score;
+    this.#token       = token;
+    this.#checkpoints = checkpoints;
     this.#state = 'result-pending';
     this.hidden = false;
     const shadow = this.shadowRoot;
@@ -299,6 +303,11 @@ export class PongScoreboard extends HTMLElement {
   hide() {
     this.hidden = true;
     this.#state = 'hidden';
+  }
+
+  /** Fetch a one-use game token from the worker (call at game start). */
+  async fetchToken() {
+    return this.#adapter.getToken();
   }
 
   // ── Private helpers ────────────────────────────────────────────────────
@@ -451,7 +460,7 @@ export class PongScoreboard extends HTMLElement {
 
     try {
       const result = this.#adapter.available
-        ? await this.#adapter.submitScore(name, this.#score)
+        ? await this.#adapter.submitScore(name, this.#score, this.#token, this.#checkpoints)
         : null;
 
       if (result) {

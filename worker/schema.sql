@@ -6,3 +6,9 @@ CREATE TABLE IF NOT EXISTS scores (
 );
 
 CREATE INDEX IF NOT EXISTS idx_score ON scores(score DESC, ts ASC);
+
+CREATE TABLE IF NOT EXISTS tokens (
+  nonce TEXT    PRIMARY KEY,
+  iat   INTEGER NOT NULL,
+  used  INTEGER NOT NULL DEFAULT 0
+);

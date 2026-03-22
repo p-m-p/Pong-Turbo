@@ -17,6 +17,15 @@ export function initGame() {
 
   let rafId         = null;
   let lastTimestamp = null;
+  let gameToken     = null;
+  let checkpoints   = [];
+  let trackedLevel  = 1;
+
+  async function fetchToken() {
+    try {
+      gameToken = await scoreboardEl?.fetchToken() ?? null;
+    } catch { gameToken = null; }
+  }
 
   function startNewGame() {
     if (rafId !== null) {
@@ -24,9 +33,13 @@ export function initGame() {
       rafId = null;
     }
     lastTimestamp = null;
+    gameToken     = null;
+    checkpoints   = [];
+    trackedLevel  = 1;
     loop.startNewGame(performance.now());
     canvasEl.initInput(PADDLE_BASE_H);
     document.getElementById('soundtrack')?.play().catch(() => {});
+    fetchToken();
     rafId = requestAnimationFrame(gameLoop);
   }
 
@@ -38,10 +51,16 @@ export function initGame() {
 
     const result = loop.tick(timestamp, elapsed / TARGET_FRAME_MS);
 
+    // Record a checkpoint each time the level advances
+    if (loop.level !== trackedLevel) {
+      trackedLevel = loop.level;
+      checkpoints.push({ level: trackedLevel, score: loop.scoreValue });
+    }
+
     if (result === 'gameover') {
       canvasEl.renderAdapter.drawGameOver();
       rafId = null;
-      scoreboardEl?.showResult(loop.scoreValue);
+      scoreboardEl?.showResult(loop.scoreValue, gameToken, checkpoints);
       return;
     }
     rafId = requestAnimationFrame(gameLoop);
