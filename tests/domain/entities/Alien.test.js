@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import { Alien } from '../../../src/domain/entities/Alien.js';
 
-function makeAlien(hp = 2) {
-  return new Alien(50, 50, hp, '#0f0');
+function makeAlien(hp = 2, type = 'drone') {
+  return new Alien(50, 50, hp, '#0f0', type);
 }
 
 describe('Alien', () => {
@@ -36,7 +36,11 @@ describe('Alien', () => {
   });
 
   it('exposes color', () => {
-    const a = new Alien(0, 0, 1, '#abc');
+    const a = new Alien(0, 0, 1, '#abc', 'crab');
     expect(a.color).toBe('#abc');
+  });
+
+  it('exposes type', () => {
+    expect(makeAlien(2, 'squid').type).toBe('squid');
   });
 });

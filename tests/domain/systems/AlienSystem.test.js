@@ -25,6 +25,22 @@ describe('AlienSystem spawn', () => {
   it('active is false before spawn', () => {
     expect(new AlienSystem().active).toBe(false);
   });
+
+  it('assigns types left-to-right by column', () => {
+    const col0 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 0);
+    const col1 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 1);
+    const col2 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 2);
+    expect(col0.every(a => a.type === 'drone')).toBe(true);
+    expect(col1.every(a => a.type === 'crab')).toBe(true);
+    expect(col2.every(a => a.type === 'squid')).toBe(true);
+  });
+
+  it('each alien has a type and color', () => {
+    for (const a of sys.aliens) {
+      expect(['drone', 'crab', 'squid']).toContain(a.type);
+      expect(a.color).toMatch(/^#[0-9a-f]{6}$/i);
+    }
+  });
 });
 
 describe('AlienSystem move', () => {
