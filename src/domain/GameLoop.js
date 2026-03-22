@@ -332,7 +332,7 @@ export class GameLoop {
       ball:          { ...this.#ball },
       paddle:        { ...this.#paddle },
       ghosts:        this.#ghostSystem.ghosts.map(g => ({
-        x: g.x, y: g.y, w: g.w, h: g.h, color: g.color, state: g.state,
+        x: g.x, y: g.y, w: g.w, h: g.h, color: g.color, state: g.state, vx: g.vx, vy: g.vy,
       })),
       powerUps:      this.#powerUpSystem.powerUps.map(p => ({
         x: p.x, y: p.y, w: p.w, h: p.h, type: p.type, born: p.born,

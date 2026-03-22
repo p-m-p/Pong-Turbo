@@ -28,6 +28,8 @@ export class Ghost {
   get color()      { return this.#color; }
   get state()      { return this.#state; }
   get isCharging() { return this.#state === 'charging'; }
+  get vx()         { return this.#vx; }
+  get vy()         { return this.#vy; }
 
   retreat() {
     this.#state = 'retreating';

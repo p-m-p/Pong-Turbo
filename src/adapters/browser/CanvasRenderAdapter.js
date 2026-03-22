@@ -152,7 +152,7 @@ export class CanvasRenderAdapter {
     }
   }
 
-  #drawGhostShape(ctx, { x, y, w, h, color }, s) {
+  #drawGhostShape(ctx, { x, y, w, h, color, vx = 1, vy = 0 }, s) {
     const cx       = x + w / 2;
     const domeR    = w / 2;
     const domeBaseY = y + domeR;
@@ -206,10 +206,16 @@ export class CanvasRenderAdapter {
     ctx.arc(rightEX, eyeY, eyeR, 0, Math.PI * 2);
     ctx.fill();
 
+    // Pupils track travel direction — clamp offset inside iris
+    const maxOffset = eyeR - pupilR;
+    const mag       = Math.sqrt(vx * vx + vy * vy) || 1;
+    const pdx = (vx / mag) * maxOffset;
+    const pdy = (vy / mag) * maxOffset;
+
     ctx.fillStyle = '#0d0d1a';
     ctx.beginPath();
-    ctx.arc(leftEX  + w * 0.03, eyeY + eyeR * 0.2, pupilR, 0, Math.PI * 2);
-    ctx.arc(rightEX - w * 0.03, eyeY + eyeR * 0.2, pupilR, 0, Math.PI * 2);
+    ctx.arc(leftEX  + pdx, eyeY + pdy, pupilR, 0, Math.PI * 2);
+    ctx.arc(rightEX + pdx, eyeY + pdy, pupilR, 0, Math.PI * 2);
     ctx.fill();
   }
 
