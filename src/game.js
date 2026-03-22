@@ -26,6 +26,7 @@ export function initGame() {
     lastTimestamp = null;
     loop.startNewGame(performance.now());
     canvasEl.initInput(PADDLE_BASE_H);
+    document.getElementById('soundtrack')?.play().catch(() => {});
     rafId = requestAnimationFrame(gameLoop);
   }
 
