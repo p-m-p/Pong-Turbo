@@ -10,8 +10,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "worker:dev":     "wrangler dev --config worker/wrangler.toml --port 8787",
-    "worker:deploy":  "wrangler deploy --config worker/wrangler.toml",
+    "worker:dev": "wrangler dev --config worker/wrangler.toml --port 8787",
+    "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
     "worker:db:init": "wrangler d1 execute DB --local --config worker/wrangler.toml --file=worker/schema.sql",
     "worker:db:migrate": "wrangler d1 execute DB --config worker/wrangler.toml --file=worker/schema.sql"
   },
@@ -23,6 +23,6 @@
     "@vitest/coverage-v8": "^4.1.0",
     "vite": "^8.0.1",
     "vitest": "^4.1.0",
-    "wrangler": "^3"
+    "wrangler": "^4.76.0"
   }
 }
