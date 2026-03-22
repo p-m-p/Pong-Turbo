@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Dark background tile -->
+  <rect width="32" height="32" rx="6" fill="#1e1e2e"/>
+
+  <!-- Ghost body: semicircle dome + straight sides + three wavy bumps
+       x=2 y=1 w=28 h=30  →  cx=16  domeR=14  domeBaseY=15  skirtY=23.8  bottom=31 -->
+  <path d="M2,15 A14,14,0,0,1,30,15 L30,23.8
+           Q25.3,31 20.7,23.8
+           Q16,31  11.3,23.8
+           Q6.7,31  2,23.8 Z"
+        fill="#cba6f7"/>
+
+  <!-- Dome highlight -->
+  <radialGradient id="hl" cx="44%" cy="30%" r="50%">
+    <stop offset="0%"   stop-color="white" stop-opacity="0.28"/>
+    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+  </radialGradient>
+  <path d="M2,15 A14,14,0,0,1,30,15 L30,23.8
+           Q25.3,31 20.7,23.8
+           Q16,31  11.3,23.8
+           Q6.7,31  2,23.8 Z"
+        fill="url(#hl)"/>
+
+  <!-- Eyes — white irises -->
+  <circle cx="10.4" cy="13" r="3.1" fill="white"/>
+  <circle cx="21.6" cy="13" r="3.1" fill="white"/>
+
+  <!-- Pupils — shifted slightly inward and down -->
+  <circle cx="11.2" cy="13.6" r="1.7" fill="#0d0d1a"/>
+  <circle cx="20.8" cy="13.6" r="1.7" fill="#0d0d1a"/>
+</svg>
