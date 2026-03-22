@@ -6,7 +6,24 @@ import './components/PongHud.js';
 import './components/PongSoundToggle.js';
 import './components/PongScoreboard.js';
 
+function initFullscreenOnLandscape() {
+  if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
+
+  const onOrientationChange = () => {
+    const isLandscape = window.matchMedia('(orientation: landscape)').matches;
+    if (isLandscape && !document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    } else if (!isLandscape && document.fullscreenElement) {
+      document.exitFullscreen?.().catch(() => {});
+    }
+  };
+
+  screen.orientation?.addEventListener('change', onOrientationChange);
+  window.addEventListener('orientationchange', onOrientationChange);
+}
+
 export function initGame() {
+  initFullscreenOnLandscape();
   const canvasEl     = document.querySelector('pong-canvas');
   const hudEl        = document.querySelector('pong-hud');
   const scoreboardEl = document.querySelector('pong-scoreboard');
