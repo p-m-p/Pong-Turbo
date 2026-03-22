@@ -63,8 +63,8 @@ src/
 │   │   └── PowerUp.js           ← isLive(now) / expired(now)
 │   ├── physics/
 │   │   ├── collision.js             ← aabb(), checkPaddleHit()
-│   │   ├── ballPhysics.js           ← moveBall(), updateReadyBall(), launchBall()
-│   │   └── paddlePhysics.js         ← movePaddle()
+│   │   ├── ball.js           ← moveBall(), updateReadyBall(), launchBall()
+│   │   └── paddle.js         ← movePaddle()
 │   └── systems/
 │       ├── GhostSystem.js           ← spawn/move/checkCollision (no draw)
 │       ├── AlienSystem.js           ← spawn/move/checkCollision/reachedX (no draw)
@@ -96,8 +96,8 @@ src/
 tests/
 ├── domain/
 │   ├── collision.test.js
-│   ├── ballPhysics.test.js
-│   ├── paddlePhysics.test.js
+│   ├── ball.test.js
+│   ├── paddle.test.js
 │   ├── Ghost.test.js
 │   ├── Alien.test.js
 │   ├── PowerUp.test.js
@@ -504,10 +504,10 @@ it('removes ghost and returns centroid on ball hit', () => {
 });
 ```
 
-### `ballPhysics` — serve state machine
+### `domain/physics/ball.js` — serve state machine
 
 ```js
-import { updateReadyBall } from '../../src/domain/physics/ballPhysics.js';
+import { updateReadyBall } from '../../src/domain/physics/ball.js';
 
 it('does not move ball during pause window', () => {
   const ball   = { x:40, y:195, w:10, h:10, dx:0, dy:0 };
@@ -575,7 +575,7 @@ Each phase leaves the browser game **fully working**. Tests grow throughout.
 ### Phase 2 — Domain entities and physics
 
 - Create `src/domain/entities/` — all five entity classes, `born` injected in `PowerUp`
-- Create `src/domain/physics/collision.js`, `ballPhysics.js`, `paddlePhysics.js`
+- Create `src/domain/physics/collision.js`, `ball.js`, `paddle.js`
 - Create `src/domain/systems/ScoringRules.js`
 - Write unit tests for all of the above
 - Old `src/entities/` files untouched
