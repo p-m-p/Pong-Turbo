@@ -55,6 +55,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: pnpm/action-setup@v4
+
       - name: Run DB migration
         uses: cloudflare/wrangler-action@v3
         with:
