@@ -4,5 +4,5 @@ compatibility_date = "2025-03-22"
 
 [[d1_databases]]
 binding       = "DB"
-database_name = "pong-turbo-scores"
-database_id   = "TO_BE_REPLACED"
+database_name = "pong-turbo-scoreboard"
+database_id   = "a3a52d47-725d-4667-b971-e4669f275efc"
