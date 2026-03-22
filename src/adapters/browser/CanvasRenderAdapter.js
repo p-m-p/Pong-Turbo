@@ -74,7 +74,7 @@ export class CanvasRenderAdapter {
     this.#drawPaddle(ctx, snapshot, s, now);
     this.#drawGhosts(ctx, snapshot, s);
     this.#drawPowerUps(ctx, snapshot, s, now);
-    if (snapshot.isBonusRound) this.#drawAliens(ctx, snapshot);
+    if (snapshot.isBonusRound) this.#drawAliens(ctx, snapshot, s);
     if (snapshot.shieldActive) this.#drawShield(ctx, snapshot, s, now);
 
     ctx.restore();
@@ -265,17 +265,156 @@ export class CanvasRenderAdapter {
     }
   }
 
-  #drawAliens(ctx, { aliens, alienOffsetX, alienOffsetY }) {
+  #drawAliens(ctx, { aliens, alienOffsetX, alienOffsetY }, s) {
     ctx.save();
     ctx.translate(alienOffsetX, alienOffsetY);
     for (const a of aliens) {
-      const t = a.hp / a.maxHp;
-      ctx.globalAlpha = 0.4 + 0.6 * t;
+      ctx.save();
+      ctx.globalAlpha = 0.4 + 0.6 * (a.hp / a.maxHp);
+      ctx.shadowBlur  = 10 * s;
+      ctx.shadowColor = a.color;
       ctx.fillStyle   = a.color;
-      ctx.fillRect(a.x, a.y, a.w, a.h);
+      switch (a.type) {
+        case 'drone': this.#drawDrone(ctx, a); break;
+        case 'crab':  this.#drawCrab(ctx, a);  break;
+        default:      this.#drawSquid(ctx, a); break;
+      }
+      ctx.restore();
     }
-    ctx.globalAlpha = 1;
     ctx.restore();
+  }
+
+  // ── Drone (rows 0-1): futuristic saucer — flat body, dome, antenna, thrusters ──
+
+  #drawDrone(ctx, { x, y, w, h, color }) {
+    const cx = x + w / 2;
+
+    // Two thin antenna prongs
+    ctx.fillRect(x + 8,  y,     2, 5);
+    ctx.fillRect(x + 18, y,     2, 5);
+
+    // Saucer body (trapezoid — wide top, narrower bottom)
+    ctx.beginPath();
+    ctx.moveTo(x + 2,  y + 6);
+    ctx.lineTo(x + 26, y + 6);
+    ctx.lineTo(x + 22, y + 15);
+    ctx.lineTo(x + 6,  y + 15);
+    ctx.closePath();
+    ctx.fill();
+
+    // Cockpit dome (upper half-ellipse above the saucer)
+    ctx.beginPath();
+    ctx.ellipse(cx, y + 6, 6, 4, 0, Math.PI, 0);
+    ctx.fill();
+
+    // 3 engine prongs at bottom
+    ctx.fillRect(x + 5,  y + 15, 3, 5);
+    ctx.fillRect(x + 13, y + 15, 3, 5);
+    ctx.fillRect(x + 20, y + 15, 3, 5);
+
+    // Dark cockpit window
+    ctx.shadowBlur = 0;
+    ctx.fillStyle  = '#1e1e2e';
+    ctx.beginPath();
+    ctx.ellipse(cx, y + 7, 3, 2, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── Crab (rows 2-3): wide body, raised claws, eye-stalks, legs ─────────────
+
+  #drawCrab(ctx, { x, y, w, h, color }) {
+    const cx = x + w / 2;
+
+    // Eye stalks
+    ctx.fillRect(x + 7,  y,     3, 5);
+    ctx.fillRect(x + 18, y,     3, 5);
+
+    // Main body
+    ctx.beginPath();
+    ctx.roundRect(x + 4, y + 5, 20, 10, 3);
+    ctx.fill();
+
+    // Left claw (arrowhead pointing up-left)
+    ctx.beginPath();
+    ctx.moveTo(x + 4,  y + 6);
+    ctx.lineTo(x,      y + 3);
+    ctx.lineTo(x,      y + 9);
+    ctx.lineTo(x + 4,  y + 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // Right claw (mirror)
+    ctx.beginPath();
+    ctx.moveTo(x + 24, y + 6);
+    ctx.lineTo(x + 28, y + 3);
+    ctx.lineTo(x + 28, y + 9);
+    ctx.lineTo(x + 24, y + 12);
+    ctx.closePath();
+    ctx.fill();
+
+    // 4 bottom legs
+    ctx.fillRect(x + 5,  y + 15, 2, 6);
+    ctx.fillRect(x + 10, y + 15, 2, 5);
+    ctx.fillRect(x + 16, y + 15, 2, 5);
+    ctx.fillRect(x + 21, y + 15, 2, 6);
+
+    // Eyes
+    ctx.shadowBlur = 0;
+    ctx.fillStyle  = 'white';
+    ctx.beginPath();
+    ctx.arc(x + 9.5,  y + 9, 2.5, 0, Math.PI * 2);
+    ctx.arc(x + 18.5, y + 9, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1e1e2e';
+    ctx.beginPath();
+    ctx.arc(x + 10,   y + 9.5, 1.2, 0, Math.PI * 2);
+    ctx.arc(x + 18,   y + 9.5, 1.2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // ── Squid (rows 4-5): round head, two horns, tentacles, big eyes ────────────
+
+  #drawSquid(ctx, { x, y, w, h, color }) {
+    const cx = x + w / 2;
+
+    // Two horns at top
+    ctx.beginPath();
+    ctx.moveTo(x + 8,  y + 5);
+    ctx.lineTo(x + 6,  y);
+    ctx.lineTo(x + 4,  y + 5);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(x + 20, y + 5);
+    ctx.lineTo(x + 22, y);
+    ctx.lineTo(x + 24, y + 5);
+    ctx.fill();
+
+    // Round head — dome top + rectangular lower half
+    ctx.beginPath();
+    ctx.arc(cx, y + 9, 9, Math.PI, 0);
+    ctx.lineTo(x + 23, y + 14);
+    ctx.lineTo(x + 5,  y + 14);
+    ctx.closePath();
+    ctx.fill();
+
+    // 4 tentacles (alternate lengths for organic look)
+    ctx.fillRect(x + 5,  y + 14, 3, 7);
+    ctx.fillRect(x + 10, y + 14, 3, 5);
+    ctx.fillRect(x + 15, y + 14, 3, 5);
+    ctx.fillRect(x + 20, y + 14, 3, 7);
+
+    // Eyes
+    ctx.shadowBlur = 0;
+    ctx.fillStyle  = 'white';
+    ctx.beginPath();
+    ctx.arc(x + 10, y + 9, 3, 0, Math.PI * 2);
+    ctx.arc(x + 18, y + 9, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1e1e2e';
+    ctx.beginPath();
+    ctx.arc(x + 10.5, y + 9.5, 1.5, 0, Math.PI * 2);
+    ctx.arc(x + 17.5, y + 9.5, 1.5, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   #drawShield(ctx, { paddle }, s, now) {

@@ -338,7 +338,7 @@ export class GameLoop {
         x: p.x, y: p.y, w: p.w, h: p.h, type: p.type, born: p.born,
       })),
       aliens:        this.#alienSystem.aliens.map(a => ({
-        x: a.x, y: a.y, w: a.w, h: a.h, color: a.color, hp: a.hp, maxHp: a.maxHp,
+        x: a.x, y: a.y, w: a.w, h: a.h, color: a.color, type: a.type, hp: a.hp, maxHp: a.maxHp,
       })),
       alienOffsetX:  this.#alienSystem.offsetX,
       alienOffsetY:  this.#alienSystem.offsetY,
