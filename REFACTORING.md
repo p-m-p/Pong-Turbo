@@ -56,11 +56,11 @@ src/
 │   ├── GameState.js                 ← createGameState() factory
 │   ├── GameLoop.js                  ← update(state, timeScale, now, input)
 │   ├── entities/
-│   │   ├── BallState.js             ← data only: {x,y,w,h,dx,dy}
-│   │   ├── PaddleState.js           ← data only: {x,y,w,h,moveY,velocity,vy}
-│   │   ├── GhostState.js            ← state machine (no draw)
-│   │   ├── AlienState.js            ← hp logic (no draw)
-│   │   └── PowerUpState.js          ← isLive(now) / expired(now)
+│   │   ├── Ball.js             ← data only: {x,y,w,h,dx,dy}
+│   │   ├── Paddle.js           ← data only: {x,y,w,h,moveY,velocity,vy}
+│   │   ├── Ghost.js            ← state machine (no draw)
+│   │   ├── Alien.js            ← hp logic (no draw)
+│   │   └── PowerUp.js           ← isLive(now) / expired(now)
 │   ├── physics/
 │   │   ├── collision.js             ← aabb(), checkPaddleHit()
 │   │   ├── ballPhysics.js           ← moveBall(), updateReadyBall(), launchBall()
@@ -98,9 +98,9 @@ tests/
 │   ├── collision.test.js
 │   ├── ballPhysics.test.js
 │   ├── paddlePhysics.test.js
-│   ├── GhostState.test.js
-│   ├── AlienState.test.js
-│   ├── PowerUpState.test.js
+│   ├── Ghost.test.js
+│   ├── Alien.test.js
+│   ├── PowerUp.test.js
 │   ├── GhostSystem.test.js
 │   ├── AlienSystem.test.js
 │   ├── PowerUpSystem.test.js
@@ -122,15 +122,15 @@ Each entity splits into two responsibilities:
 
 | Current file | Domain module (logic) | Render (moves to CanvasRenderAdapter) |
 |---|---|---|
-| `entities/ball.js` | `domain/entities/BallState.js` | `drawBall(ctx, state)` |
-| `entities/paddle.js` | `domain/entities/PaddleState.js` | `drawPaddle(ctx, state)` |
-| `entities/ghost.js` | `domain/entities/GhostState.js` | `drawGhost(ctx, ghost, drawScale)` |
-| `entities/alien.js` | `domain/entities/AlienState.js` | `drawAlien(ctx, alien, offset, drawScale)` |
-| `entities/powerup.js` | `domain/entities/PowerUpState.js` | `drawPowerUp(ctx, pu, now, drawScale)` |
+| `entities/ball.js` | `domain/entities/Ball.js` | `drawBall(ctx, ball)` |
+| `entities/paddle.js` | `domain/entities/Paddle.js` | `drawPaddle(ctx, paddle)` |
+| `entities/ghost.js` | `domain/entities/Ghost.js` | `drawGhost(ctx, ghost, drawScale)` |
+| `entities/alien.js` | `domain/entities/Alien.js` | `drawAlien(ctx, alien, offset, drawScale)` |
+| `entities/powerup.js` | `domain/entities/PowerUp.js` | `drawPowerUp(ctx, powerUp, now, drawScale)` |
 
 ### Fixing the time problem
 
-`PowerUpState.isLive()` and `expired()` currently call `performance.now()` internally. Change the signatures to accept `now`:
+`PowerUp.isLive()` and `PowerUp.expired()` currently call `performance.now()` internally. Change the signatures to accept `now`:
 
 ```js
 // Before (untestable):
@@ -154,7 +154,7 @@ constructor(x, y, type, born) { this.#born = born; ... }
 
 `PowerUpSystem.trySpawn()` passes `now` down from `GameLoop.update()`, which receives it as a parameter. No domain code calls `performance.now()` directly.
 
-### GhostState color exposure
+### Ghost color exposure
 
 `Ghost` stores `#color` as a private field used only in `draw()`. Once `draw()` is removed, the adapter needs the color. Add a getter:
 
@@ -241,8 +241,8 @@ Replaces the closure variables in `game.js`. The complete snapshot of all game s
 // src/domain/GameState.js
 export function createGameState() {
   return {
-    ball:    null,     // BallState
-    paddle:  null,     // PaddleState
+    ball:    null,     // Ball
+    paddle:  null,     // Paddle
 
     score:      0,
     lives:      5,
@@ -464,19 +464,19 @@ it('double kill is 4× not 2× a single kill', () => {
 });
 ```
 
-### `PowerUpState` — deterministic time
+### `domain/entities/PowerUp.js` — deterministic time
 
 ```js
-import { PowerUpState } from '../../src/domain/entities/PowerUpState.js';
+import { PowerUp } from '../../src/domain/entities/PowerUp.js';
 
 it('is not collectable during 2s grace period', () => {
-  const pu = new PowerUpState(100, 200, 'wide', /* born= */ 0);
+  const pu = new PowerUp(100, 200, 'wide', /* born= */ 0);
   expect(pu.isLive(1000)).toBe(false);  // 1 s < 2 s grace
   expect(pu.isLive(2001)).toBe(true);
 });
 
 it('expires after 10 s', () => {
-  const pu = new PowerUpState(100, 200, 'slow', 0);
+  const pu = new PowerUp(100, 200, 'slow', 0);
   expect(pu.expired(9999)).toBe(false);
   expect(pu.expired(10001)).toBe(true);
 });
@@ -574,7 +574,7 @@ Each phase leaves the browser game **fully working**. Tests grow throughout.
 
 ### Phase 2 — Domain entities and physics
 
-- Create `src/domain/entities/` — all five state classes, `born` injected in PowerUpState
+- Create `src/domain/entities/` — all five entity classes, `born` injected in `PowerUp`
 - Create `src/domain/physics/collision.js`, `ballPhysics.js`, `paddlePhysics.js`
 - Create `src/domain/systems/ScoringRules.js`
 - Write unit tests for all of the above
