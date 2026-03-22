@@ -14,14 +14,11 @@ import {
   VIRTUAL_H,
 } from '../constants.js';
 
-// Alien type and colour per row pair — top rows are hardest (drone), bottom easiest (squid)
-const ROW_TIERS = [
-  { type: 'drone', color: '#cba6f7' }, // rows 0-1 — mauve
-  { type: 'drone', color: '#cba6f7' },
-  { type: 'crab',  color: '#89dceb' }, // rows 2-3 — sky
-  { type: 'crab',  color: '#89dceb' },
-  { type: 'squid', color: '#a6e3a1' }, // rows 4-5 — green
-  { type: 'squid', color: '#a6e3a1' },
+// Alien type and colour per column — left to right
+const COL_TIERS = [
+  { type: 'drone', color: '#cba6f7' }, // col 0 — mauve
+  { type: 'crab',  color: '#89dceb' }, // col 1 — sky
+  { type: 'squid', color: '#a6e3a1' }, // col 2 — green
 ];
 
 export class AlienSystem {
@@ -47,7 +44,7 @@ export class AlienSystem {
       for (let col = 0; col < ALIEN_COLS; col++) {
         const x     = ALIEN_SPAWN_X + col * (ALIEN_W + ALIEN_H_GAP);
         const y     = row * (ALIEN_H + ALIEN_V_GAP);
-        const { type, color } = ROW_TIERS[row];
+        const { type, color } = COL_TIERS[col % COL_TIERS.length];
         this.#aliens.push(new Alien(x, y, ALIEN_HP, color, type));
       }
     }
