@@ -1,8 +1,8 @@
-export class Scoreboard {
+export class DOMScoreAdapter {
   #scoreEl;
   #lifeEls;
 
-  constructor() {
+  init() {
     this.#scoreEl = document.getElementById('playerscore');
     this.#lifeEls = document.querySelectorAll('.life');
   }
