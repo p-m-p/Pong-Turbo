@@ -1,6 +1,7 @@
 name               = "pong-turbo-scores"
 main               = "src/index.js"
 compatibility_date = "2025-03-22"
+account_id         = "fccd6740ae391ad0a29e42f2f9e57fd1"
 
 [[d1_databases]]
 binding       = "DB"

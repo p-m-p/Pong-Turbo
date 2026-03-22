@@ -13,7 +13,7 @@
     "worker:dev": "wrangler dev --config worker/wrangler.toml --port 8787",
     "worker:deploy": "wrangler deploy --config worker/wrangler.toml",
     "worker:db:init": "wrangler d1 execute DB --local --config worker/wrangler.toml --file=worker/schema.sql",
-    "worker:db:migrate": "wrangler d1 execute DB --config worker/wrangler.toml --file=worker/schema.sql"
+    "worker:db:migrate": "wrangler d1 execute DB --remote --config worker/wrangler.toml --file=worker/schema.sql"
   },
   "keywords": [],
   "author": "",
