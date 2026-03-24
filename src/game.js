@@ -121,6 +121,17 @@ export function initGame() {
     startNewGame();
   });
 
+  // Pause music when the app is hidden (tab switch, home button, lock screen)
+  document.addEventListener('visibilitychange', () => {
+    const soundtrack = document.getElementById('soundtrack');
+    if (!soundtrack) return;
+    if (document.hidden) {
+      soundtrack.pause();
+    } else if (rafId !== null) {
+      soundtrack.play().catch(() => {});
+    }
+  });
+
   // Keyboard Enter — only when scoreboard is hidden (avoid firing during name entry)
   window.addEventListener('keydown', (ev) => {
     if (ev.key === 'Enter' && rafId === null && scoreboardEl?.hidden) {

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Full bleed background for maskable icon — safe zone is centre 80% (51px inset) -->
+  <rect width="512" height="512" fill="#1e1e2e"/>
+
+  <!-- Ghost body, inset to safe zone -->
+  <path d="M51,250 A205,205,0,0,1,461,250 L461,370.4
+           Q392.2,461 323.4,370.4
+           Q256,461  188.6,370.4
+           Q119.8,461  51,370.4 Z"
+        fill="#cba6f7"/>
+
+  <!-- Dome highlight -->
+  <radialGradient id="hl" cx="44%" cy="30%" r="50%">
+    <stop offset="0%"   stop-color="white" stop-opacity="0.28"/>
+    <stop offset="100%" stop-color="white" stop-opacity="0"/>
+  </radialGradient>
+  <path d="M51,250 A205,205,0,0,1,461,250 L461,370.4
+           Q392.2,461 323.4,370.4
+           Q256,461  188.6,370.4
+           Q119.8,461  51,370.4 Z"
+        fill="url(#hl)"/>
+
+  <!-- Eyes — white irises -->
+  <circle cx="166.4" cy="215" r="49.6" fill="white"/>
+  <circle cx="345.6" cy="215" r="49.6" fill="white"/>
+
+  <!-- Pupils -->
+  <circle cx="179.2" cy="224" r="27.2" fill="#0d0d1a"/>
+  <circle cx="332.8" cy="224" r="27.2" fill="#0d0d1a"/>
+</svg>
