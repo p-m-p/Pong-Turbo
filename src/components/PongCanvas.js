@@ -93,8 +93,9 @@ template.innerHTML = `
       box-shadow: 0 -5px 0 var(--overlay-0), 0 5px 0 var(--overlay-0);
     }
     @media (pointer: coarse) and (orientation: landscape) {
-      :host         { padding-right: 0; }
-      :host([playing]) #touch-control { display: block; }
+      :host          { padding-right: 0; }
+      #touch-control { display: block; visibility: hidden; }
+      :host([playing]) #touch-control { visibility: visible; }
     }
   </style>
   <div id="canvas-wrap">
