@@ -27,6 +27,11 @@ body {
   color: var(--text);
   font-family: 'Play', helvetica, arial, sans-serif;
   font-weight: 700;
+  /* Extend background into safe-area when status bar is black-translucent */
+  padding-top: env(safe-area-inset-top);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 /* ── App shell ────────────────────────────────────────────────────────────── */

@@ -6,13 +6,21 @@ import './components/PongHud.js';
 import './components/PongSoundToggle.js';
 import './components/PongScoreboard.js';
 
+// iOS Safari does not support requestFullscreen on arbitrary elements.
+// On iOS, fullscreen is only available via "Add to Home Screen" (PWA mode).
+const isIos = /iP(hone|ad|od)/.test(navigator.userAgent);
+
+function requestFullscreen() {
+  if (!isIos) document.documentElement.requestFullscreen?.().catch(() => {});
+}
+
 function initFullscreenOnLandscape() {
   if (!('ontouchstart' in window || navigator.maxTouchPoints > 0)) return;
 
   const onOrientationChange = () => {
     const isLandscape = window.matchMedia('(orientation: landscape)').matches;
     if (isLandscape && !document.fullscreenElement) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
+      requestFullscreen();
     } else if (!isLandscape && document.fullscreenElement) {
       document.exitFullscreen?.().catch(() => {});
     }
@@ -106,7 +114,7 @@ export function initGame() {
   // Scoreboard Play / Play Again button
   document.addEventListener('play-requested', () => {
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-      document.documentElement.requestFullscreen?.().catch(() => {});
+      requestFullscreen();
     }
     scoreboardEl?.hide();
     startNewGame();
