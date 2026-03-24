@@ -90,6 +90,40 @@ footer {
 footer a { color: var(--subtext); text-decoration: none; }
 footer a:hover { color: var(--text); }
 
+/* ── Rotate-to-landscape overlay ─────────────────────────────────────────── */
+#rotate-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: var(--base);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem;
+  color: var(--subtext);
+}
+
+#rotate-overlay p {
+  font-size: 1rem;
+  letter-spacing: 0.05em;
+}
+
+@keyframes rotate-hint {
+  0%, 100% { transform: rotate(0deg); }
+  40%, 60% { transform: rotate(90deg); }
+}
+
+#rotate-overlay .rotate-icon {
+  animation: rotate-hint 2.5s ease-in-out infinite;
+  transform-origin: center;
+  color: var(--mauve);
+}
+
+@media (pointer: coarse) and (orientation: portrait) {
+  #rotate-overlay { display: flex; }
+}
+
 /* ── Touch landscape — right edge touch zone ─────────────────────────────── */
 @media (pointer: coarse) and (orientation: landscape) {
   pong-canvas { padding-right: 72px; }

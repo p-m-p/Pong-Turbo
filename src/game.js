@@ -63,6 +63,14 @@ export function initGame() {
   }
 
   function gameLoop(timestamp) {
+    // Pause while a touch device is in portrait (rotate overlay is showing)
+    if (('ontouchstart' in window || navigator.maxTouchPoints > 0) &&
+        window.matchMedia('(orientation: portrait)').matches) {
+      lastTimestamp = null;
+      rafId = requestAnimationFrame(gameLoop);
+      return;
+    }
+
     const elapsed = lastTimestamp
       ? Math.min(timestamp - lastTimestamp, MAX_FRAME_MS)
       : TARGET_FRAME_MS;
@@ -97,6 +105,9 @@ export function initGame() {
 
   // Scoreboard Play / Play Again button
   document.addEventListener('play-requested', () => {
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+    }
     scoreboardEl?.hide();
     startNewGame();
   });
