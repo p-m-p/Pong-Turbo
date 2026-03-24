@@ -113,6 +113,7 @@ export function initGame() {
 
   // Scoreboard Play / Play Again button
   document.addEventListener('play-requested', () => {
+    audio.unlock();
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
       requestFullscreen();
     }
