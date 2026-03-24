@@ -9,7 +9,6 @@ template.innerHTML = `
       display: flex;
       flex-direction: row;
       align-items: stretch;
-      padding: 8px;
       overflow: hidden;
       min-height: 0;
     }
@@ -21,6 +20,7 @@ template.innerHTML = `
       justify-content: center;
       min-width: 0;
       min-height: 0;
+      padding: 8px;
     }
     #start-screen {
       position: absolute;
@@ -93,8 +93,7 @@ template.innerHTML = `
       box-shadow: 0 -5px 0 var(--overlay-0), 0 5px 0 var(--overlay-0);
     }
     @media (pointer: coarse) and (orientation: landscape) {
-      :host          { padding-right: 0; }
-      #touch-control { display: block; visibility: hidden; }
+      #touch-control           { display: flex; flex-direction: column; justify-content: center; visibility: hidden; }
       :host([playing]) #touch-control { visibility: visible; }
     }
   </style>
