@@ -124,11 +124,6 @@ footer a:hover { color: var(--text); }
   #rotate-overlay { display: flex; }
 }
 
-/* ── Touch landscape — right edge touch zone ─────────────────────────────── */
-@media (pointer: coarse) and (orientation: landscape) {
-  pong-canvas { padding-right: 72px; }
-}
-
 /* ── Compact landscape (mobile) ──────────────────────────────────────────── */
 @media (max-height: 480px) and (orientation: landscape) {
   #app   { padding: 0 0.5rem; }
