@@ -42,11 +42,20 @@ template.innerHTML = `
       width: 100%;
       max-width: 360px;
       max-height: calc(100% - 2rem);
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .panel-scroll {
+      flex: 1;
+      min-height: 0;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 1rem;
+      padding-bottom: 0.5rem;
       scrollbar-width: thin;
       scrollbar-color: var(--surface-1) transparent;
     }
@@ -149,6 +158,9 @@ template.innerHTML = `
       padding: 0.6em 2.5em;
       cursor: pointer;
       transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+      align-self: center;
+      margin-top: 1rem;
     }
     button:hover  { background: var(--lavender); transform: scale(1.03); }
     button:active { transform: scale(0.97); }
@@ -164,7 +176,7 @@ template.innerHTML = `
 
     /* ── Compact landscape ─────────────────────────────────────────── */
     @media (max-height: 480px) {
-      .panel { gap: 0.5rem; }
+      .panel-scroll { gap: 0.5rem; }
       h2     { font-size: 1rem; }
       td, th { padding-top: 0.2rem; padding-bottom: 0.2rem; }
     }
@@ -174,41 +186,45 @@ template.innerHTML = `
 
     <!-- ── Start panel ───────────────────────────────────────── -->
     <div id="start-panel" class="panel">
-      <h2>HIGH SCORES</h2>
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align:right">#</th>
-            <th style="padding-left:0.75rem">NAME</th>
-            <th style="text-align:right">SCORE</th>
-          </tr>
-        </thead>
-        <tbody id="top-tbody"></tbody>
-      </table>
-      <p id="start-status" class="status-msg"></p>
+      <div class="panel-scroll">
+        <h2>HIGH SCORES</h2>
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:right">#</th>
+              <th style="padding-left:0.75rem">NAME</th>
+              <th style="text-align:right">SCORE</th>
+            </tr>
+          </thead>
+          <tbody id="top-tbody"></tbody>
+        </table>
+        <p id="start-status" class="status-msg"></p>
+      </div>
       <button id="play-btn">PLAY</button>
     </div>
 
     <!-- ── Result panel ──────────────────────────────────────── -->
     <div id="result-panel" class="panel" hidden>
-      <h2>GAME OVER</h2>
-      <div class="score-display">
-        <div>SCORE <span id="final-score" class="value"></span></div>
-        <div id="rank-preview" class="rank"></div>
+      <div class="panel-scroll">
+        <h2>GAME OVER</h2>
+        <div class="score-display">
+          <div>SCORE <span id="final-score" class="value"></span></div>
+          <div id="rank-preview" class="rank"></div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th style="text-align:right">#</th>
+              <th style="padding-left:0.75rem">NAME</th>
+              <th style="text-align:right">SCORE</th>
+            </tr>
+          </thead>
+          <tbody id="result-tbody"></tbody>
+        </table>
+
+        <p id="submit-status" class="status-msg"></p>
       </div>
-
-      <table>
-        <thead>
-          <tr>
-            <th style="text-align:right">#</th>
-            <th style="padding-left:0.75rem">NAME</th>
-            <th style="text-align:right">SCORE</th>
-          </tr>
-        </thead>
-        <tbody id="result-tbody"></tbody>
-      </table>
-
-      <p id="submit-status" class="status-msg"></p>
       <button id="play-again-btn" hidden>PLAY AGAIN</button>
     </div>
 

@@ -38,6 +38,8 @@ export function initGame() {
   const audio        = new WebAudioAdapter();
   audio.init();
 
+  const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+
   const loop = new GameLoop(canvasEl.renderAdapter, audio, canvasEl.inputAdapter, hudEl);
 
   let rafId         = null;
@@ -65,6 +67,7 @@ export function initGame() {
     loop.startNewGame(performance.now());
     canvasEl.initInput(PADDLE_BASE_H);
     canvasEl.setAttribute('playing', '');
+    document.body.classList.add('game-playing');
     document.getElementById('soundtrack')?.play().catch(() => {});
     fetchToken();
     rafId = requestAnimationFrame(gameLoop);
@@ -72,8 +75,7 @@ export function initGame() {
 
   function gameLoop(timestamp) {
     // Pause while a touch device is in portrait (rotate overlay is showing)
-    if (('ontouchstart' in window || navigator.maxTouchPoints > 0) &&
-        window.matchMedia('(orientation: portrait)').matches) {
+    if (isTouchDevice && window.matchMedia('(orientation: portrait)').matches) {
       lastTimestamp = null;
       rafId = requestAnimationFrame(gameLoop);
       return;
@@ -95,6 +97,7 @@ export function initGame() {
     if (result === 'gameover') {
       canvasEl.renderAdapter.drawGameOver();
       canvasEl.removeAttribute('playing');
+      document.body.classList.remove('game-playing');
       rafId = null;
       scoreboardEl?.showResult(loop.scoreValue, gameToken, checkpoints);
       return;
@@ -114,7 +117,12 @@ export function initGame() {
   // Scoreboard Play / Play Again button
   document.addEventListener('play-requested', () => {
     audio.unlock();
-    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    // On touch devices in portrait, keep the scoreboard visible and don't start the game.
+    // The user must rotate to landscape first.
+    if (isTouchDevice && window.matchMedia('(orientation: portrait)').matches) {
+      return;
+    }
+    if (isTouchDevice) {
       requestFullscreen();
     }
     scoreboardEl?.hide();
