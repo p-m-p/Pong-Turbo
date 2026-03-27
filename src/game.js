@@ -67,10 +67,26 @@ export function initGame() {
     loop.startNewGame(performance.now());
     canvasEl.initInput(PADDLE_BASE_H);
     canvasEl.setAttribute('playing', '');
+    document.body.classList.remove('play-pending');
     document.body.classList.add('game-playing');
     document.getElementById('soundtrack')?.play().catch(() => {});
     fetchToken();
     rafId = requestAnimationFrame(gameLoop);
+  }
+
+  // When a touch device rotates to landscape while play is pending, start the game
+  if (isTouchDevice) {
+    const onLandscapeForPending = () => {
+      if (window.matchMedia('(orientation: landscape)').matches &&
+          document.body.classList.contains('play-pending')) {
+        audio.unlock();
+        requestFullscreen();
+        scoreboardEl?.hide();
+        startNewGame();
+      }
+    };
+    screen.orientation?.addEventListener('change', onLandscapeForPending);
+    window.addEventListener('orientationchange', onLandscapeForPending);
   }
 
   function gameLoop(timestamp) {
@@ -117,9 +133,10 @@ export function initGame() {
   // Scoreboard Play / Play Again button
   document.addEventListener('play-requested', () => {
     audio.unlock();
-    // On touch devices in portrait, keep the scoreboard visible and don't start the game.
-    // The user must rotate to landscape first.
+    // On touch devices in portrait, show the rotate overlay and wait for the user
+    // to rotate to landscape — the orientation change listener will start the game.
     if (isTouchDevice && window.matchMedia('(orientation: portrait)').matches) {
+      document.body.classList.add('play-pending');
       return;
     }
     if (isTouchDevice) {

@@ -126,7 +126,8 @@ footer a:hover { color: var(--text); }
 }
 
 @media (pointer: coarse) and (orientation: portrait) {
-  body.game-playing #rotate-overlay { display: flex; }
+  body.game-playing #rotate-overlay,
+  body.play-pending #rotate-overlay { display: flex; }
 }
 
 /* ── Compact landscape (mobile) ──────────────────────────────────────────── */

@@ -44,18 +44,15 @@ template.innerHTML = `
       max-height: calc(100% - 2rem);
       display: flex;
       flex-direction: column;
-      align-items: stretch;
+      align-items: center;
+      gap: 0.75rem;
     }
 
-    .panel-scroll {
+    .table-wrapper {
+      width: 100%;
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-      padding-bottom: 0.5rem;
       scrollbar-width: thin;
       scrollbar-color: var(--surface-1) transparent;
     }
@@ -68,6 +65,7 @@ template.innerHTML = `
       color: var(--mauve);
       margin: 0;
       text-align: center;
+      text-transform: uppercase;
     }
 
     .score-display {
@@ -77,6 +75,7 @@ template.innerHTML = `
       color: var(--text);
       text-align: center;
       line-height: 1.4;
+      text-transform: uppercase;
     }
     .score-display .value { color: var(--green); }
     .score-display .rank  { color: var(--lavender); font-size: 0.85em; }
@@ -95,7 +94,12 @@ template.innerHTML = `
       letter-spacing: 0.08em;
       padding: 0 0.25rem 0.5rem;
       border-bottom: 1px solid var(--surface-0);
+      text-transform: uppercase;
     }
+
+    th.rank-col  { text-align: right; width: 2.5em; }
+    th.name-col  { padding-left: 0.75rem; }
+    th.score-col { text-align: right; }
 
     td {
       padding: 0.35rem 0.25rem;
@@ -151,6 +155,7 @@ template.innerHTML = `
       font-size: clamp(0.875rem, 3vw, 1.125rem);
       font-weight: 700;
       letter-spacing: 0.08em;
+      text-transform: uppercase;
       color: var(--base);
       background: var(--mauve);
       border: none;
@@ -159,8 +164,6 @@ template.innerHTML = `
       cursor: pointer;
       transition: background 0.15s, transform 0.1s;
       flex-shrink: 0;
-      align-self: center;
-      margin-top: 1rem;
     }
     button:hover  { background: var(--lavender); transform: scale(1.03); }
     button:active { transform: scale(0.97); }
@@ -176,7 +179,7 @@ template.innerHTML = `
 
     /* ── Compact landscape ─────────────────────────────────────────── */
     @media (max-height: 480px) {
-      .panel-scroll { gap: 0.5rem; }
+      .panel { gap: 0.4rem; }
       h2     { font-size: 1rem; }
       td, th { padding-top: 0.2rem; padding-bottom: 0.2rem; }
     }
@@ -186,46 +189,46 @@ template.innerHTML = `
 
     <!-- ── Start panel ───────────────────────────────────────── -->
     <div id="start-panel" class="panel">
-      <div class="panel-scroll">
-        <h2>HIGH SCORES</h2>
+      <h2>High scores</h2>
+      <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th style="text-align:right">#</th>
-              <th style="padding-left:0.75rem">NAME</th>
-              <th style="text-align:right">SCORE</th>
+              <th class="rank-col">#</th>
+              <th class="name-col">Name</th>
+              <th class="score-col">Score</th>
             </tr>
           </thead>
           <tbody id="top-tbody"></tbody>
         </table>
-        <p id="start-status" class="status-msg"></p>
       </div>
-      <button id="play-btn">PLAY</button>
+      <p id="start-status" class="status-msg"></p>
+      <button id="play-btn">Play</button>
     </div>
 
     <!-- ── Result panel ──────────────────────────────────────── -->
     <div id="result-panel" class="panel" hidden>
-      <div class="panel-scroll">
-        <h2>GAME OVER</h2>
-        <div class="score-display">
-          <div>SCORE <span id="final-score" class="value"></span></div>
-          <div id="rank-preview" class="rank"></div>
-        </div>
+      <h2>Game over</h2>
+      <div class="score-display">
+        <div>Score <span id="final-score" class="value"></span></div>
+        <div id="rank-preview" class="rank"></div>
+      </div>
 
+      <div class="table-wrapper">
         <table>
           <thead>
             <tr>
-              <th style="text-align:right">#</th>
-              <th style="padding-left:0.75rem">NAME</th>
-              <th style="text-align:right">SCORE</th>
+              <th class="rank-col">#</th>
+              <th class="name-col">Name</th>
+              <th class="score-col">Score</th>
             </tr>
           </thead>
           <tbody id="result-tbody"></tbody>
         </table>
-
-        <p id="submit-status" class="status-msg"></p>
       </div>
-      <button id="play-again-btn" hidden>PLAY AGAIN</button>
+
+      <p id="submit-status" class="status-msg"></p>
+      <button id="play-again-btn" hidden>Play again</button>
     </div>
 
   </div>
@@ -403,7 +406,7 @@ export class PongScoreboard extends HTMLElement {
       `;
       tr.querySelector('.name-col').appendChild(this.#nameInput);
       tbody.appendChild(tr);
-      rankPreview.textContent = 'RANK #1';
+      rankPreview.textContent = 'Rank #1';
       this.#nameInput.focus();
       return;
     }
@@ -413,8 +416,8 @@ export class PongScoreboard extends HTMLElement {
     const pendingRank = topScores.filter(s => s.score > playerScore).length + 1;
 
     rankPreview.textContent = pendingRank <= topScores.length || topScores.length < 10
-      ? `RANK #${pendingRank} (EST.)`
-      : `OUTSIDE TOP ${topScores.length}`;
+      ? `Rank #${pendingRank} (est.)`
+      : `Outside top ${topScores.length}`;
 
     // Build merged list with pending row spliced in
     const allRows = topScores.map(s => ({ ...s, isPending: false }));
@@ -480,13 +483,13 @@ export class PongScoreboard extends HTMLElement {
         : null;
 
       if (result) {
-        rankPrev.textContent = `RANK #${result.rank}`;
+        rankPrev.textContent = `Rank #${result.rank}`;
         this.#renderResultTable(null, result.context);
       } else {
-        rankPrev.textContent = rankPrev.textContent.replace(' (EST.)', '');
+        rankPrev.textContent = rankPrev.textContent.replace(' (est.)', '');
         // Replace pending row with confirmed name
         this.#renderResultTable(null, [{
-          rank: parseInt(rankPrev.textContent.replace('RANK #', ''), 10) || 1,
+          rank: parseInt(rankPrev.textContent.replace('Rank #', ''), 10) || 1,
           name,
           score: this.#score,
           isPlayer: true,
