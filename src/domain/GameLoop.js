@@ -68,7 +68,7 @@ export class GameLoop {
   // ── Stun / power-up state ───────────────────────────────────────────────
   #paddleStunnedUntil = 0;
   #wideUntil          = 0;
-  #shieldActive       = false;
+  #shieldBounces      = 0;   // ball-paddle hits remaining; 0 = no shield
   #isBonusRound       = false;
 
   constructor(render, audio, input, score) {
@@ -104,7 +104,7 @@ export class GameLoop {
     this.#ballSpeed          = INITIAL_SPEED;
     this.#paddleStunnedUntil = 0;
     this.#wideUntil          = 0;
-    this.#shieldActive       = false;
+    this.#shieldBounces      = 0;
     this.#isBonusRound       = false;
     this.#powerUpSystem.clear();
 
@@ -219,6 +219,7 @@ export class GameLoop {
       this.#score    += rallyScore(this.#gameSpeed);
       this.#score_update();
       this.#audio.play('paddle');
+      if (this.#shieldBounces > 0) this.#shieldBounces--;
       return;
     }
 
@@ -237,8 +238,8 @@ export class GameLoop {
     this.#ghostSystem.move(VIRTUAL_H, this.#fieldW, this.#paddle.x, (this.#gameSpeed / 4) * timeScale);
 
     if (this.#ghostSystem.checkPaddleCollision(this.#paddle)) {
-      if (this.#shieldActive) {
-        this.#shieldActive = false;
+      if (this.#shieldBounces > 0) {
+        this.#shieldBounces = 0;
       } else if (this.#paddleStunnedUntil < now) {
         this.#paddleStunnedUntil = now + STUN_DURATION_MS;
       }
@@ -298,7 +299,7 @@ export class GameLoop {
         this.#paddle.h  = PADDLE_BASE_H * WIDE_SCALE;
         break;
       case 'shield':
-        this.#shieldActive = true;
+        this.#shieldBounces = 10;
         break;
       case 'slow':
         this.#ballSpeed = this.#gameSpeed;
@@ -351,7 +352,7 @@ export class GameLoop {
       ballState:     this.#ballState,
       ballReadySince: this.#ballReadySince,
       paddleStunnedUntil: this.#paddleStunnedUntil,
-      shieldActive:  this.#shieldActive,
+      shieldActive:  this.#shieldBounces > 0,
       isBonusRound:  this.#isBonusRound,
       now,
     };
