@@ -260,6 +260,7 @@ export class GameLoop {
       this.#alienSystem.aliens,
       VIRTUAL_H,
       this.#fieldW,
+      this.#gameSpeed,
     );
 
     if (this.#ballState === 'live') {
@@ -274,8 +275,12 @@ export class GameLoop {
       if (msResult) {
         this.#audio.play(msResult === 'killed' ? 'ghost' : 'paddle');
         if (msResult === 'killed') {
-          this.#score += MOTHERSHIP_KILL_SCORE;
+          // Mothership kill clears the level — no respawn
+          this.#score += MOTHERSHIP_KILL_SCORE + bonusClearScore(this.#level);
           this.#score_update();
+          this.#isBonusRound = false;
+          this.#advanceLevel(); // plays levelUp, resets mothership, spawns ghosts
+          return;
         }
       }
     }

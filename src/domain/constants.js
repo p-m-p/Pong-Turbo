@@ -66,17 +66,18 @@ export const MOTHERSHIP_H             = 20;
 export const MOTHERSHIP_HP            = 10;
 export const MOTHERSHIP_APPEAR_OFFSET = 50;   // alienOffsetX threshold before spawn
 export const MOTHERSHIP_ROAM_MARGIN   = 6;    // px gap left of formation left edge
+export const MOTHERSHIP_ENTRY_SPEED   = 2.5;  // vx sliding in from left edge
 export const MOTHERSHIP_ROAM_SPEED    = 1.0;  // vy magnitude while roaming / retreating
-export const MOTHERSHIP_CHARGE_SPEED  = 3.0;  // vx during charge
+export const MOTHERSHIP_CHARGE_SPEED  = 3.0;  // vx/vy during diagonal charge
 export const MOTHERSHIP_RETREAT_SPEED = 1.8;  // vx during retreat
 export const MOTHERSHIP_CHARGE_FRAC   = 2 / 3; // charge target: fieldW * this
-export const MOTHERSHIP_FIRE_MS       = 2500; // laser interval while roaming
-export const MOTHERSHIP_RAPID_FIRE_MS = 450;  // laser interval while charging
+export const MOTHERSHIP_FIRE_MS       = 3500; // laser interval while roaming
+export const MOTHERSHIP_RAPID_FIRE_MS = 800;  // laser interval while charging
 export const MOTHERSHIP_KILL_SCORE    = 5000;
 
-export const LASER_W     = 8;
-export const LASER_H     = 3;
-export const LASER_SPEED = 2.5;
+export const LASER_W          = 8;
+export const LASER_H          = 3;
+export const LASER_SPEED_MULT = 2.0; // laser speed = gameSpeed * this
 
 // ── Scoring ────────────────────────────────────────────────────────────────
 export const BONUS_COMPLETION_SCORE = 2000;
