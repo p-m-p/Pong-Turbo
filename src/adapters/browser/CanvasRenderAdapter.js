@@ -6,8 +6,9 @@ const CLR_PADDLE    = '#b4befe'; // lavender
 const CLR_TEXT      = '#cdd6f4'; // text
 const CLR_SHIELD    = '#89dceb'; // sky
 
-const MAX_PHYS_W = 1200;
-const MAX_PHYS_H = 800;
+const MAX_PHYS_W    = 1200;
+const MAX_PHYS_H    = 800;
+const MAX_ASPECT    = 1.6;  // canvas width : height — prevents over-wide field on landscape phones
 
 export class CanvasRenderAdapter {
   #canvas;
@@ -56,7 +57,7 @@ export class CanvasRenderAdapter {
       - parseFloat(style.paddingBottom);
 
     const physH = Math.min(Math.max(availH, 1), MAX_PHYS_H);
-    const physW = Math.min(Math.max(availW, 1), MAX_PHYS_W);
+    const physW = Math.min(Math.max(availW, 1), MAX_PHYS_W, physH * MAX_ASPECT);
 
     this.#dpr     = window.devicePixelRatio || 1;
     this.#scale   = physH / VIRTUAL_H;          // uniform, height-based
