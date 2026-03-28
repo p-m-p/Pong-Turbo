@@ -63,15 +63,17 @@ export class AlienSystem {
     const alive     = this.#aliens.length;
     const speedMult = 1 + (this.#totalAliens - alive) / this.#totalAliens;
 
+    // speedMult only on horizontal advance — vertical stays smooth
     this.#offsetX += ALIEN_ADVANCE_X * speedMult * timeScale;
-    this.#offsetY += this.#vy        * speedMult * timeScale;
+    this.#offsetY += this.#vy * timeScale;
 
-    if (this.#offsetY <= 0) {
-      this.#offsetY = 0;
+    // Reflect overshoot instead of hard-clamping (eliminates positional snap)
+    if (this.#offsetY < 0) {
+      this.#offsetY = -this.#offsetY;
       this.#vy      =  Math.abs(this.#vy);
     }
-    if (this.#offsetY + ALIEN_FORM_H >= canvasH) {
-      this.#offsetY = canvasH - ALIEN_FORM_H;
+    if (this.#offsetY + ALIEN_FORM_H > canvasH) {
+      this.#offsetY = 2 * (canvasH - ALIEN_FORM_H) - this.#offsetY;
       this.#vy      = -Math.abs(this.#vy);
     }
   }

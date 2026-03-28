@@ -1,8 +1,9 @@
 import { createBall }    from './entities/Ball.js';
 import { createPaddle }  from './entities/Paddle.js';
-import { GhostSystem }   from './systems/GhostSystem.js';
-import { AlienSystem }   from './systems/AlienSystem.js';
-import { PowerUpSystem } from './systems/PowerUpSystem.js';
+import { GhostSystem }     from './systems/GhostSystem.js';
+import { AlienSystem }     from './systems/AlienSystem.js';
+import { PowerUpSystem }   from './systems/PowerUpSystem.js';
+import { MotherShipSystem } from './systems/MotherShipSystem.js';
 import { moveBall, launchBall, checkPaddleHit, updateReadyBall } from './physics/ball.js';
 import { movePaddle }    from './physics/paddle.js';
 import {
@@ -26,6 +27,7 @@ import {
   STUN_DURATION_MS,
   WIDE_DURATION_MS,
   WIDE_SCALE,
+  MOTHERSHIP_KILL_SCORE,
 } from './constants.js';
 
 /**
@@ -48,6 +50,7 @@ export class GameLoop {
   #ghostSystem;
   #alienSystem;
   #powerUpSystem;
+  #motherShipSystem;
 
   // ── Field dimensions ────────────────────────────────────────────────────
   #fieldW = VIRTUAL_W;
@@ -77,8 +80,9 @@ export class GameLoop {
     this.#input        = input;
     this.#scorePort    = score;
     this.#ghostSystem  = new GhostSystem();
-    this.#alienSystem  = new AlienSystem();
-    this.#powerUpSystem = new PowerUpSystem();
+    this.#alienSystem     = new AlienSystem();
+    this.#powerUpSystem   = new PowerUpSystem();
+    this.#motherShipSystem = new MotherShipSystem();
   }
 
   /** Set the virtual field width before starting a new game. */
@@ -107,6 +111,7 @@ export class GameLoop {
     this.#shieldBounces      = 0;
     this.#isBonusRound       = false;
     this.#powerUpSystem.clear();
+    this.#motherShipSystem.reset();
 
     this.#paddle = createPaddle(
       this.#fieldW - 15,
@@ -248,12 +253,36 @@ export class GameLoop {
 
   #tickBonusRound(now, timeScale) {
     this.#alienSystem.move(VIRTUAL_H, timeScale);
+    this.#motherShipSystem.move(
+      now, timeScale,
+      this.#alienSystem.offsetX,
+      this.#alienSystem.offsetY,
+      this.#alienSystem.aliens,
+      VIRTUAL_H,
+      this.#fieldW,
+    );
+
     if (this.#ballState === 'live') {
       const killed = this.#alienSystem.checkCollision(this.#ball);
       if (killed > 0) {
         this.#score += alienKillScore(this.#level, this.#gameSpeed, killed);
         this.#score_update();
         this.#audio.play('ghost');
+      }
+
+      const msResult = this.#motherShipSystem.checkBallCollision(this.#ball);
+      if (msResult) {
+        this.#audio.play(msResult === 'killed' ? 'ghost' : 'paddle');
+        if (msResult === 'killed') {
+          this.#score += MOTHERSHIP_KILL_SCORE;
+          this.#score_update();
+        }
+      }
+    }
+
+    if (this.#motherShipSystem.checkLaserPaddleCollision(this.#paddle)) {
+      if (this.#paddleStunnedUntil < now) {
+        this.#paddleStunnedUntil = now + STUN_DURATION_MS;
       }
     }
 
@@ -279,6 +308,7 @@ export class GameLoop {
       this.#isBonusRound = true;
       this.#powerUpSystem.clear();
       this.#alienSystem.spawn(VIRTUAL_H);
+      this.#motherShipSystem.reset();
     } else {
       this.#ghostSystem.spawn();
     }
@@ -289,6 +319,7 @@ export class GameLoop {
     this.#level++;
     this.#gameSpeed += 2;
     this.#ballSpeed  = this.#gameSpeed;
+    this.#motherShipSystem.reset();
     this.#ghostSystem.spawn();
   }
 
@@ -354,6 +385,17 @@ export class GameLoop {
       paddleStunnedUntil: this.#paddleStunnedUntil,
       shieldActive:  this.#shieldBounces > 0,
       isBonusRound:  this.#isBonusRound,
+      motherShip: this.#motherShipSystem.active
+        ? {
+            x:     this.#motherShipSystem.x,
+            y:     this.#motherShipSystem.y,
+            w:     this.#motherShipSystem.w,
+            h:     this.#motherShipSystem.h,
+            hp:    this.#motherShipSystem.hp,
+            maxHp: this.#motherShipSystem.maxHp,
+          }
+        : null,
+      motherShipLasers: this.#motherShipSystem.lasers.map(l => ({ ...l })),
       now,
     };
   }

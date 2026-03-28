@@ -86,7 +86,11 @@ export class CanvasRenderAdapter {
     this.#drawPaddle(ctx, snapshot, s, now);
     this.#drawGhosts(ctx, snapshot, s);
     this.#drawPowerUps(ctx, snapshot, s, now);
-    if (snapshot.isBonusRound) this.#drawAliens(ctx, snapshot, s);
+    if (snapshot.isBonusRound) {
+      this.#drawAliens(ctx, snapshot, s);
+      if (snapshot.motherShip) this.#drawMotherShip(ctx, snapshot.motherShip, s);
+      if (snapshot.motherShipLasers?.length) this.#drawLasers(ctx, snapshot.motherShipLasers, s);
+    }
     if (snapshot.shieldActive) this.#drawShield(ctx, snapshot, s, now);
 
     ctx.restore();
@@ -433,6 +437,53 @@ export class CanvasRenderAdapter {
     ctx.arc(x + 10.5, y + 9.5, 1.5, 0, Math.PI * 2);
     ctx.arc(x + 17.5, y + 9.5, 1.5, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  #drawMotherShip(ctx, ms, s) {
+    const CLR = '#f38ba8'; // Catppuccin red
+    const { x, y, w, h } = ms;
+    const cx = x + w / 2;
+
+    ctx.save();
+    ctx.shadowBlur  = 14 * s;
+    ctx.shadowColor = CLR;
+    ctx.fillStyle   = CLR;
+
+    // Wide flat saucer body
+    ctx.beginPath();
+    ctx.ellipse(cx, y + h * 0.68, w / 2, h * 0.36, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Dome (upper half-ellipse)
+    ctx.beginPath();
+    ctx.ellipse(cx, y + h * 0.5, w * 0.26, h * 0.44, 0, Math.PI, 0);
+    ctx.fill();
+
+    // Dark cockpit window
+    ctx.shadowBlur = 0;
+    ctx.fillStyle  = '#1e1e2e';
+    ctx.beginPath();
+    ctx.ellipse(cx, y + h * 0.46, w * 0.12, h * 0.22, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // HP bar (above mothership)
+    const barY = y - 5;
+    ctx.fillStyle = '#313244';
+    ctx.fillRect(x, barY, w, 3);
+    ctx.fillStyle = CLR;
+    ctx.fillRect(x, barY, w * (ms.hp / ms.maxHp), 3);
+
+    ctx.restore();
+  }
+
+  #drawLasers(ctx, lasers, s) {
+    const CLR = '#f38ba8';
+    ctx.save();
+    ctx.shadowBlur  = 8 * s;
+    ctx.shadowColor = CLR;
+    ctx.fillStyle   = CLR;
+    for (const l of lasers) ctx.fillRect(l.x, l.y, l.w, l.h);
+    ctx.restore();
   }
 
   #drawShield(ctx, { paddle }, s, now) {
