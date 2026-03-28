@@ -11,6 +11,10 @@ import {
   INITIAL_SPEED,
   TARGET_FRAME_MS,
   ALIEN_HP,
+  MOTHERSHIP_HP,
+  MOTHERSHIP_KILL_SCORE,
+  MOTHERSHIP_W,
+  MOTHERSHIP_H,
 } from '../../src/domain/constants.js';
 
 // Helpers
@@ -290,5 +294,95 @@ describe('GameLoop — bonus round', () => {
     now = killAllAliens(loop, a, now);
     expect(loop.isBonusRound).toBe(false);
     expect(loop.level).toBe(4);
+  });
+});
+
+/**
+ * Keep the ball alive (parked at the left) until the mothership appears.
+ * Returns the next 'now' value.
+ */
+function waitForMothership(loop, adapters, startNow) {
+  let now = startNow;
+  for (let i = 0; i < 3000; i++) {
+    if (loop.ballState === 'live') {
+      loop.ball.x  = 10;
+      loop.ball.y  = VIRTUAL_H / 2;
+      loop.ball.dx = 1;
+      loop.ball.dy = 0;
+    }
+    loop.tick(now, 1);
+    now += TARGET_FRAME_MS;
+    const ms = adapters.render.lastFrame().motherShip;
+    if (ms && ms.x >= 0) return now;
+  }
+  throw new Error('mothership did not appear within 3000 ticks');
+}
+
+/**
+ * Hit the mothership MOTHERSHIP_HP times to kill it.
+ * Returns the next 'now' value.
+ */
+function killMothership(loop, adapters, startNow) {
+  let now = waitForMothership(loop, adapters, startNow);
+  for (let hit = 0; hit < MOTHERSHIP_HP; hit++) {
+    const ms = adapters.render.lastFrame().motherShip;
+    if (!ms) break;
+    loop.ball.x  = ms.x + 5;
+    loop.ball.y  = ms.y + 5;
+    loop.ball.dx = 5;
+    loop.ball.dy = 0;
+    loop.tick(now, 1);
+    now += TARGET_FRAME_MS;
+  }
+  return now;
+}
+
+describe('GameLoop — mothership', () => {
+  it('killing the mothership ends the bonus round', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    now = killAllGhosts(loop, a, now); // level 1 → 2
+    now = killAllGhosts(loop, a, now); // level 2 → 3 (bonus round)
+    expect(loop.isBonusRound).toBe(true);
+    killMothership(loop, a, now);
+    expect(loop.isBonusRound).toBe(false);
+  });
+
+  it('level advances after mothership kill', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    now = killAllGhosts(loop, a, now);
+    now = killAllGhosts(loop, a, now);
+    killMothership(loop, a, now);
+    expect(loop.level).toBe(4);
+  });
+
+  it('plays levelUp when mothership is killed', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    now = killAllGhosts(loop, a, now);
+    now = killAllGhosts(loop, a, now);
+    a.audio.calls.length = 0; // clear prior audio calls
+    killMothership(loop, a, now);
+    expect(a.audio.played('levelUp')).toBe(true);
+  });
+
+  it('awards MOTHERSHIP_KILL_SCORE + bonusClearScore on kill', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    let now = waitForLaunch(loop, 0);
+    now = killAllGhosts(loop, a, now);
+    now = killAllGhosts(loop, a, now);
+    const scoreBefore = loop.scoreValue;
+    killMothership(loop, a, now);
+    // bonusClearScore(3) = 2000 × 3 = 6000; MOTHERSHIP_KILL_SCORE = 5000
+    expect(loop.scoreValue - scoreBefore).toBeGreaterThanOrEqual(MOTHERSHIP_KILL_SCORE + 6000);
   });
 });
