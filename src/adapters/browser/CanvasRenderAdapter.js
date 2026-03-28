@@ -10,6 +10,9 @@ const MAX_PHYS_W    = 1200;
 const MAX_PHYS_H    = 800;
 const MAX_ASPECT    = 1.6;  // canvas width : height — prevents over-wide field on landscape phones
 
+const FADE_FRAMES     = 15;  // frames to fade in new-level entities
+const PARTICLE_LIFE   = 25;  // frames a particle lives
+
 export class CanvasRenderAdapter {
   #canvas;
   #wrap;
@@ -19,6 +22,22 @@ export class CanvasRenderAdapter {
   #scale    = 1;
   #virtualW = VIRTUAL_W;
   #dpr      = 1;
+
+  // ── Particle system ────────────────────────────────────────────────────
+  #particles    = [];
+
+  // ── Kill-event detection ───────────────────────────────────────────────
+  #prevGhostCount  = 0;
+  #prevGhosts      = [];   // [{ x, y, w, h, color }]
+  #prevAlienCount  = 0;
+  #prevAliens      = [];   // [{ x, y, color }]
+  #prevMotherShip  = null; // { x, y, w, h } | null
+
+  // ── Level-fade transition ──────────────────────────────────────────────
+  #prevLevel   = 1;
+  #fadeAlpha   = 1;     // alpha applied to new-wave entities
+  #fadingIn    = false; // true while fade-in is in progress
+  #fadeFrame   = 0;     // frames elapsed since fade started
 
   /**
    * @param {HTMLCanvasElement} canvas
@@ -78,6 +97,9 @@ export class CanvasRenderAdapter {
     const dpr = this.#dpr;
     const now = snapshot.now;
 
+    this.#detectKillsAndSpawnParticles(snapshot);
+    this.#tickLevelFade(snapshot);
+
     ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
     ctx.save();
     ctx.scale(s * dpr, s * dpr);
@@ -93,8 +115,11 @@ export class CanvasRenderAdapter {
     }
     if (snapshot.shieldActive) this.#drawShield(ctx, snapshot, s, now);
 
+    this.#tickAndDrawParticles(ctx, s);
+
     ctx.restore();
 
+    this.#saveFrameState(snapshot);
     this.#updateTouchKnob(snapshot);
   }
 
@@ -148,7 +173,7 @@ export class CanvasRenderAdapter {
   #drawGhosts(ctx, { ghosts }, s) {
     for (const g of ghosts) {
       ctx.save();
-      ctx.globalAlpha = g.state === 'retreating' ? 0.5 : 1;
+      ctx.globalAlpha = (g.state === 'retreating' ? 0.5 : 1) * this.#fadeAlpha;
       this.#drawGhostShape(ctx, g, s);
       ctx.restore();
     }
@@ -292,7 +317,7 @@ export class CanvasRenderAdapter {
     ctx.translate(alienOffsetX, alienOffsetY);
     for (const a of aliens) {
       ctx.save();
-      ctx.globalAlpha = 0.4 + 0.6 * (a.hp / a.maxHp);
+      ctx.globalAlpha = (0.4 + 0.6 * (a.hp / a.maxHp)) * this.#fadeAlpha;
       ctx.shadowBlur  = 10 * s;
       ctx.shadowColor = a.color;
       ctx.fillStyle   = a.color;
@@ -437,6 +462,131 @@ export class CanvasRenderAdapter {
     ctx.arc(x + 10.5, y + 9.5, 1.5, 0, Math.PI * 2);
     ctx.arc(x + 17.5, y + 9.5, 1.5, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // ── Particle & transition helpers ─────────────────────────────────────
+
+  #detectKillsAndSpawnParticles(snapshot) {
+    const { ghosts, aliens, ball, motherShip, isBonusRound } = snapshot;
+    const bx = ball.x + ball.w / 2;
+    const by = ball.y + ball.h / 2;
+
+    // Ghost kills
+    const ghostKills = this.#prevGhostCount - ghosts.length;
+    if (ghostKills > 0) {
+      const remaining = [...this.#prevGhosts];
+      for (let k = 0; k < ghostKills; k++) {
+        let closest = remaining[0];
+        let bestD = Infinity;
+        let bestIdx = 0;
+        for (let i = 0; i < remaining.length; i++) {
+          const g = remaining[i];
+          const d = (g.x + g.w / 2 - bx) ** 2 + (g.y + g.h / 2 - by) ** 2;
+          if (d < bestD) { bestD = d; closest = g; bestIdx = i; }
+        }
+        if (closest) {
+          this.#spawnBurst(bx, by, closest.color, 8);
+          remaining.splice(bestIdx, 1);
+        }
+      }
+    }
+
+    // Alien kills (bonus round — aliens use local coords; ball is in world space)
+    if (isBonusRound) {
+      const alienKills = this.#prevAlienCount - aliens.length;
+      if (alienKills > 0) {
+        const oX = snapshot.alienOffsetX;
+        const oY = snapshot.alienOffsetY;
+        const remaining = [...this.#prevAliens];
+        for (let k = 0; k < alienKills; k++) {
+          let closest = remaining[0];
+          let bestD = Infinity;
+          let bestIdx = 0;
+          for (let i = 0; i < remaining.length; i++) {
+            const a = remaining[i];
+            const wx = a.x + oX + a.w / 2;
+            const wy = a.y + oY + a.h / 2;
+            const d  = (wx - bx) ** 2 + (wy - by) ** 2;
+            if (d < bestD) { bestD = d; closest = a; bestIdx = i; }
+          }
+          if (closest) {
+            this.#spawnBurst(bx, by, closest.color, 8);
+            remaining.splice(bestIdx, 1);
+          }
+        }
+      }
+    }
+
+    // Mothership kill
+    if (this.#prevMotherShip && !motherShip) {
+      const ms = this.#prevMotherShip;
+      this.#spawnBurst(ms.x + ms.w / 2, ms.y + ms.h / 2, '#f38ba8', 20);
+    }
+  }
+
+  #spawnBurst(cx, cy, color, count) {
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const spd   = 1.5 + Math.random() * 2.5;
+      this.#particles.push({
+        x:       cx,
+        y:       cy,
+        vx:      Math.cos(angle) * spd,
+        vy:      Math.sin(angle) * spd,
+        color,
+        life:    PARTICLE_LIFE,
+        maxLife: PARTICLE_LIFE,
+        size:    Math.random() < 0.5 ? 2 : 3,
+      });
+    }
+  }
+
+  #tickAndDrawParticles(ctx, s) {
+    for (let i = this.#particles.length - 1; i >= 0; i--) {
+      const p = this.#particles[i];
+      p.vy  += 0.04;
+      p.x   += p.vx;
+      p.y   += p.vy;
+      p.life--;
+      if (p.life <= 0) { this.#particles.splice(i, 1); continue; }
+
+      ctx.globalAlpha = p.life / p.maxLife;
+      ctx.shadowBlur  = 4 * s;
+      ctx.shadowColor = p.color;
+      ctx.fillStyle   = p.color;
+      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+    }
+    ctx.globalAlpha = 1;
+    ctx.shadowBlur  = 0;
+  }
+
+  #tickLevelFade(snapshot) {
+    if (snapshot.level > this.#prevLevel) {
+      this.#fadeAlpha  = 0;
+      this.#fadeFrame  = 0;
+      this.#fadingIn   = snapshot.ball.x > this.#virtualW / 2;
+      this.#prevLevel  = snapshot.level;
+    }
+
+    if (!this.#fadingIn && this.#fadeAlpha < 1) {
+      if (snapshot.ball.x > this.#virtualW / 2) this.#fadingIn = true;
+    }
+
+    if (this.#fadingIn && this.#fadeAlpha < 1) {
+      this.#fadeFrame++;
+      this.#fadeAlpha = Math.min(1, this.#fadeFrame / FADE_FRAMES);
+      if (this.#fadeAlpha >= 1) this.#fadingIn = false;
+    }
+  }
+
+  #saveFrameState(snapshot) {
+    this.#prevGhostCount = snapshot.ghosts.length;
+    this.#prevGhosts     = snapshot.ghosts.map(g => ({ x: g.x, y: g.y, w: g.w, h: g.h, color: g.color }));
+    this.#prevAlienCount = snapshot.aliens.length;
+    this.#prevAliens     = snapshot.aliens.map(a => ({
+      x: a.x, y: a.y, w: a.w, h: a.h, color: a.color,
+    }));
+    this.#prevMotherShip = snapshot.motherShip ? { ...snapshot.motherShip } : null;
   }
 
   #drawMotherShip(ctx, ms, s) {

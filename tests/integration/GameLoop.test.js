@@ -1,9 +1,12 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
 import { GameLoop }                  from '../../src/domain/GameLoop.js';
 import { RecordingRenderAdapter }    from '../../src/adapters/test/RecordingRenderAdapter.js';
 import { NullAudioAdapter }          from '../../src/adapters/test/NullAudioAdapter.js';
 import { ScriptedInputAdapter }      from '../../src/adapters/test/ScriptedInputAdapter.js';
 import { MemoryScoreAdapter }        from '../../src/adapters/test/MemoryScoreAdapter.js';
+import { PowerUpSystem }             from '../../src/domain/systems/PowerUpSystem.js';
+import { PowerUp }                   from '../../src/domain/entities/PowerUp.js';
+import { GhostSystem }               from '../../src/domain/systems/GhostSystem.js';
 import {
   VIRTUAL_W,
   VIRTUAL_H,
@@ -15,6 +18,8 @@ import {
   MOTHERSHIP_KILL_SCORE,
   MOTHERSHIP_W,
   MOTHERSHIP_H,
+  BALL_SIZE,
+  POWERUP_GRACE_MS,
 } from '../../src/domain/constants.js';
 
 // Helpers
@@ -384,5 +389,122 @@ describe('GameLoop — mothership', () => {
     killMothership(loop, a, now);
     // bonusClearScore(3) = 2000 × 3 = 6000; MOTHERSHIP_KILL_SCORE = 5000
     expect(loop.scoreValue - scoreBefore).toBeGreaterThanOrEqual(MOTHERSHIP_KILL_SCORE + 6000);
+  });
+});
+
+// ── Shield power-up ───────────────────────────────────────────────────────────
+
+/**
+ * Spy on PowerUpSystem.trySpawn so it always injects a shield power-up that is
+ * immediately collectible (born = now - POWERUP_GRACE_MS).
+ */
+function spyShield() {
+  return vi.spyOn(PowerUpSystem.prototype, 'trySpawn').mockImplementation(
+    function spawnShield(cx, cy, _killCount, now) {
+      this.powerUps.push(new PowerUp(cx, cy, 'shield', now - POWERUP_GRACE_MS));
+    },
+  );
+}
+
+/**
+ * Kill a ghost and ensure the injected shield power-up is collected.
+ * The power-up may be collected in the same tick as the kill (if the ball
+ * overlaps it) or require a follow-up tick. Returns the next 'now' value.
+ */
+function collectShield(loop, adapters, startNow) {
+  let now = startNow;
+  // Kill a ghost — spy guarantees a shield drop at the ghost's centre
+  const g = adapters.render.lastFrame().ghosts[0];
+  if (!g) throw new Error('no ghosts available');
+  loop.ball.x  = g.x + 2;
+  loop.ball.y  = g.y + 5;
+  loop.ball.dx = 0;
+  loop.ball.dy = 0;
+  loop.tick(now++, 1);
+  // The power-up may already be collected (ball overlapped it in the same tick)
+  const pu = adapters.render.lastFrame().powerUps[0];
+  if (pu) {
+    // Power-up still live — move ball onto it and collect
+    loop.ball.x  = pu.x + 1;
+    loop.ball.y  = pu.y + 1;
+    loop.ball.dx = 0;
+    loop.ball.dy = 0;
+    loop.tick(now++, 1);
+  }
+  // Either way, the shield should now be active
+  return now;
+}
+
+describe('GameLoop — shield power-up', () => {
+  afterEach(() => { vi.restoreAllMocks(); });
+
+  it('activates after collecting a shield power-up', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    spyShield();
+    let now = waitForLaunch(loop, 0);
+    loop.tick(now++, 1); // ensure a frame with ghosts
+    collectShield(loop, a, now);
+    expect(a.render.lastFrame().shieldActive).toBe(true);
+  });
+
+  it('remains active after 9 ball-paddle bounces', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    spyShield();
+    let now = waitForLaunch(loop, 0);
+    loop.tick(now++, 1);
+    now = collectShield(loop, a, now);
+
+    // Simulate 9 paddle hits by positioning ball on paddle each tick
+    for (let i = 0; i < 9; i++) {
+      loop.ball.x  = loop.paddle.x - BALL_SIZE + 1;
+      loop.ball.y  = loop.paddle.y + loop.paddle.h / 2;
+      loop.ball.dx = INITIAL_SPEED;
+      loop.ball.dy = 0;
+      loop.tick(now++, 1);
+    }
+    expect(a.render.lastFrame().shieldActive).toBe(true);
+  });
+
+  it('expires after 10 ball-paddle bounces', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    spyShield();
+    let now = waitForLaunch(loop, 0);
+    loop.tick(now++, 1);
+    now = collectShield(loop, a, now);
+
+    // Simulate 10 paddle hits
+    for (let i = 0; i < 10; i++) {
+      loop.ball.x  = loop.paddle.x - BALL_SIZE + 1;
+      loop.ball.y  = loop.paddle.y + loop.paddle.h / 2;
+      loop.ball.dx = INITIAL_SPEED;
+      loop.ball.dy = 0;
+      loop.tick(now++, 1);
+    }
+    expect(a.render.lastFrame().shieldActive).toBe(false);
+  });
+
+  it('drains instantly on a ghost-paddle collision (no stun)', () => {
+    const a    = makeAdapters();
+    const loop = makeLoop(a);
+    loop.startNewGame(0);
+    spyShield();
+    let now = waitForLaunch(loop, 0);
+    loop.tick(now++, 1);
+    now = collectShield(loop, a, now);
+
+    // Force a ghost-paddle collision by spying on GhostSystem
+    const ghostSpy = vi.spyOn(GhostSystem.prototype, 'checkPaddleCollision').mockReturnValueOnce(true);
+    loop.tick(now++, 1);
+    ghostSpy.mockRestore();
+
+    // Shield absorbed the ghost hit — should be gone, paddle NOT stunned
+    expect(a.render.lastFrame().shieldActive).toBe(false);
+    expect(a.render.lastFrame().paddleStunnedUntil).toBeLessThanOrEqual(now);
   });
 });
