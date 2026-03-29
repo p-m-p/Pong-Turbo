@@ -153,7 +153,7 @@ describe('MotherShipSystem — checkBallCollision()', () => {
     expect(sys.hp).toBe(MOTHERSHIP_HP - 1);
   });
 
-  it('always bounces ball dx negative', () => {
+  it('bounces ball left when approaching from the left (dx positive)', () => {
     const sys = new MotherShipSystem();
     advanceTo(sys, 'entering');
     const ball = makeBall({ x: sys.x + 5, y: sys.y + 5, dx: 8 });
@@ -161,12 +161,22 @@ describe('MotherShipSystem — checkBallCollision()', () => {
     expect(ball.dx).toBe(-8);
   });
 
-  it('bounces ball left even if dx was already negative', () => {
+  it('bounces ball right when approaching from the right (dx negative)', () => {
     const sys = new MotherShipSystem();
     advanceTo(sys, 'entering');
     const ball = makeBall({ x: sys.x + 5, y: sys.y + 5, dx: -8 });
     sys.checkBallCollision(ball);
-    expect(ball.dx).toBeLessThan(0);
+    expect(ball.dx).toBeGreaterThan(0);
+  });
+
+  it('pushes ball clear of the mothership after a hit', () => {
+    const sys = new MotherShipSystem();
+    advanceTo(sys, 'entering');
+    const ball = makeBall({ x: sys.x + 5, y: sys.y + 5, dx: -8 });
+    sys.checkBallCollision(ball);
+    // Ball must no longer overlap the mothership bbox
+    expect(ball.x + ball.w).toBeLessThanOrEqual(sys.x + MOTHERSHIP_W + ball.w + 1);
+    expect(ball.x).toBeGreaterThanOrEqual(sys.x + MOTHERSHIP_W);
   });
 
   it('returns "killed" after MOTHERSHIP_HP hits and goes dormant', () => {

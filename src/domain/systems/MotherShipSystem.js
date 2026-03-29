@@ -87,7 +87,16 @@ export class MotherShipSystem {
     const ms = { x: this.#x, y: this.#y, w: MOTHERSHIP_W, h: MOTHERSHIP_H };
     if (!aabb(ball, ms)) return null;
 
-    ball.dx = -Math.abs(ball.dx);
+    // Bounce ball away and push it clear so it can't register multiple hits
+    if (ball.dx <= 0) {
+      // Approaching from right — bounce right
+      ball.dx = Math.abs(ball.dx);
+      ball.x  = this.#x + MOTHERSHIP_W;
+    } else {
+      // Approaching from left — bounce left
+      ball.dx = -Math.abs(ball.dx);
+      ball.x  = this.#x - ball.w;
+    }
     this.#hp--;
     if (this.#hp <= 0) {
       this.#state  = 'dormant';

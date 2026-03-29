@@ -310,9 +310,11 @@ function waitForMothership(loop, adapters, startNow) {
   let now = startNow;
   for (let i = 0; i < 3000; i++) {
     if (loop.ballState === 'live') {
+      // Park below the visible field (y > VIRTUAL_H) so the ball cannot collide
+      // with the entering mothership and drain its HP before it becomes visible.
       loop.ball.x  = 10;
-      loop.ball.y  = VIRTUAL_H / 2;
-      loop.ball.dx = 1;
+      loop.ball.y  = VIRTUAL_H + 100;
+      loop.ball.dx = 0;
       loop.ball.dy = 0;
     }
     loop.tick(now, 1);

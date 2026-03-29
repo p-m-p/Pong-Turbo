@@ -63,7 +63,7 @@ export const ALIEN_FORM_H    = ALIEN_ROWS * ALIEN_H + (ALIEN_ROWS - 1) * ALIEN_V
 // ── Mothership (bonus round) ────────────────────────────────────────────────
 export const MOTHERSHIP_W             = 52;
 export const MOTHERSHIP_H             = 20;
-export const MOTHERSHIP_HP            = 10;
+export const MOTHERSHIP_HP            = 5;
 export const MOTHERSHIP_APPEAR_OFFSET = 50;   // alienOffsetX threshold before spawn
 export const MOTHERSHIP_ROAM_MARGIN   = 6;    // px gap left of formation left edge
 export const MOTHERSHIP_ENTRY_SPEED   = 2.5;  // vx sliding in from left edge
