@@ -1,4 +1,4 @@
-import { VIRTUAL_W, VIRTUAL_H } from '../../domain/constants.js';
+import { VIRTUAL_W, VIRTUAL_H, TARGET_FRAME_MS } from '../../domain/constants.js';
 
 // Catppuccin Mocha
 const CLR_BALL      = '#cba6f7'; // mauve
@@ -10,8 +10,11 @@ const MAX_PHYS_W    = 1200;
 const MAX_PHYS_H    = 800;
 const MAX_ASPECT    = 1.6;  // canvas width : height — prevents over-wide field on landscape phones
 
-const FADE_FRAMES     = 15;  // frames to fade in new-level entities
-const PARTICLE_LIFE   = 25;  // frames a particle lives
+const FADE_DURATION_MS     = 500;   // ms to fade in new-level entities
+const PARTICLE_DURATION_MS = 800;   // ms a particle lives
+// Pre-compute per-ms equivalents of the original per-frame speeds
+const PARTICLE_SPEED_MS    = 1 / TARGET_FRAME_MS;   // 1 virtual-unit/frame → per ms
+const PARTICLE_GRAV_MS2    = 0.04 / (TARGET_FRAME_MS * TARGET_FRAME_MS); // gravity per ms²
 
 export class CanvasRenderAdapter {
   #canvas;
@@ -34,10 +37,9 @@ export class CanvasRenderAdapter {
   #prevMotherShip  = null; // { x, y, w, h } | null
 
   // ── Level-fade transition ──────────────────────────────────────────────
-  #prevLevel   = 1;
-  #fadeAlpha   = 1;     // alpha applied to new-wave entities
-  #fadingIn    = false; // true while fade-in is in progress
-  #fadeFrame   = 0;     // frames elapsed since fade started
+  #prevLevel    = 1;
+  #fadeAlpha    = 1;  // alpha applied to new-wave entities (1 = fully visible)
+  #fadeStartAt  = -1; // snapshot.now when fade-in began; -1 = waiting for ball to cross mid
 
   /**
    * @param {HTMLCanvasElement} canvas
@@ -115,7 +117,7 @@ export class CanvasRenderAdapter {
     }
     if (snapshot.shieldActive) this.#drawShield(ctx, snapshot, s, now);
 
-    this.#tickAndDrawParticles(ctx, s);
+    this.#tickAndDrawParticles(ctx, s, now);
 
     ctx.restore();
 
@@ -135,7 +137,7 @@ export class CanvasRenderAdapter {
     ctx.font         = `bold 16px 'Play', sans-serif`;
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowBlur   = 12 * s;
+    ctx.shadowBlur  = 8;
     ctx.shadowColor  = CLR_BALL;
     ctx.fillText('Game over  ·  press Enter to play again', this.#virtualW / 2, VIRTUAL_H / 2);
     ctx.restore();
@@ -148,7 +150,7 @@ export class CanvasRenderAdapter {
       ? 0.25 + 0.75 * Math.abs(Math.sin((now - ballReadySince) * 0.005))
       : 1;
     ctx.globalAlpha = alpha;
-    ctx.shadowBlur  = 10 * s;
+    ctx.shadowBlur  = 8;
     ctx.shadowColor = CLR_BALL;
     ctx.fillStyle   = CLR_BALL;
     ctx.fillRect(ball.x, ball.y, ball.w, ball.h);
@@ -162,7 +164,7 @@ export class CanvasRenderAdapter {
       ? 0.55 + 0.45 * Math.sin(now * 0.019)
       : 1;
     ctx.globalAlpha = alpha;
-    ctx.shadowBlur  = 10 * s;
+    ctx.shadowBlur  = 8;
     ctx.shadowColor = CLR_PADDLE;
     ctx.fillStyle   = CLR_PADDLE;
     ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
@@ -186,7 +188,7 @@ export class CanvasRenderAdapter {
     const skirtY   = y + h * 0.76;
 
     // Glow
-    ctx.shadowBlur  = 14 * s;
+    ctx.shadowBlur  = 8;
     ctx.shadowColor = color;
 
     // Body
@@ -272,7 +274,7 @@ export class CanvasRenderAdapter {
 
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.shadowBlur  = 12 * s;
+      ctx.shadowBlur  = 8;
       ctx.shadowColor = color;
       ctx.fillStyle   = color;
       ctx.beginPath();
@@ -318,7 +320,7 @@ export class CanvasRenderAdapter {
     for (const a of aliens) {
       ctx.save();
       ctx.globalAlpha = (0.4 + 0.6 * (a.hp / a.maxHp)) * this.#fadeAlpha;
-      ctx.shadowBlur  = 10 * s;
+      ctx.shadowBlur  = 8;
       ctx.shadowColor = a.color;
       ctx.fillStyle   = a.color;
       switch (a.type) {
@@ -467,7 +469,7 @@ export class CanvasRenderAdapter {
   // ── Particle & transition helpers ─────────────────────────────────────
 
   #detectKillsAndSpawnParticles(snapshot) {
-    const { ghosts, aliens, ball, motherShip, isBonusRound } = snapshot;
+    const { ghosts, aliens, ball, motherShip, isBonusRound, now } = snapshot;
     const bx = ball.x + ball.w / 2;
     const by = ball.y + ball.h / 2;
 
@@ -485,7 +487,7 @@ export class CanvasRenderAdapter {
           if (d < bestD) { bestD = d; closest = g; bestIdx = i; }
         }
         if (closest) {
-          this.#spawnBurst(bx, by, closest.color, 8);
+          this.#spawnBurst(bx, by, closest.color, 8, now);
           remaining.splice(bestIdx, 1);
         }
       }
@@ -510,7 +512,7 @@ export class CanvasRenderAdapter {
             if (d < bestD) { bestD = d; closest = a; bestIdx = i; }
           }
           if (closest) {
-            this.#spawnBurst(bx, by, closest.color, 8);
+            this.#spawnBurst(bx, by, closest.color, 8, now);
             remaining.splice(bestIdx, 1);
           }
         }
@@ -520,62 +522,59 @@ export class CanvasRenderAdapter {
     // Mothership kill
     if (this.#prevMotherShip && !motherShip) {
       const ms = this.#prevMotherShip;
-      this.#spawnBurst(ms.x + ms.w / 2, ms.y + ms.h / 2, '#f38ba8', 20);
+      this.#spawnBurst(ms.x + ms.w / 2, ms.y + ms.h / 2, '#f38ba8', 20, now);
     }
   }
 
-  #spawnBurst(cx, cy, color, count) {
+  #spawnBurst(cx, cy, color, count, now) {
     for (let i = 0; i < count; i++) {
-      const angle = Math.random() * Math.PI * 2;
-      const spd   = 1.5 + Math.random() * 2.5;
+      const angle  = Math.random() * Math.PI * 2;
+      const spdPxF = 1.5 + Math.random() * 2.5;   // virtual px per frame at 30fps
+      const spd    = spdPxF * PARTICLE_SPEED_MS;   // convert to px per ms
       this.#particles.push({
-        x:       cx,
-        y:       cy,
+        x0:      cx,
+        y0:      cy,
         vx:      Math.cos(angle) * spd,
         vy:      Math.sin(angle) * spd,
         color,
-        life:    PARTICLE_LIFE,
-        maxLife: PARTICLE_LIFE,
+        born:    now,
         size:    Math.random() < 0.5 ? 2 : 3,
       });
     }
   }
 
-  #tickAndDrawParticles(ctx, s) {
+  #tickAndDrawParticles(ctx, s, now) {
     for (let i = this.#particles.length - 1; i >= 0; i--) {
-      const p = this.#particles[i];
-      p.vy  += 0.04;
-      p.x   += p.vx;
-      p.y   += p.vy;
-      p.life--;
-      if (p.life <= 0) { this.#particles.splice(i, 1); continue; }
+      const p   = this.#particles[i];
+      const age = now - p.born;
+      if (age >= PARTICLE_DURATION_MS) { this.#particles.splice(i, 1); continue; }
 
-      ctx.globalAlpha = p.life / p.maxLife;
-      ctx.shadowBlur  = 4 * s;
-      ctx.shadowColor = p.color;
+      const x     = p.x0 + p.vx * age;
+      const y     = p.y0 + p.vy * age + 0.5 * PARTICLE_GRAV_MS2 * age * age;
+      const alpha = 1 - age / PARTICLE_DURATION_MS;
+
+      ctx.globalAlpha = alpha;
       ctx.fillStyle   = p.color;
-      ctx.fillRect(p.x - p.size / 2, p.y - p.size / 2, p.size, p.size);
+      ctx.fillRect(x - p.size / 2, y - p.size / 2, p.size, p.size);
     }
     ctx.globalAlpha = 1;
-    ctx.shadowBlur  = 0;
   }
 
   #tickLevelFade(snapshot) {
-    if (snapshot.level > this.#prevLevel) {
-      this.#fadeAlpha  = 0;
-      this.#fadeFrame  = 0;
-      this.#fadingIn   = snapshot.ball.x > this.#virtualW / 2;
-      this.#prevLevel  = snapshot.level;
+    const { level, ball, now } = snapshot;
+
+    if (level > this.#prevLevel) {
+      this.#fadeAlpha   = 0;
+      this.#fadeStartAt = ball.x > this.#virtualW / 2 ? now : -1;
+      this.#prevLevel   = level;
     }
 
-    if (!this.#fadingIn && this.#fadeAlpha < 1) {
-      if (snapshot.ball.x > this.#virtualW / 2) this.#fadingIn = true;
+    if (this.#fadeStartAt < 0 && this.#fadeAlpha < 1) {
+      if (ball.x > this.#virtualW / 2) this.#fadeStartAt = now;
     }
 
-    if (this.#fadingIn && this.#fadeAlpha < 1) {
-      this.#fadeFrame++;
-      this.#fadeAlpha = Math.min(1, this.#fadeFrame / FADE_FRAMES);
-      if (this.#fadeAlpha >= 1) this.#fadingIn = false;
+    if (this.#fadeStartAt >= 0 && this.#fadeAlpha < 1) {
+      this.#fadeAlpha = Math.min(1, (now - this.#fadeStartAt) / FADE_DURATION_MS);
     }
   }
 
@@ -595,7 +594,7 @@ export class CanvasRenderAdapter {
     const cx = x + w / 2;
 
     ctx.save();
-    ctx.shadowBlur  = 14 * s;
+    ctx.shadowBlur  = 8;
     ctx.shadowColor = CLR;
     ctx.fillStyle   = CLR;
 
@@ -616,12 +615,17 @@ export class CanvasRenderAdapter {
     ctx.ellipse(cx, y + h * 0.46, w * 0.12, h * 0.22, 0, 0, Math.PI * 2);
     ctx.fill();
 
-    // HP bar (above mothership)
-    const barY = y - 5;
-    ctx.fillStyle = '#313244';
+    // HP bar (above mothership): green → yellow → red
+    const barY    = y - 5;
+    const hpFrac  = ms.hp / ms.maxHp;
+    const barClr  = hpFrac > 2 / 3 ? '#a6e3a1'   // green
+                  : hpFrac > 1 / 3 ? '#f9e2af'   // yellow
+                  :                  '#f38ba8';   // red
+    ctx.shadowBlur = 0;
+    ctx.fillStyle  = '#313244';
     ctx.fillRect(x, barY, w, 3);
-    ctx.fillStyle = CLR;
-    ctx.fillRect(x, barY, w * (ms.hp / ms.maxHp), 3);
+    ctx.fillStyle  = barClr;
+    ctx.fillRect(x, barY, w * hpFrac, 3);
 
     ctx.restore();
   }
@@ -629,7 +633,7 @@ export class CanvasRenderAdapter {
   #drawLasers(ctx, lasers, s) {
     const CLR = '#f38ba8';
     ctx.save();
-    ctx.shadowBlur  = 8 * s;
+    ctx.shadowBlur  = 8;
     ctx.shadowColor = CLR;
     ctx.fillStyle   = CLR;
     for (const l of lasers) ctx.fillRect(l.x, l.y, l.w, l.h);
@@ -638,7 +642,7 @@ export class CanvasRenderAdapter {
 
   #drawShield(ctx, { paddle }, s, now) {
     ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(now * 0.004));
-    ctx.shadowBlur  = 16 * s;
+    ctx.shadowBlur  = 8;
     ctx.shadowColor = CLR_SHIELD;
     ctx.strokeStyle = CLR_SHIELD;
     ctx.lineWidth   = 2;
