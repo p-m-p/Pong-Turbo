@@ -63,6 +63,7 @@ export class WebAudioAdapter {
   #decode(name) {
     const raw = this.#raw[name];
     if (!raw || !this.#ctx) return;
+    this.#raw[name] = null; // ArrayBuffer is transferred on decode — prevent double-decode
     this.#ctx.decodeAudioData(raw)
       .then(buf => { this.#buffers[name] = buf; })
       .catch(() => {});

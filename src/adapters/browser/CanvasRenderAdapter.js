@@ -1,4 +1,8 @@
-import { VIRTUAL_W, VIRTUAL_H, TARGET_FRAME_MS } from '../../domain/constants.js';
+import {
+  VIRTUAL_W, VIRTUAL_H, TARGET_FRAME_MS,
+  POWERUP_GRACE_MS, POWERUP_WARN_AT_MS, POWERUP_LIFESPAN_MS,
+  STUN_PULSE_ANGULAR_FREQ,
+} from '../../domain/constants.js';
 
 // ── 8-bit colour palette ────────────────────────────────────────────────────
 const CLR_BALL   = '#ffffff'; // white (original Pong)
@@ -32,7 +36,7 @@ const GHOST_BOT = [
 ];
 
 // Aliens — 9×7 grid, pixel = 3px (fits in 27×21, centred in 28×22)
-// Drone — top rows (red), octopus-like
+// Drone — rightmost columns (green), octopus-like
 const DRONE_ROWS = [
   [0,0,1,1,0,1,1,0,0],
   [0,1,1,1,1,1,1,1,0],
@@ -239,7 +243,7 @@ export class CanvasRenderAdapter {
   #drawPaddle(ctx, { paddle, paddleStunnedUntil }, now) {
     const stunned = paddleStunnedUntil > now;
     const alpha   = stunned
-      ? 0.55 + 0.45 * Math.sin(now * 0.019)
+      ? 0.55 + 0.45 * Math.sin(now * STUN_PULSE_ANGULAR_FREQ)
       : 1;
     ctx.globalAlpha = alpha;
     ctx.fillStyle   = CLR_PADDLE;
@@ -286,16 +290,14 @@ export class CanvasRenderAdapter {
 
   #drawPowerUps(ctx, { powerUps }, now) {
     for (const p of powerUps) {
-      const age     = now - p.born;
-      const grace   = 2000;
-      const warning = 7000;
+      const age = now - p.born;
 
       let alpha;
-      if (age < grace) {
-        const t = age / grace;
+      if (age < POWERUP_GRACE_MS) {
+        const t = age / POWERUP_GRACE_MS;
         alpha = t * (0.4 + 0.6 * Math.abs(Math.sin(age * 0.012)));
-      } else if (age > warning) {
-        const t = (age - warning) / (10000 - warning);
+      } else if (age > POWERUP_WARN_AT_MS) {
+        const t = (age - POWERUP_WARN_AT_MS) / (POWERUP_LIFESPAN_MS - POWERUP_WARN_AT_MS);
         alpha = 0.3 + 0.7 * Math.abs(Math.sin(age * (0.008 + t * 0.016)));
       } else {
         alpha = 1;

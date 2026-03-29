@@ -222,7 +222,7 @@ export class GameLoop {
     if (hitResult) {
       this.#ballSpeed = hitResult.ballSpeed;
       this.#score    += rallyScore(this.#gameSpeed);
-      this.#score_update();
+      this.#scoreUpdate();
       this.#audio.play('paddle');
       if (this.#shieldBounces > 0) this.#shieldBounces--;
       return;
@@ -233,7 +233,7 @@ export class GameLoop {
     if (killResult) {
       const { count, cx, cy } = killResult;
       this.#score += ghostKillScore(this.#level, this.#gameSpeed, count);
-      this.#score_update();
+      this.#scoreUpdate();
       this.#audio.play('ghost');
       this.#powerUpSystem.trySpawn(cx, cy, count, now, this.#lives);
     }
@@ -267,7 +267,7 @@ export class GameLoop {
       const killed = this.#alienSystem.checkCollision(this.#ball);
       if (killed > 0) {
         this.#score += alienKillScore(this.#level, this.#gameSpeed, killed);
-        this.#score_update();
+        this.#scoreUpdate();
         this.#audio.play('ghost');
       }
 
@@ -277,7 +277,7 @@ export class GameLoop {
         if (msResult === 'killed') {
           // Mothership kill clears the level — no respawn
           this.#score += MOTHERSHIP_KILL_SCORE + bonusClearScore(this.#level);
-          this.#score_update();
+          this.#scoreUpdate();
           this.#isBonusRound = false;
           this.#advanceLevel(); // plays levelUp, resets mothership, spawns ghosts
           return;
@@ -292,19 +292,15 @@ export class GameLoop {
     }
 
     if (this.#alienSystem.allDead() || this.#alienSystem.reachedX(this.#paddle.x)) {
-      if (this.#alienSystem.allDead()) {
-        this.#score += bonusClearScore(this.#level);
-        this.#score_update();
-      }
       // Aliens cleared — force mothership in if it hasn't appeared yet.
-      // Round only ends when the mothership is destroyed.
+      // Round only ends when the mothership is destroyed (bonusClearScore awarded then).
       this.#motherShipSystem.forceEnter(VIRTUAL_H, now);
     }
   }
 
   #onLevelClear(now) {
     this.#score += levelClearScore(this.#level);
-    this.#score_update();
+    this.#scoreUpdate();
     this.#audio.play('levelUp');
     this.#level++;
     this.#gameSpeed += 2;
@@ -367,7 +363,7 @@ export class GameLoop {
     this.#ballReadySince = now;
   }
 
-  #score_update() {
+  #scoreUpdate() {
     this.#scorePort.updateScore(this.#score);
   }
 
