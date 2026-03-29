@@ -49,7 +49,7 @@ export const GHOST_RETREAT_SPEED    = 1.4;
 export const GHOST_H_SPEED_RATIO    = 0.7;
 
 // ── Aliens (bonus round) ───────────────────────────────────────────────────
-export const ALIEN_COLS      = 3;
+export const ALIEN_COLS      = 5;
 export const ALIEN_ROWS      = 6;
 export const ALIEN_W         = 28;
 export const ALIEN_H         = 22;
