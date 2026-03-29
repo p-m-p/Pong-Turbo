@@ -1,7 +1,7 @@
 import { VIRTUAL_W, VIRTUAL_H, TARGET_FRAME_MS } from '../../domain/constants.js';
 
 // ── 8-bit colour palette ────────────────────────────────────────────────────
-const CLR_BALL   = '#ffff00'; // Pac-Man yellow
+const CLR_BALL   = '#ffffff'; // white (original Pong)
 const CLR_PADDLE = '#ffffff'; // white
 const CLR_TEXT   = '#ffffff';
 const CLR_SHIELD = '#00ffff'; // cyan
