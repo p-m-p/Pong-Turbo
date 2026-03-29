@@ -28,11 +28,11 @@ describe('AlienSystem spawn', () => {
 
   it('assigns types left-to-right by column (vertical stripes)', () => {
     const col0 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 0);
+    const col1 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 1);
     const col2 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 2);
-    const col4 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 4);
     expect(col0.every(a => a.type === 'squid')).toBe(true);
-    expect(col2.every(a => a.type === 'crab')).toBe(true);
-    expect(col4.every(a => a.type === 'drone')).toBe(true);
+    expect(col1.every(a => a.type === 'crab')).toBe(true);
+    expect(col2.every(a => a.type === 'drone')).toBe(true);
   });
 
   it('each alien has a type and color', () => {

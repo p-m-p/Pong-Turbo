@@ -14,17 +14,14 @@ import {
   VIRTUAL_H,
 } from '../constants.js';
 
-// Alien type and colour per column — vertical stripes of each type:
-//   cols 0-1 → squid  (cyan)
-//   cols 2-3 → crab   (yellow)
-//   cols 4-5 → drone  (green)
+// Alien type and colour per column — one type per vertical stripe:
+//   col 0 → squid  (cyan)
+//   col 1 → crab   (yellow)
+//   col 2 → drone  (green)
 const COL_TIERS = [
-  { type: 'squid', color: '#00ffff' }, // cols 0-1
-  { type: 'squid', color: '#00ffff' },
-  { type: 'crab',  color: '#ffff00' }, // cols 2-3
-  { type: 'crab',  color: '#ffff00' },
-  { type: 'drone', color: '#00ff00' }, // cols 4-5
-  { type: 'drone', color: '#00ff00' },
+  { type: 'squid', color: '#00ffff' }, // col 0
+  { type: 'crab',  color: '#ffff00' }, // col 1
+  { type: 'drone', color: '#00ff00' }, // col 2
 ];
 
 export class AlienSystem {
