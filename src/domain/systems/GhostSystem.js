@@ -7,13 +7,13 @@ import {
   VIRTUAL_W,
 } from '../constants.js';
 
-// Pac-Man ghost colours
+// Pac-Man ghost colours (4 originals + magenta for 5th)
 const GHOST_COLOURS = [
   '#ff0000', // Blinky  — red
   '#ffb8ff', // Pinky   — pink
   '#00ffff', // Inky    — cyan
   '#ffb827', // Clyde   — orange
-  '#ffffff', // bonus   — white
+  '#ff00ff', // bonus   — magenta
 ];
 
 export class GhostSystem {

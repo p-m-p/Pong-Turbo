@@ -19,12 +19,13 @@ const PARTICLE_GRAV_MS2    = 0.04 / (TARGET_FRAME_MS * TARGET_FRAME_MS);
 // Values: 0=transparent, 1=body colour, 2=white, 3=dark (black)
 
 // Ghost — 8×8 grid, pixel = size/8 (4px at GHOST_SIZE=32)
-const GHOST_ROWS = [
+// Rows 3-4 are the eyes; pupils (3) shift left/right based on travel direction.
+const GHOST_TOP = [
   [0,0,1,1,1,1,0,0],
   [0,1,1,1,1,1,1,0],
   [1,1,1,1,1,1,1,1],
-  [1,1,2,2,1,1,2,2],
-  [1,1,2,3,1,1,2,3], // pupils facing right
+];
+const GHOST_BOT = [
   [1,1,1,1,1,1,1,1],
   [1,1,1,1,1,1,1,1],
   [1,0,1,1,0,1,1,0], // bumpy skirt
@@ -249,10 +250,36 @@ export class CanvasRenderAdapter {
   #drawGhosts(ctx, { ghosts }) {
     for (const g of ghosts) {
       ctx.globalAlpha = (g.state === 'retreating' ? 0.5 : 1) * this.#fadeAlpha;
-      const px = Math.max(1, Math.floor(g.w / 8));
-      drawBitmap(ctx, GHOST_ROWS, Math.round(g.x), Math.round(g.y), px, g.color);
+      this.#drawPixelGhost(ctx, g);
       ctx.globalAlpha = 1;
     }
+  }
+
+  #drawPixelGhost(ctx, { x, y, w, color, vx = 1, vy = 0 }) {
+    const px = Math.max(1, Math.floor(w / 8));
+    const gx = Math.round(x);
+    const gy = Math.round(y);
+
+    // Top dome + body
+    drawBitmap(ctx, GHOST_TOP, gx, gy, px, color);
+
+    // Eye rows — pupils shift based on travel direction
+    // Each eye occupies cols 2-3 (left) and 6-7 (right)
+    // Pupil (3) sits on the near side of travel: right col when going right, left col when going left
+    const goingRight = !vx || vx >= 0;
+    const eyeRow1 = goingRight
+      ? [1,1,2,2,1,1,2,2]
+      : [1,1,2,2,1,1,2,2]; // upper eye row always white fill
+    const eyeRow2 = goingRight
+      ? [1,1,2,3,1,1,2,3]  // pupils on right side of each eye
+      : [1,1,3,2,1,1,3,2]; // pupils on left side of each eye
+
+    const eyeY = gy + GHOST_TOP.length * px;
+    drawBitmap(ctx, [eyeRow1], gx, eyeY,          px, color);
+    drawBitmap(ctx, [eyeRow2], gx, eyeY + px,     px, color);
+
+    // Lower body + skirt
+    drawBitmap(ctx, GHOST_BOT, gx, eyeY + 2 * px, px, color);
   }
 
   #drawPowerUps(ctx, { powerUps }, now) {
