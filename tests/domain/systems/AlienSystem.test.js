@@ -26,13 +26,13 @@ describe('AlienSystem spawn', () => {
     expect(new AlienSystem().active).toBe(false);
   });
 
-  it('assigns types left-to-right by column', () => {
-    const col0 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 0);
-    const col1 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 1);
-    const col2 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 2);
-    expect(col0.every(a => a.type === 'drone')).toBe(true);
-    expect(col1.every(a => a.type === 'crab')).toBe(true);
-    expect(col2.every(a => a.type === 'squid')).toBe(true);
+  it('assigns types top-to-bottom by row (Space Invaders layout)', () => {
+    const row0 = sys.aliens.slice(0 * ALIEN_COLS, 1 * ALIEN_COLS);
+    const row1 = sys.aliens.slice(1 * ALIEN_COLS, 2 * ALIEN_COLS);
+    const row3 = sys.aliens.slice(3 * ALIEN_COLS, 4 * ALIEN_COLS);
+    expect(row0.every(a => a.type === 'squid')).toBe(true);
+    expect(row1.every(a => a.type === 'crab')).toBe(true);
+    expect(row3.every(a => a.type === 'drone')).toBe(true);
   });
 
   it('each alien has a type and color', () => {

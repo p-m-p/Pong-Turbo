@@ -14,11 +14,16 @@ import {
   VIRTUAL_H,
 } from '../constants.js';
 
-// Alien type and colour per column — Space Invaders palette
-const COL_TIERS = [
-  { type: 'drone', color: '#ff0000' }, // col 0 — red   (top rows)
-  { type: 'crab',  color: '#ffff00' }, // col 1 — yellow (middle rows)
-  { type: 'squid', color: '#00ff00' }, // col 2 — green (bottom rows)
+// Alien type and colour per row — matches Space Invaders layout top-to-bottom:
+//   row 0        → squid  (1 row,  top)
+//   rows 1-2     → crab   (2 rows, middle)
+//   rows 3-4     → drone  (2 rows, bottom)
+const ROW_TIERS = [
+  { type: 'squid', color: '#00ffff' }, // row 0 — cyan
+  { type: 'crab',  color: '#ffff00' }, // row 1 — yellow
+  { type: 'crab',  color: '#ffff00' }, // row 2 — yellow
+  { type: 'drone', color: '#00ff00' }, // row 3 — green
+  { type: 'drone', color: '#00ff00' }, // row 4 — green
 ];
 
 export class AlienSystem {
@@ -44,7 +49,7 @@ export class AlienSystem {
       for (let col = 0; col < ALIEN_COLS; col++) {
         const x     = ALIEN_SPAWN_X + col * (ALIEN_W + ALIEN_H_GAP);
         const y     = row * (ALIEN_H + ALIEN_V_GAP);
-        const { type, color } = COL_TIERS[col % COL_TIERS.length];
+        const { type, color } = ROW_TIERS[row];
         this.#aliens.push(new Alien(x, y, ALIEN_HP, color, type));
       }
     }
