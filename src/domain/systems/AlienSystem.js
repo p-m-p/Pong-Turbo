@@ -14,16 +14,17 @@ import {
   VIRTUAL_H,
 } from '../constants.js';
 
-// Alien type and colour per row — matches Space Invaders layout top-to-bottom:
-//   row 0        → squid  (1 row,  top)
-//   rows 1-2     → crab   (2 rows, middle)
-//   rows 3-4     → drone  (2 rows, bottom)
-const ROW_TIERS = [
-  { type: 'squid', color: '#00ffff' }, // row 0 — cyan
-  { type: 'crab',  color: '#ffff00' }, // row 1 — yellow
-  { type: 'crab',  color: '#ffff00' }, // row 2 — yellow
-  { type: 'drone', color: '#00ff00' }, // row 3 — green
-  { type: 'drone', color: '#00ff00' }, // row 4 — green
+// Alien type and colour per column — vertical stripes of each type:
+//   cols 0-1 → squid  (cyan)
+//   cols 2-3 → crab   (yellow)
+//   cols 4-5 → drone  (green)
+const COL_TIERS = [
+  { type: 'squid', color: '#00ffff' }, // cols 0-1
+  { type: 'squid', color: '#00ffff' },
+  { type: 'crab',  color: '#ffff00' }, // cols 2-3
+  { type: 'crab',  color: '#ffff00' },
+  { type: 'drone', color: '#00ff00' }, // cols 4-5
+  { type: 'drone', color: '#00ff00' },
 ];
 
 export class AlienSystem {
@@ -49,7 +50,7 @@ export class AlienSystem {
       for (let col = 0; col < ALIEN_COLS; col++) {
         const x     = ALIEN_SPAWN_X + col * (ALIEN_W + ALIEN_H_GAP);
         const y     = row * (ALIEN_H + ALIEN_V_GAP);
-        const { type, color } = ROW_TIERS[row];
+        const { type, color } = COL_TIERS[col];
         this.#aliens.push(new Alien(x, y, ALIEN_HP, color, type));
       }
     }
