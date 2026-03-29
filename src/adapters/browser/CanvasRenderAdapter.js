@@ -303,6 +303,7 @@ export class CanvasRenderAdapter {
 
       const color = p.type === 'wide'   ? '#00ff00'
                   : p.type === 'shield' ? '#00ffff'
+                  : p.type === 'life'   ? '#ff00ff'
                   :                       '#ffff00';
 
       const cx = p.x + p.w / 2;
@@ -343,10 +344,10 @@ export class CanvasRenderAdapter {
           ctx.closePath();
           ctx.stroke();
           break;
-        case 'slow':
-          ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - 3); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 2, cy); ctx.stroke();
+        case 'life':
+          // "+" symbol — classic retro health pickup
+          ctx.beginPath(); ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy); ctx.stroke();
           break;
       }
 

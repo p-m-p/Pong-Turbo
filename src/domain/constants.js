@@ -35,6 +35,7 @@ export const POWERUP_WARN_AT_MS     = 7_000;
 export const POWERUP_ORB_RADIUS     = 10;
 export const POWERUP_ROAM_RIGHT     = 280;
 export const POWERUP_SINGLE_CHANCE  = 0.15;
+export const POWERUP_LIFE_CHANCE    = 0.25; // fraction of spawns that become 'life' when lives ≤ 2
 export const WIDE_DURATION_MS       = 8_000;
 export const WIDE_SCALE             = 1.75;
 

@@ -1,6 +1,6 @@
-import { PowerUp, TYPES }       from '../entities/PowerUp.js';
-import { aabb }                  from '../physics/collision.js';
-import { POWERUP_SINGLE_CHANCE } from '../constants.js';
+import { PowerUp, TYPES }                        from '../entities/PowerUp.js';
+import { aabb }                                   from '../physics/collision.js';
+import { POWERUP_SINGLE_CHANCE, POWERUP_LIFE_CHANCE } from '../constants.js';
 
 export class PowerUpSystem {
   #powerUps = [];
@@ -10,15 +10,22 @@ export class PowerUpSystem {
   /**
    * Conditionally spawn a power-up at (cx, cy).
    * Always spawns on 2+ simultaneous kills; SINGLE_CHANCE% on a single kill.
+   * When lives ≤ 2 there is a LIFE_CHANCE probability the drop is 'life'.
    *
    * @param {number} cx
    * @param {number} cy
    * @param {number} killCount
-   * @param {number} now  - current timestamp (injected so tests can control timing)
+   * @param {number} now    - current timestamp (injected so tests can control timing)
+   * @param {number} lives  - current player lives (default Infinity — no life drops)
    */
-  trySpawn(cx, cy, killCount, now) {
+  trySpawn(cx, cy, killCount, now, lives = Infinity) {
     if (killCount < 2 && Math.random() >= POWERUP_SINGLE_CHANCE) return;
-    const type = TYPES[Math.floor(Math.random() * TYPES.length)];
+    let type;
+    if (lives <= 2 && Math.random() < POWERUP_LIFE_CHANCE) {
+      type = 'life';
+    } else {
+      type = TYPES[Math.floor(Math.random() * TYPES.length)];
+    }
     this.#powerUps.push(new PowerUp(cx, cy, type, now));
   }
 

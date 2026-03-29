@@ -235,7 +235,7 @@ export class GameLoop {
       this.#score += ghostKillScore(this.#level, this.#gameSpeed, count);
       this.#score_update();
       this.#audio.play('ghost');
-      this.#powerUpSystem.trySpawn(cx, cy, count, now);
+      this.#powerUpSystem.trySpawn(cx, cy, count, now, this.#lives);
     }
   }
 
@@ -338,8 +338,9 @@ export class GameLoop {
       case 'shield':
         this.#shieldBounces = 10;
         break;
-      case 'slow':
-        this.#ballSpeed = this.#gameSpeed;
+      case 'life':
+        this.#lives++;
+        this.#scorePort.updateLives(this.#lives);
         break;
     }
   }

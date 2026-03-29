@@ -55,7 +55,7 @@ describe('PowerUpSystem checkCollision', () => {
     const p    = sys.powerUps[0];
     const ball = makeBall({ x: p.x, y: p.y, w: p.w, h: p.h });
     const type = sys.checkCollision(ball, POWERUP_GRACE_MS + 1);
-    expect(type).toMatch(/^(wide|shield|slow)$/);
+    expect(type).toMatch(/^(wide|shield)$/);
     expect(sys.powerUps.length).toBe(0);
   });
 

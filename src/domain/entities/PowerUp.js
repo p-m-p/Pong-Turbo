@@ -5,7 +5,7 @@ import {
   POWERUP_ROAM_RIGHT,
 } from '../constants.js';
 
-export const TYPES = ['wide', 'shield', 'slow'];
+export const TYPES = ['wide', 'shield'];
 
 export class PowerUp {
   #type;
