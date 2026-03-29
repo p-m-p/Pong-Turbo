@@ -296,8 +296,9 @@ export class GameLoop {
         this.#score += bonusClearScore(this.#level);
         this.#score_update();
       }
-      this.#isBonusRound = false;
-      this.#advanceLevel();
+      // Aliens cleared — force mothership in if it hasn't appeared yet.
+      // Round only ends when the mothership is destroyed.
+      this.#motherShipSystem.forceEnter(VIRTUAL_H, now);
     }
   }
 

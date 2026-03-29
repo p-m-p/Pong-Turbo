@@ -288,7 +288,7 @@ describe('GameLoop — level progression', () => {
 });
 
 describe('GameLoop — bonus round', () => {
-  it('exits bonus round and advances level when all aliens are killed', () => {
+  it('stays in bonus round after all aliens are killed (mothership must be destroyed)', () => {
     const a    = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
@@ -297,8 +297,9 @@ describe('GameLoop — bonus round', () => {
     now = killAllGhosts(loop, a, now); // level 2 → 3 (bonus round starts)
     expect(loop.isBonusRound).toBe(true);
     now = killAllAliens(loop, a, now);
-    expect(loop.isBonusRound).toBe(false);
-    expect(loop.level).toBe(4);
+    // Bonus round continues — mothership still needs to be destroyed
+    expect(loop.isBonusRound).toBe(true);
+    expect(loop.level).toBe(3);
   });
 });
 

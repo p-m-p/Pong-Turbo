@@ -42,6 +42,16 @@ export class MotherShipSystem {
     this.#vy       = MOTHERSHIP_ROAM_SPEED;
   }
 
+  /** Force the mothership to enter immediately (used when aliens clear early). */
+  forceEnter(fieldH, now) {
+    if (this.#state !== 'dormant') return;
+    this.#state    = 'entering';
+    this.#x        = -(MOTHERSHIP_W + 20);
+    this.#y        = fieldH / 2 - MOTHERSHIP_H / 2;
+    this.#vy       = MOTHERSHIP_ROAM_SPEED;
+    this.#lastFire = now;
+  }
+
   /**
    * @param {number} now
    * @param {number} timeScale
