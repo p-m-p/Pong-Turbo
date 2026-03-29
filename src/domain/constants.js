@@ -40,7 +40,7 @@ export const WIDE_SCALE             = 1.75;
 
 // ── Ghosts ─────────────────────────────────────────────────────────────────
 export const GHOST_SIZE             = 32;
-export const GHOST_COUNT            = 5;
+export const GHOST_COUNT            = 4;
 export const GHOST_ROAM_RATIO       = 0.45;
 export const GHOST_CHARGE_PROB      = 0.001;
 export const GHOST_CHARGE_SPEED     = 1.6;
