@@ -263,16 +263,18 @@ export class CanvasRenderAdapter {
     // Top dome + body
     drawBitmap(ctx, GHOST_TOP, gx, gy, px, color);
 
-    // Eye rows — pupils shift based on travel direction
-    // Each eye occupies cols 2-3 (left) and 6-7 (right)
-    // Pupil (3) sits on the near side of travel: right col when going right, left col when going left
-    const goingRight = !vx || vx >= 0;
-    const eyeRow1 = goingRight
-      ? [1,1,2,2,1,1,2,2]
-      : [1,1,2,2,1,1,2,2]; // upper eye row always white fill
-    const eyeRow2 = goingRight
-      ? [1,1,2,3,1,1,2,3]  // pupils on right side of each eye
-      : [1,1,3,2,1,1,3,2]; // pupils on left side of each eye
+    // Eye rows — each eye occupies cols 2-3 (left) and 6-7 (right).
+    // Pupils sit in the corner of the 2×2 eye that points toward travel direction:
+    //   vy < 0 → top row of eye;  vy >= 0 → bottom row
+    //   vx < 0 → left col of eye; vx >= 0 → right col
+    const pupilRow = vy < 0 ? 0 : 1;   // 0 = top eye-row, 1 = bottom eye-row
+    const pupilCol = vx < 0 ? 0 : 1;   // 0 = left eye-col, 1 = right eye-col
+
+    const eyeRow1 = [1,1,2,2,1,1,2,2]; // both eyes white
+    const eyeRow2 = [1,1,2,2,1,1,2,2];
+    const targetRow = pupilRow === 0 ? eyeRow1 : eyeRow2;
+    targetRow[2 + pupilCol] = 3; // left eye pupil
+    targetRow[6 + pupilCol] = 3; // right eye pupil
 
     const eyeY = gy + GHOST_TOP.length * px;
     drawBitmap(ctx, [eyeRow1], gx, eyeY,          px, color);
