@@ -1,20 +1,91 @@
 import { VIRTUAL_W, VIRTUAL_H, TARGET_FRAME_MS } from '../../domain/constants.js';
 
-// Catppuccin Mocha
-const CLR_BALL      = '#cba6f7'; // mauve
-const CLR_PADDLE    = '#b4befe'; // lavender
-const CLR_TEXT      = '#cdd6f4'; // text
-const CLR_SHIELD    = '#89dceb'; // sky
+// ── 8-bit colour palette ────────────────────────────────────────────────────
+const CLR_BALL   = '#ffff00'; // Pac-Man yellow
+const CLR_PADDLE = '#ffffff'; // white
+const CLR_TEXT   = '#ffffff';
+const CLR_SHIELD = '#00ffff'; // cyan
 
-const MAX_PHYS_W    = 1200;
-const MAX_PHYS_H    = 800;
-const MAX_ASPECT    = 1.6;  // canvas width : height — prevents over-wide field on landscape phones
+const MAX_PHYS_W  = 1200;
+const MAX_PHYS_H  = 800;
+const MAX_ASPECT  = 1.6;
 
-const FADE_DURATION_MS     = 500;   // ms to fade in new-level entities
-const PARTICLE_DURATION_MS = 800;   // ms a particle lives
-// Pre-compute per-ms equivalents of the original per-frame speeds
-const PARTICLE_SPEED_MS    = 1 / TARGET_FRAME_MS;   // 1 virtual-unit/frame → per ms
-const PARTICLE_GRAV_MS2    = 0.04 / (TARGET_FRAME_MS * TARGET_FRAME_MS); // gravity per ms²
+const FADE_DURATION_MS     = 500;
+const PARTICLE_DURATION_MS = 800;
+const PARTICLE_SPEED_MS    = 1 / TARGET_FRAME_MS;
+const PARTICLE_GRAV_MS2    = 0.04 / (TARGET_FRAME_MS * TARGET_FRAME_MS);
+
+// ── Pixel-art bitmaps ───────────────────────────────────────────────────────
+// Values: 0=transparent, 1=body colour, 2=white, 3=dark (black)
+
+// Ghost — 8×8 grid, pixel = size/8 (4px at GHOST_SIZE=32)
+const GHOST_ROWS = [
+  [0,0,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,0],
+  [1,1,1,1,1,1,1,1],
+  [1,1,2,2,1,1,2,2],
+  [1,1,2,3,1,1,2,3], // pupils facing right
+  [1,1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1,1],
+  [1,0,1,1,0,1,1,0], // bumpy skirt
+];
+
+// Aliens — 9×7 grid, pixel = 3px (fits in 27×21, centred in 28×22)
+// Drone — top rows (red), octopus-like
+const DRONE_ROWS = [
+  [0,0,1,1,0,1,1,0,0],
+  [0,1,1,1,1,1,1,1,0],
+  [1,1,0,1,1,1,0,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [1,0,1,1,1,1,1,0,1],
+  [0,1,0,0,0,0,0,1,0],
+  [0,1,0,0,0,0,0,1,0],
+];
+
+// Crab — middle rows (yellow), crab-like
+const CRAB_ROWS = [
+  [1,0,1,0,0,0,1,0,1],
+  [0,1,1,1,1,1,1,1,0],
+  [1,1,0,1,0,1,0,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [0,1,1,1,1,1,1,1,0],
+  [0,0,1,0,0,0,1,0,0],
+  [0,1,0,0,0,0,0,1,0],
+];
+
+// Squid — bottom rows (green), squid-like
+const SQUID_ROWS = [
+  [0,0,0,1,1,1,0,0,0],
+  [0,1,1,1,1,1,1,1,0],
+  [1,1,0,1,1,1,0,1,1],
+  [1,1,1,1,1,1,1,1,1],
+  [0,1,1,1,1,1,1,1,0],
+  [0,1,0,0,0,0,0,1,0],
+  [1,0,0,0,0,0,0,0,1],
+];
+
+// Mothership — 13×5 grid, pixel = 4px (52×20 = MOTHERSHIP_W×MOTHERSHIP_H)
+// 2 = dark window
+const MOTHERSHIP_ROWS = [
+  [0,0,0,1,1,1,1,1,1,1,0,0,0],
+  [0,0,1,1,1,1,1,1,1,1,1,0,0],
+  [0,1,1,2,1,2,1,2,1,2,1,1,0],
+  [1,1,1,1,1,1,1,1,1,1,1,1,1],
+  [0,1,0,1,0,1,0,1,0,1,0,1,0],
+];
+
+/** Draw a pixel-art bitmap at (x, y) with the given pixel size. */
+function drawBitmap(ctx, rows, x, y, px, bodyColor, white = '#ffffff', dark = '#000000') {
+  for (let r = 0; r < rows.length; r++) {
+    const row = rows[r];
+    for (let c = 0; c < row.length; c++) {
+      const v = row[c];
+      if (v === 0) continue;
+      ctx.fillStyle = v === 1 ? bodyColor : v === 2 ? white : dark;
+      ctx.fillRect(x + c * px, y + r * px, px, px);
+    }
+  }
+}
 
 export class CanvasRenderAdapter {
   #canvas;
@@ -31,21 +102,21 @@ export class CanvasRenderAdapter {
 
   // ── Kill-event detection ───────────────────────────────────────────────
   #prevGhostCount  = 0;
-  #prevGhosts      = [];   // [{ x, y, w, h, color }]
+  #prevGhosts      = [];
   #prevAlienCount  = 0;
-  #prevAliens      = [];   // [{ x, y, color }]
-  #prevMotherShip  = null; // { x, y, w, h } | null
+  #prevAliens      = [];
+  #prevMotherShip  = null;
 
   // ── Level-fade transition ──────────────────────────────────────────────
   #prevLevel    = 1;
-  #fadeAlpha    = 1;  // alpha applied to new-wave entities (1 = fully visible)
-  #fadeStartAt  = -1; // snapshot.now when fade-in began; -1 = waiting for ball to cross mid
+  #fadeAlpha    = 1;
+  #fadeStartAt  = -1;
 
   /**
    * @param {HTMLCanvasElement} canvas
-   * @param {HTMLElement}       wrap    - observed for resize (the pong-canvas host element)
-   * @param {HTMLElement|null}  knob    - touch knob element (optional)
-   * @param {HTMLElement|null}  zone    - touch zone element (optional)
+   * @param {HTMLElement}       wrap
+   * @param {HTMLElement|null}  knob
+   * @param {HTMLElement|null}  zone
    */
   constructor(canvas, wrap, knob = null, zone = null) {
     this.#canvas = canvas;
@@ -81,8 +152,8 @@ export class CanvasRenderAdapter {
     const physW = Math.min(Math.max(availW, 1), MAX_PHYS_W, physH * MAX_ASPECT);
 
     this.#dpr     = window.devicePixelRatio || 1;
-    this.#scale   = physH / VIRTUAL_H;          // uniform, height-based
-    this.#virtualW = physW / this.#scale;       // field width adapts to canvas
+    this.#scale   = physH / VIRTUAL_H;
+    this.#virtualW = physW / this.#scale;
 
     this.#canvas.width  = Math.round(physW * this.#dpr);
     this.#canvas.height = Math.round(physH * this.#dpr);
@@ -105,19 +176,24 @@ export class CanvasRenderAdapter {
     ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
     ctx.save();
     ctx.scale(s * dpr, s * dpr);
+    ctx.imageSmoothingEnabled = false;
 
-    this.#drawBall(ctx, snapshot, s, now);
-    this.#drawPaddle(ctx, snapshot, s, now);
-    this.#drawGhosts(ctx, snapshot, s);
-    this.#drawPowerUps(ctx, snapshot, s, now);
+    // Black fill (belt-and-braces behind CSS background)
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, this.#virtualW, VIRTUAL_H);
+
+    this.#drawBall(ctx, snapshot, now);
+    this.#drawPaddle(ctx, snapshot, now);
+    this.#drawGhosts(ctx, snapshot);
+    this.#drawPowerUps(ctx, snapshot, now);
     if (snapshot.isBonusRound) {
-      this.#drawAliens(ctx, snapshot, s);
-      if (snapshot.motherShip) this.#drawMotherShip(ctx, snapshot.motherShip, s);
-      if (snapshot.motherShipLasers?.length) this.#drawLasers(ctx, snapshot.motherShipLasers, s);
+      this.#drawAliens(ctx, snapshot);
+      if (snapshot.motherShip) this.#drawMotherShip(ctx, snapshot.motherShip);
+      if (snapshot.motherShipLasers?.length) this.#drawLasers(ctx, snapshot.motherShipLasers);
     }
-    if (snapshot.shieldActive) this.#drawShield(ctx, snapshot, s, now);
+    if (snapshot.shieldActive) this.#drawShield(ctx, snapshot, now);
 
-    this.#tickAndDrawParticles(ctx, s, now);
+    this.#tickAndDrawParticles(ctx, now);
 
     ctx.restore();
 
@@ -133,122 +209,53 @@ export class CanvasRenderAdapter {
     ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
     ctx.save();
     ctx.scale(s * dpr, s * dpr);
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = '#000000';
+    ctx.fillRect(0, 0, this.#virtualW, VIRTUAL_H);
     ctx.fillStyle    = CLR_TEXT;
-    ctx.font         = `bold 16px 'Play', sans-serif`;
+    ctx.font         = `11px 'Press Start 2P', monospace`;
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor  = CLR_BALL;
-    ctx.fillText('Game over  ·  press Enter to play again', this.#virtualW / 2, VIRTUAL_H / 2);
+    ctx.fillText('GAME OVER', this.#virtualW / 2, VIRTUAL_H / 2 - 10);
+    ctx.font = `7px 'Press Start 2P', monospace`;
+    ctx.fillStyle = '#888888';
+    ctx.fillText('PRESS ENTER TO PLAY AGAIN', this.#virtualW / 2, VIRTUAL_H / 2 + 10);
     ctx.restore();
   }
 
   // ── Draw helpers ───────────────────────────────────────────────────────
 
-  #drawBall(ctx, { ball, ballState, ballReadySince }, s, now) {
+  #drawBall(ctx, { ball, ballState, ballReadySince }, now) {
     const alpha = ballState === 'ready'
       ? 0.25 + 0.75 * Math.abs(Math.sin((now - ballReadySince) * 0.005))
       : 1;
     ctx.globalAlpha = alpha;
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = CLR_BALL;
     ctx.fillStyle   = CLR_BALL;
     ctx.fillRect(ball.x, ball.y, ball.w, ball.h);
     ctx.globalAlpha = 1;
-    ctx.shadowBlur  = 0;
   }
 
-  #drawPaddle(ctx, { paddle, paddleStunnedUntil }, s, now) {
+  #drawPaddle(ctx, { paddle, paddleStunnedUntil }, now) {
     const stunned = paddleStunnedUntil > now;
     const alpha   = stunned
       ? 0.55 + 0.45 * Math.sin(now * 0.019)
       : 1;
     ctx.globalAlpha = alpha;
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = CLR_PADDLE;
     ctx.fillStyle   = CLR_PADDLE;
     ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
     ctx.globalAlpha = 1;
-    ctx.shadowBlur  = 0;
   }
 
-  #drawGhosts(ctx, { ghosts }, s) {
+  #drawGhosts(ctx, { ghosts }) {
     for (const g of ghosts) {
-      ctx.save();
       ctx.globalAlpha = (g.state === 'retreating' ? 0.5 : 1) * this.#fadeAlpha;
-      this.#drawGhostShape(ctx, g, s);
-      ctx.restore();
+      const px = Math.max(1, Math.floor(g.w / 8));
+      drawBitmap(ctx, GHOST_ROWS, Math.round(g.x), Math.round(g.y), px, g.color);
+      ctx.globalAlpha = 1;
     }
   }
 
-  #drawGhostShape(ctx, { x, y, w, h, color, vx = 1, vy = 0 }, s) {
-    const cx       = x + w / 2;
-    const domeR    = w / 2;
-    const domeBaseY = y + domeR;
-    const skirtY   = y + h * 0.76;
-
-    // Glow
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = color;
-
-    // Body
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(cx, domeBaseY, domeR, Math.PI, 0);
-    ctx.lineTo(x + w, skirtY);
-    ctx.quadraticCurveTo(x + w * (5 / 6), y + h, x + w * (2 / 3), skirtY);
-    ctx.quadraticCurveTo(x + w * (1 / 2), y + h, x + w * (1 / 3), skirtY);
-    ctx.quadraticCurveTo(x + w * (1 / 6), y + h, x,                skirtY);
-    ctx.lineTo(x, domeBaseY);
-    ctx.closePath();
-    ctx.fill();
-
-    // Dome highlight
-    ctx.shadowBlur = 0;
-    const hl = ctx.createRadialGradient(
-      cx - domeR * 0.2, y + domeR * 0.3, domeR * 0.05,
-      cx,               y + domeR,        domeR,
-    );
-    hl.addColorStop(0, 'rgba(255,255,255,0.28)');
-    hl.addColorStop(1, 'rgba(255,255,255,0)');
-    ctx.fillStyle = hl;
-    ctx.beginPath();
-    ctx.arc(cx, domeBaseY, domeR, Math.PI, 0);
-    ctx.lineTo(x + w, skirtY);
-    ctx.quadraticCurveTo(x + w * (5 / 6), y + h, x + w * (2 / 3), skirtY);
-    ctx.quadraticCurveTo(x + w * (1 / 2), y + h, x + w * (1 / 3), skirtY);
-    ctx.quadraticCurveTo(x + w * (1 / 6), y + h, x,                skirtY);
-    ctx.lineTo(x, domeBaseY);
-    ctx.closePath();
-    ctx.fill();
-
-    // Eyes
-    const eyeY    = y + h * 0.40;
-    const eyeR    = w * 0.11;
-    const pupilR  = w * 0.060;
-    const leftEX  = x + w * 0.30;
-    const rightEX = x + w * 0.70;
-
-    ctx.fillStyle = 'white';
-    ctx.beginPath();
-    ctx.arc(leftEX,  eyeY, eyeR, 0, Math.PI * 2);
-    ctx.arc(rightEX, eyeY, eyeR, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Pupils track travel direction — clamp offset inside iris
-    const maxOffset = eyeR - pupilR;
-    const mag       = Math.sqrt(vx * vx + vy * vy) || 1;
-    const pdx = (vx / mag) * maxOffset;
-    const pdy = (vy / mag) * maxOffset;
-
-    ctx.fillStyle = '#0d0d1a';
-    ctx.beginPath();
-    ctx.arc(leftEX  + pdx, eyeY + pdy, pupilR, 0, Math.PI * 2);
-    ctx.arc(rightEX + pdx, eyeY + pdy, pupilR, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  #drawPowerUps(ctx, { powerUps }, s, now) {
+  #drawPowerUps(ctx, { powerUps }, now) {
     for (const p of powerUps) {
       const age     = now - p.born;
       const grace   = 2000;
@@ -265,48 +272,52 @@ export class CanvasRenderAdapter {
         alpha = 1;
       }
 
-      const color = p.type === 'wide'   ? '#a6e3a1'
-                  : p.type === 'shield' ? '#89dceb'
-                  :                       '#f9e2af';
+      const color = p.type === 'wide'   ? '#00ff00'
+                  : p.type === 'shield' ? '#00ffff'
+                  :                       '#ffff00';
 
       const cx = p.x + p.w / 2;
       const cy = p.y + p.h / 2;
+      const r  = p.w / 2;
 
       ctx.save();
       ctx.globalAlpha = alpha;
-      ctx.shadowBlur  = 8;
-      ctx.shadowColor = color;
-      ctx.fillStyle   = color;
+
+      // 8-bit style: draw as a diamond (rotated square)
+      ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.arc(cx, cy, p.w / 2, 0, Math.PI * 2);
+      ctx.moveTo(cx,     cy - r);
+      ctx.lineTo(cx + r, cy);
+      ctx.lineTo(cx,     cy + r);
+      ctx.lineTo(cx - r, cy);
+      ctx.closePath();
       ctx.fill();
 
-      // Symbol
-      ctx.shadowBlur  = 0;
-      ctx.strokeStyle = '#1e1e2e';
+      // Symbol — hard lines, no shadow
+      ctx.strokeStyle = '#000000';
       ctx.lineWidth   = 1.5;
-      ctx.lineCap     = 'round';
-      ctx.lineJoin    = 'round';
+      ctx.lineCap     = 'square';
+      ctx.lineJoin    = 'miter';
 
       switch (p.type) {
         case 'wide':
-          ctx.beginPath(); ctx.moveTo(cx - 5.5, cy); ctx.lineTo(cx + 5.5, cy); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(cx - 3, cy - 2.5); ctx.lineTo(cx - 6, cy); ctx.lineTo(cx - 3, cy + 2.5); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(cx + 3, cy - 2.5); ctx.lineTo(cx + 6, cy); ctx.lineTo(cx + 3, cy + 2.5); ctx.stroke();
           break;
         case 'shield':
           ctx.beginPath();
-          ctx.moveTo(cx,     cy - 5.5);
+          ctx.moveTo(cx,     cy - 5);
           ctx.lineTo(cx + 4, cy);
-          ctx.lineTo(cx,     cy + 5.5);
+          ctx.lineTo(cx,     cy + 5);
           ctx.lineTo(cx - 4, cy);
           ctx.closePath();
           ctx.stroke();
           break;
         case 'slow':
-          ctx.beginPath(); ctx.arc(cx, cy, 4.5, 0, Math.PI * 2); ctx.stroke();
+          ctx.beginPath(); ctx.arc(cx, cy, 4, 0, Math.PI * 2); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, cy - 3); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 2.2, cy); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + 2, cy); ctx.stroke();
           break;
       }
 
@@ -314,156 +325,59 @@ export class CanvasRenderAdapter {
     }
   }
 
-  #drawAliens(ctx, { aliens, alienOffsetX, alienOffsetY }, s) {
+  #drawAliens(ctx, { aliens, alienOffsetX, alienOffsetY }) {
     ctx.save();
     ctx.translate(alienOffsetX, alienOffsetY);
     for (const a of aliens) {
-      ctx.save();
       ctx.globalAlpha = (0.4 + 0.6 * (a.hp / a.maxHp)) * this.#fadeAlpha;
-      ctx.shadowBlur  = 8;
-      ctx.shadowColor = a.color;
-      ctx.fillStyle   = a.color;
-      switch (a.type) {
-        case 'drone': this.#drawDrone(ctx, a); break;
-        case 'crab':  this.#drawCrab(ctx, a);  break;
-        default:      this.#drawSquid(ctx, a); break;
-      }
-      ctx.restore();
+      const rows = a.type === 'drone' ? DRONE_ROWS
+                 : a.type === 'crab'  ? CRAB_ROWS
+                 :                      SQUID_ROWS;
+      const px   = 3;
+      const offX = Math.round((a.w - rows[0].length * px) / 2);
+      const offY = Math.round((a.h - rows.length * px) / 2);
+      drawBitmap(ctx, rows, a.x + offX, a.y + offY, px, a.color);
+      ctx.globalAlpha = 1;
     }
     ctx.restore();
   }
 
-  // ── Drone (rows 0-1): futuristic saucer — flat body, dome, antenna, thrusters ──
+  #drawMotherShip(ctx, ms) {
+    const CLR  = '#ff0000';
+    const { x, y } = ms;
+    const px   = 4;                        // 13×4=52=MOTHERSHIP_W, 5×4=20=MOTHERSHIP_H
+    const alpha = this.#fadeAlpha;
 
-  #drawDrone(ctx, { x, y, w, h, color }) {
-    const cx = x + w / 2;
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    drawBitmap(ctx, MOTHERSHIP_ROWS, x, y, px, CLR, CLR, '#000000');
 
-    // Two thin antenna prongs
-    ctx.fillRect(x + 8,  y,     2, 5);
-    ctx.fillRect(x + 18, y,     2, 5);
+    // HP bar above mothership
+    const barY   = y - 5;
+    const hpFrac = ms.hp / ms.maxHp;
+    const barClr = hpFrac > 2 / 3 ? '#00ff00'
+                 : hpFrac > 1 / 3 ? '#ffff00'
+                 :                  '#ff0000';
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = '#333333';
+    ctx.fillRect(x, barY, ms.w, 3);
+    ctx.fillStyle = barClr;
+    ctx.fillRect(x, barY, ms.w * hpFrac, 3);
 
-    // Saucer body (trapezoid — wide top, narrower bottom)
-    ctx.beginPath();
-    ctx.moveTo(x + 2,  y + 6);
-    ctx.lineTo(x + 26, y + 6);
-    ctx.lineTo(x + 22, y + 15);
-    ctx.lineTo(x + 6,  y + 15);
-    ctx.closePath();
-    ctx.fill();
-
-    // Cockpit dome (upper half-ellipse above the saucer)
-    ctx.beginPath();
-    ctx.ellipse(cx, y + 6, 6, 4, 0, Math.PI, 0);
-    ctx.fill();
-
-    // 3 engine prongs at bottom
-    ctx.fillRect(x + 5,  y + 15, 3, 5);
-    ctx.fillRect(x + 13, y + 15, 3, 5);
-    ctx.fillRect(x + 20, y + 15, 3, 5);
-
-    // Dark cockpit window
-    ctx.shadowBlur = 0;
-    ctx.fillStyle  = '#1e1e2e';
-    ctx.beginPath();
-    ctx.ellipse(cx, y + 7, 3, 2, 0, 0, Math.PI * 2);
-    ctx.fill();
+    ctx.restore();
   }
 
-  // ── Crab (rows 2-3): wide body, raised claws, eye-stalks, legs ─────────────
-
-  #drawCrab(ctx, { x, y, w, h, color }) {
-    const cx = x + w / 2;
-
-    // Eye stalks
-    ctx.fillRect(x + 7,  y,     3, 5);
-    ctx.fillRect(x + 18, y,     3, 5);
-
-    // Main body
-    ctx.beginPath();
-    ctx.roundRect(x + 4, y + 5, 20, 10, 3);
-    ctx.fill();
-
-    // Left claw (arrowhead pointing up-left)
-    ctx.beginPath();
-    ctx.moveTo(x + 4,  y + 6);
-    ctx.lineTo(x,      y + 3);
-    ctx.lineTo(x,      y + 9);
-    ctx.lineTo(x + 4,  y + 12);
-    ctx.closePath();
-    ctx.fill();
-
-    // Right claw (mirror)
-    ctx.beginPath();
-    ctx.moveTo(x + 24, y + 6);
-    ctx.lineTo(x + 28, y + 3);
-    ctx.lineTo(x + 28, y + 9);
-    ctx.lineTo(x + 24, y + 12);
-    ctx.closePath();
-    ctx.fill();
-
-    // 4 bottom legs
-    ctx.fillRect(x + 5,  y + 15, 2, 6);
-    ctx.fillRect(x + 10, y + 15, 2, 5);
-    ctx.fillRect(x + 16, y + 15, 2, 5);
-    ctx.fillRect(x + 21, y + 15, 2, 6);
-
-    // Eyes
-    ctx.shadowBlur = 0;
-    ctx.fillStyle  = 'white';
-    ctx.beginPath();
-    ctx.arc(x + 9.5,  y + 9, 2.5, 0, Math.PI * 2);
-    ctx.arc(x + 18.5, y + 9, 2.5, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#1e1e2e';
-    ctx.beginPath();
-    ctx.arc(x + 10,   y + 9.5, 1.2, 0, Math.PI * 2);
-    ctx.arc(x + 18,   y + 9.5, 1.2, 0, Math.PI * 2);
-    ctx.fill();
+  #drawLasers(ctx, lasers) {
+    ctx.fillStyle = '#ff0000';
+    for (const l of lasers) ctx.fillRect(l.x, l.y, l.w, l.h);
   }
 
-  // ── Squid (rows 4-5): round head, two horns, tentacles, big eyes ────────────
-
-  #drawSquid(ctx, { x, y, w, h, color }) {
-    const cx = x + w / 2;
-
-    // Two horns at top
-    ctx.beginPath();
-    ctx.moveTo(x + 8,  y + 5);
-    ctx.lineTo(x + 6,  y);
-    ctx.lineTo(x + 4,  y + 5);
-    ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(x + 20, y + 5);
-    ctx.lineTo(x + 22, y);
-    ctx.lineTo(x + 24, y + 5);
-    ctx.fill();
-
-    // Round head — dome top + rectangular lower half
-    ctx.beginPath();
-    ctx.arc(cx, y + 9, 9, Math.PI, 0);
-    ctx.lineTo(x + 23, y + 14);
-    ctx.lineTo(x + 5,  y + 14);
-    ctx.closePath();
-    ctx.fill();
-
-    // 4 tentacles (alternate lengths for organic look)
-    ctx.fillRect(x + 5,  y + 14, 3, 7);
-    ctx.fillRect(x + 10, y + 14, 3, 5);
-    ctx.fillRect(x + 15, y + 14, 3, 5);
-    ctx.fillRect(x + 20, y + 14, 3, 7);
-
-    // Eyes
-    ctx.shadowBlur = 0;
-    ctx.fillStyle  = 'white';
-    ctx.beginPath();
-    ctx.arc(x + 10, y + 9, 3, 0, Math.PI * 2);
-    ctx.arc(x + 18, y + 9, 3, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#1e1e2e';
-    ctx.beginPath();
-    ctx.arc(x + 10.5, y + 9.5, 1.5, 0, Math.PI * 2);
-    ctx.arc(x + 17.5, y + 9.5, 1.5, 0, Math.PI * 2);
-    ctx.fill();
+  #drawShield(ctx, { paddle }, now) {
+    ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(now * 0.004));
+    ctx.strokeStyle = CLR_SHIELD;
+    ctx.lineWidth   = 2;
+    ctx.strokeRect(paddle.x - 3, paddle.y - 3, paddle.w + 6, paddle.h + 6);
+    ctx.globalAlpha = 1;
   }
 
   // ── Particle & transition helpers ─────────────────────────────────────
@@ -493,7 +407,7 @@ export class CanvasRenderAdapter {
       }
     }
 
-    // Alien kills (bonus round — aliens use local coords; ball is in world space)
+    // Alien kills
     if (isBonusRound) {
       const alienKills = this.#prevAlienCount - aliens.length;
       if (alienKills > 0) {
@@ -522,28 +436,28 @@ export class CanvasRenderAdapter {
     // Mothership kill
     if (this.#prevMotherShip && !motherShip) {
       const ms = this.#prevMotherShip;
-      this.#spawnBurst(ms.x + ms.w / 2, ms.y + ms.h / 2, '#f38ba8', 20, now);
+      this.#spawnBurst(ms.x + ms.w / 2, ms.y + ms.h / 2, '#ff0000', 20, now);
     }
   }
 
   #spawnBurst(cx, cy, color, count, now) {
     for (let i = 0; i < count; i++) {
       const angle  = Math.random() * Math.PI * 2;
-      const spdPxF = 1.5 + Math.random() * 2.5;   // virtual px per frame at 30fps
-      const spd    = spdPxF * PARTICLE_SPEED_MS;   // convert to px per ms
+      const spdPxF = 1.5 + Math.random() * 2.5;
+      const spd    = spdPxF * PARTICLE_SPEED_MS;
       this.#particles.push({
-        x0:      cx,
-        y0:      cy,
-        vx:      Math.cos(angle) * spd,
-        vy:      Math.sin(angle) * spd,
+        x0:   cx,
+        y0:   cy,
+        vx:   Math.cos(angle) * spd,
+        vy:   Math.sin(angle) * spd,
         color,
-        born:    now,
-        size:    Math.random() < 0.5 ? 2 : 3,
+        born: now,
+        size: Math.random() < 0.5 ? 2 : 3,
       });
     }
   }
 
-  #tickAndDrawParticles(ctx, s, now) {
+  #tickAndDrawParticles(ctx, now) {
     for (let i = this.#particles.length - 1; i >= 0; i--) {
       const p   = this.#particles[i];
       const age = now - p.born;
@@ -555,7 +469,7 @@ export class CanvasRenderAdapter {
 
       ctx.globalAlpha = alpha;
       ctx.fillStyle   = p.color;
-      ctx.fillRect(x - p.size / 2, y - p.size / 2, p.size, p.size);
+      ctx.fillRect(Math.round(x) - p.size / 2, Math.round(y) - p.size / 2, p.size, p.size);
     }
     ctx.globalAlpha = 1;
   }
@@ -582,73 +496,8 @@ export class CanvasRenderAdapter {
     this.#prevGhostCount = snapshot.ghosts.length;
     this.#prevGhosts     = snapshot.ghosts.map(g => ({ x: g.x, y: g.y, w: g.w, h: g.h, color: g.color }));
     this.#prevAlienCount = snapshot.aliens.length;
-    this.#prevAliens     = snapshot.aliens.map(a => ({
-      x: a.x, y: a.y, w: a.w, h: a.h, color: a.color,
-    }));
+    this.#prevAliens     = snapshot.aliens.map(a => ({ x: a.x, y: a.y, w: a.w, h: a.h, color: a.color }));
     this.#prevMotherShip = snapshot.motherShip ? { ...snapshot.motherShip } : null;
-  }
-
-  #drawMotherShip(ctx, ms, s) {
-    const CLR = '#f38ba8'; // Catppuccin red
-    const { x, y, w, h } = ms;
-    const cx = x + w / 2;
-
-    ctx.save();
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = CLR;
-    ctx.fillStyle   = CLR;
-
-    // Wide flat saucer body
-    ctx.beginPath();
-    ctx.ellipse(cx, y + h * 0.68, w / 2, h * 0.36, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // Dome (upper half-ellipse)
-    ctx.beginPath();
-    ctx.ellipse(cx, y + h * 0.5, w * 0.26, h * 0.44, 0, Math.PI, 0);
-    ctx.fill();
-
-    // Dark cockpit window
-    ctx.shadowBlur = 0;
-    ctx.fillStyle  = '#1e1e2e';
-    ctx.beginPath();
-    ctx.ellipse(cx, y + h * 0.46, w * 0.12, h * 0.22, 0, 0, Math.PI * 2);
-    ctx.fill();
-
-    // HP bar (above mothership): green → yellow → red
-    const barY    = y - 5;
-    const hpFrac  = ms.hp / ms.maxHp;
-    const barClr  = hpFrac > 2 / 3 ? '#a6e3a1'   // green
-                  : hpFrac > 1 / 3 ? '#f9e2af'   // yellow
-                  :                  '#f38ba8';   // red
-    ctx.shadowBlur = 0;
-    ctx.fillStyle  = '#313244';
-    ctx.fillRect(x, barY, w, 3);
-    ctx.fillStyle  = barClr;
-    ctx.fillRect(x, barY, w * hpFrac, 3);
-
-    ctx.restore();
-  }
-
-  #drawLasers(ctx, lasers, s) {
-    const CLR = '#f38ba8';
-    ctx.save();
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = CLR;
-    ctx.fillStyle   = CLR;
-    for (const l of lasers) ctx.fillRect(l.x, l.y, l.w, l.h);
-    ctx.restore();
-  }
-
-  #drawShield(ctx, { paddle }, s, now) {
-    ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(now * 0.004));
-    ctx.shadowBlur  = 8;
-    ctx.shadowColor = CLR_SHIELD;
-    ctx.strokeStyle = CLR_SHIELD;
-    ctx.lineWidth   = 2;
-    ctx.strokeRect(paddle.x - 3, paddle.y - 3, paddle.w + 6, paddle.h + 6);
-    ctx.globalAlpha = 1;
-    ctx.shadowBlur  = 0;
   }
 
   #updateTouchKnob({ paddle }) {

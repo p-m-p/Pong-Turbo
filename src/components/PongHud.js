@@ -10,21 +10,19 @@ template.innerHTML = `
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 0.375rem;
+      gap: 0.5rem;
     }
     #score {
-      font-family: 'Play', helvetica, arial, sans-serif;
-      font-weight: 700;
-      font-size: clamp(1.5rem, 4vw, 2.75rem);
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.875rem, 3vw, 1.5rem);
       line-height: 1;
-      color: var(--mauve);
-      letter-spacing: -0.02em;
+      color: #ffff00;
       min-width: 5ch;
       text-align: right;
     }
     #lives {
       display: flex;
-      gap: 5px;
+      gap: 4px;
       list-style: none;
       margin: 0;
       padding: 0;
@@ -32,17 +30,16 @@ template.innerHTML = `
     .life {
       width: 10px;
       height: 10px;
-      border-radius: 50%;
-      border: 2px solid var(--green);
-      transition: background 0.2s ease;
+      background: transparent;
+      border: 2px solid #00ff00;
     }
     .life.active {
-      background: var(--green);
+      background: #00ff00;
     }
     @media (max-height: 480px) and (orientation: landscape) {
       :host          { align-items: center; gap: 0.5rem; }
       #score-display { flex-direction: row; align-items: center; gap: 0.5rem; }
-      #score         { font-size: 1rem; min-width: auto; }
+      #score         { font-size: 0.7rem; min-width: auto; }
       #lives         { gap: 3px; }
       .life          { width: 6px; height: 6px; border-width: 1.5px; }
     }

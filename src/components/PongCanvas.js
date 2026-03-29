@@ -32,26 +32,23 @@ template.innerHTML = `
     }
     #start-screen.hidden { display: none; }
     #startGame {
-      font-family: 'Play', helvetica, arial, sans-serif;
-      font-size: 1.375rem;
-      font-weight: 700;
+      font-family: 'Press Start 2P', monospace;
+      font-size: 1rem;
       letter-spacing: 0.08em;
-      color: var(--base);
-      background: var(--mauve);
-      border: none;
-      border-radius: 8px;
-      padding: 0.75rem 3.5rem;
+      color: #000000;
+      background: #ffff00;
+      border: 3px solid #ffffff;
+      border-radius: 0;
+      padding: 0.75rem 3rem;
       cursor: pointer;
-      transition: background 0.15s ease, transform 0.1s ease;
+      transition: background 0.05s;
     }
-    #startGame:hover  { background: var(--lavender); transform: scale(1.03); }
-    #startGame:active { transform: scale(0.97); }
+    #startGame:hover  { background: #ffffff; }
+    #startGame:active { background: #cccc00; }
     canvas {
       display: block;
-      background: var(--mantle);
-      border-radius: 6px;
-      border: 1px solid var(--surface-0);
-      box-shadow: 0 0 0 1px var(--surface-0), 0 0 40px rgba(180, 190, 254, 0.07);
+      background: #000000;
+      border: 2px solid #333333;
       flex-shrink: 0;
     }
     #touch-control {
@@ -69,28 +66,25 @@ template.innerHTML = `
       left: 50%; top: 1.5rem; bottom: 1.5rem;
       width: 2px;
       transform: translateX(-50%);
-      background: var(--surface-1);
-      border-radius: 2px;
+      background: #333333;
     }
     #touch-knob {
       position: absolute;
       left: 50%; top: 0;
       width: 38px; height: 56px;
       transform: translateX(-50%);
-      background: var(--surface-0);
-      border: 1.5px solid var(--lavender);
-      border-radius: 19px;
+      background: #111111;
+      border: 2px solid #ffff00;
+      border-radius: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 0 10px rgba(180, 190, 254, 0.2);
     }
     .knob-lines {
       display: block;
-      width: 14px; height: 1.5px;
-      background: var(--overlay-0);
-      border-radius: 1px;
-      box-shadow: 0 -5px 0 var(--overlay-0), 0 5px 0 var(--overlay-0);
+      width: 14px; height: 2px;
+      background: #ffff00;
+      box-shadow: 0 -5px 0 #ffff00, 0 5px 0 #ffff00;
     }
     @media (pointer: coarse) and (orientation: landscape) {
       #touch-control           { display: flex; flex-direction: column; justify-content: center; visibility: hidden; }
@@ -99,7 +93,7 @@ template.innerHTML = `
   </style>
   <div id="canvas-wrap">
     <div id="start-screen">
-      <button id="startGame">Play</button>
+      <button id="startGame">PLAY</button>
     </div>
     <canvas id="pongBoard">
       <p>Your browser does not support HTML5 Canvas. Please update to a modern browser.</p>

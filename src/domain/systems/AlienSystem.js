@@ -14,11 +14,11 @@ import {
   VIRTUAL_H,
 } from '../constants.js';
 
-// Alien type and colour per column — left to right
+// Alien type and colour per column — Space Invaders palette
 const COL_TIERS = [
-  { type: 'drone', color: '#cba6f7' }, // col 0 — mauve
-  { type: 'crab',  color: '#89dceb' }, // col 1 — sky
-  { type: 'squid', color: '#a6e3a1' }, // col 2 — green
+  { type: 'drone', color: '#ff0000' }, // col 0 — red   (top rows)
+  { type: 'crab',  color: '#ffff00' }, // col 1 — yellow (middle rows)
+  { type: 'squid', color: '#00ff00' }, // col 2 — green (bottom rows)
 ];
 
 export class AlienSystem {

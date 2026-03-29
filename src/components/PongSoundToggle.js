@@ -11,21 +11,21 @@ template.innerHTML = `
       display: flex;
       align-items: center;
       justify-content: center;
-      background: var(--surface-0);
-      border: 1px solid var(--surface-1);
-      border-radius: 8px;
+      background: #111111;
+      border: 2px solid #333333;
+      border-radius: 0;
       padding: 6px;
       cursor: pointer;
-      color: var(--subtext);
-      transition: color 0.15s ease, background 0.15s ease;
+      color: #888888;
+      transition: color 0.05s, border-color 0.05s;
     }
     button svg  { display: block; width: 100%; height: 100%; }
-    button:hover { color: var(--text); background: var(--surface-1); }
-    button.muted { color: var(--overlay-0); }
+    button:hover { color: #ffffff; border-color: #ffff00; }
+    button.muted { color: #444444; }
     .mute-slash { display: none; }
     button.muted .mute-slash { display: block; }
     @media (max-height: 480px) and (orientation: landscape) {
-      button { width: 26px; height: 26px; padding: 4px; border-radius: 6px; }
+      button { width: 26px; height: 26px; padding: 4px; }
     }
   </style>
   <button aria-label="Mute sound">

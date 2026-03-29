@@ -7,13 +7,13 @@ import {
   VIRTUAL_W,
 } from '../constants.js';
 
-// Catppuccin Mocha accent colours
+// Pac-Man ghost colours
 const GHOST_COLOURS = [
-  '#cba6f7', // mauve
-  '#f5c2e7', // pink
-  '#89dceb', // sky
-  '#a6e3a1', // green
-  '#f9e2af', // yellow
+  '#ff0000', // Blinky  — red
+  '#ffb8ff', // Pinky   — pink
+  '#00ffff', // Inky    — cyan
+  '#ffb827', // Clyde   — orange
+  '#ffffff', // bonus   — white
 ];
 
 export class GhostSystem {

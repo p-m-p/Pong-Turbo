@@ -4,18 +4,17 @@ const template = document.createElement('template');
 template.innerHTML = `
   <style>
     :host {
-      --base:      #1e1e2e;
-      --mantle:    #181825;
-      --crust:     #11111b;
-      --surface-0: #313244;
-      --surface-1: #45475a;
-      --overlay-0: #6c7086;
-      --subtext:   #a6adc8;
-      --text:      #cdd6f4;
-      --lavender:  #b4befe;
-      --mauve:     #cba6f7;
-      --green:     #a6e3a1;
-      --red:       #f38ba8;
+      --bg:       #000000;
+      --bg-dark:  #050505;
+      --bg-mid:   #0f0f0f;
+      --border:   #2a2a2a;
+      --dim:      #444444;
+      --text-dim: #888888;
+      --text:     #ffffff;
+      --yellow:   #ffff00;
+      --cyan:     #00ffff;
+      --green:    #00ff00;
+      --red:      #ff0000;
 
       display: block;
     }
@@ -31,9 +30,7 @@ template.innerHTML = `
       display: flex;
       align-items: center;
       justify-content: center;
-      background: rgba(17, 17, 27, 0.92);
-      backdrop-filter: blur(6px);
-      -webkit-backdrop-filter: blur(6px);
+      background: rgba(0, 0, 0, 0.92);
       z-index: 20;
       padding: 1rem;
     }
@@ -54,46 +51,43 @@ template.innerHTML = `
       min-height: 0;
       overflow-y: auto;
       scrollbar-width: thin;
-      scrollbar-color: var(--surface-1) transparent;
+      scrollbar-color: var(--border) transparent;
     }
 
     h2 {
-      font-family: 'Play', helvetica, arial, sans-serif;
-      font-size: clamp(1.25rem, 4vw, 1.75rem);
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      color: var(--mauve);
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.875rem, 3vw, 1.25rem);
+      letter-spacing: 0.08em;
+      color: var(--yellow);
       margin: 0;
       text-align: center;
       text-transform: uppercase;
     }
 
     .score-display {
-      font-family: 'Play', helvetica, arial, sans-serif;
-      font-size: clamp(1rem, 3.5vw, 1.5rem);
-      font-weight: 700;
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.6rem, 2.5vw, 0.875rem);
       color: var(--text);
       text-align: center;
-      line-height: 1.4;
+      line-height: 1.6;
       text-transform: uppercase;
     }
     .score-display .value { color: var(--green); }
-    .score-display .rank  { color: var(--lavender); font-size: 0.85em; }
+    .score-display .rank  { color: var(--cyan); font-size: 0.85em; }
 
     /* ── Score table ──────────────────────────────────────────────── */
     table {
       width: 100%;
       border-collapse: collapse;
-      font-family: 'Play', helvetica, arial, sans-serif;
-      font-size: clamp(0.7rem, 2.5vw, 0.875rem);
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.45rem, 1.8vw, 0.625rem);
     }
 
     th {
-      color: var(--overlay-0);
-      font-weight: 700;
+      color: var(--dim);
       letter-spacing: 0.08em;
       padding: 0 0.25rem 0.5rem;
-      border-bottom: 1px solid var(--surface-0);
+      border-bottom: 1px solid var(--border);
       text-transform: uppercase;
     }
 
@@ -103,21 +97,21 @@ template.innerHTML = `
 
     td {
       padding: 0.35rem 0.25rem;
-      color: var(--subtext);
-      border-bottom: 1px solid var(--surface-0);
+      color: var(--text-dim);
+      border-bottom: 1px solid var(--border);
     }
 
-    td.rank-col  { color: var(--overlay-0); text-align: right; width: 2.5em; }
-    td.name-col  { color: var(--text); font-weight: 700; letter-spacing: 0.06em; padding-left: 0.75rem; }
+    td.rank-col  { color: var(--dim); text-align: right; width: 2.5em; }
+    td.name-col  { color: var(--text); letter-spacing: 0.06em; padding-left: 0.75rem; }
     td.score-col { text-align: right; font-variant-numeric: tabular-nums; }
 
-    tr.player td            { color: var(--mauve); }
-    tr.player td.name-col   { color: var(--mauve); }
-    tr.player td.rank-col   { color: var(--mauve); }
-    tr.player td.score-col  { color: var(--mauve); }
+    tr.player td            { color: var(--yellow); }
+    tr.player td.name-col   { color: var(--yellow); }
+    tr.player td.rank-col   { color: var(--yellow); }
+    tr.player td.score-col  { color: var(--yellow); }
 
-    tr.player-pending td            { color: var(--lavender); }
-    tr.player-pending td.name-col   { color: var(--lavender); }
+    tr.player-pending td            { color: var(--cyan); }
+    tr.player-pending td.name-col   { color: var(--cyan); }
 
     @keyframes blink {
       0%, 100% { opacity: 1; }
@@ -125,54 +119,52 @@ template.innerHTML = `
     }
     tr.player-pending { animation: blink 1.2s ease-in-out infinite; }
 
-    .rank-marker { color: var(--mauve); margin-right: 0.25em; }
+    .rank-marker { color: var(--yellow); margin-right: 0.25em; }
 
     /* ── Inline name input (sits inside the player-pending table row) ── */
     .name-input-inline {
-      font-family: 'Play', helvetica, arial, sans-serif;
+      font-family: 'Press Start 2P', monospace;
       font-size: inherit;
-      font-weight: 700;
       text-transform: uppercase;
-      letter-spacing: 0.2em;
+      letter-spacing: 0.15em;
       width: 5.5ch;
       background: transparent;
-      color: var(--lavender);
+      color: var(--cyan);
       border: none;
-      border-bottom: 1.5px solid var(--lavender);
+      border-bottom: 2px solid var(--cyan);
       outline: none;
-      caret-color: var(--lavender);
+      caret-color: var(--cyan);
       padding: 0;
       animation: none; /* don't inherit row blink */
     }
     .name-input-inline:focus {
-      border-bottom-color: var(--mauve);
-      color: var(--mauve);
+      border-bottom-color: var(--yellow);
+      color: var(--yellow);
     }
 
     /* ── Buttons ───────────────────────────────────────────────────── */
     button {
-      font-family: 'Play', helvetica, arial, sans-serif;
-      font-size: clamp(0.875rem, 3vw, 1.125rem);
-      font-weight: 700;
+      font-family: 'Press Start 2P', monospace;
+      font-size: clamp(0.6rem, 2.5vw, 0.8rem);
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--base);
-      background: var(--mauve);
-      border: none;
-      border-radius: 8px;
+      color: #000000;
+      background: var(--yellow);
+      border: 2px solid var(--text);
+      border-radius: 0;
       padding: 0.6em 2.5em;
       cursor: pointer;
-      transition: background 0.15s, transform 0.1s;
+      transition: background 0.05s;
       flex-shrink: 0;
     }
-    button:hover  { background: var(--lavender); transform: scale(1.03); }
-    button:active { transform: scale(0.97); }
-    button:disabled { background: var(--surface-1); color: var(--overlay-0); cursor: default; transform: none; }
+    button:hover  { background: var(--text); }
+    button:active { background: #cccc00; }
+    button:disabled { background: var(--bg-mid); color: var(--dim); border-color: var(--border); cursor: default; }
 
     .status-msg {
-      font-family: 'Play', helvetica, arial, sans-serif;
-      font-size: 0.75rem;
-      color: var(--overlay-0);
+      font-family: 'Press Start 2P', monospace;
+      font-size: 0.55rem;
+      color: var(--dim);
       text-align: center;
     }
     .status-msg.error { color: var(--red); }
@@ -180,7 +172,7 @@ template.innerHTML = `
     /* ── Compact landscape ─────────────────────────────────────────── */
     @media (max-height: 480px) {
       .panel { gap: 0.4rem; }
-      h2     { font-size: 1rem; }
+      h2     { font-size: 0.75rem; }
       td, th { padding-top: 0.2rem; padding-bottom: 0.2rem; }
     }
   </style>
@@ -365,7 +357,7 @@ export class PongScoreboard extends HTMLElement {
   #renderTopTable(scores) {
     const tbody = this.shadowRoot.getElementById('top-tbody');
     if (scores.length === 0) {
-      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:var(--overlay-0);padding:1rem">No scores yet — be first!</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#444444;padding:1rem">No scores yet — be first!</td></tr>`;
       return;
     }
     tbody.innerHTML = scores.map(({ rank, name, score }) => `
