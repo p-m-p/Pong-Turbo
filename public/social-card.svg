@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <style>
+      text { font-family: 'Press Start 2P', 'Courier New', monospace; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#000"/>
+
+  <!-- Subtle pixel grid -->
+  <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+    <path d="M20,0 L0,0 0,20" fill="none" stroke="#111" stroke-width="0.5"/>
+  </pattern>
+  <rect width="1200" height="630" fill="url(#grid)"/>
+
+  <!-- ── Left: Title ───────────────────────────────────────────── -->
+  <text x="80" y="200" font-size="120" fill="#ffff00" letter-spacing="0.04em">PONG</text>
+  <text x="88" y="300" font-size="64" fill="#ffffff" letter-spacing="0.12em">TURBO</text>
+  <text x="88" y="370" font-size="20" fill="#444" letter-spacing="0.1em">PAC-MAN MEETS SPACE INVADERS</text>
+
+  <!-- Divider -->
+  <line x1="560" y1="60" x2="560" y2="570" stroke="#222" stroke-width="1"/>
+
+  <!-- ── Right: Ghost + ball scene ─────────────────────────────── -->
+
+  <!-- Ghost body (Blinky red), center ~(800,300), r~140 -->
+  <path d="M620,300 A140,140,0,0,1,900,300 L900,460
+           Q857,520 813,460
+           Q770,520 726,460
+           Q683,520 640,460
+           Q597,520 554,460 Z"
+        fill="#ff0000"/>
+
+  <!-- Eyes (white) -->
+  <circle cx="692" cy="340" r="38" fill="#fff"/>
+  <circle cx="828" cy="340" r="38" fill="#fff"/>
+
+  <!-- Pupils (looking right toward ball) -->
+  <circle cx="714" cy="352" r="21" fill="#000"/>
+  <circle cx="850" cy="352" r="21" fill="#000"/>
+
+  <!-- Pong ball (white square, embedded in ghost right side = hit) -->
+  <rect x="870" y="258" width="100" height="100" fill="#fff"/>
+
+  <!-- Impact lines -->
+  <line x1="975" y1="238" x2="1020" y2="200" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <line x1="980" y1="308" x2="1035" y2="308" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+  <line x1="975" y1="375" x2="1020" y2="415" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+
+  <!-- ── Bottom: URL / branding ─────────────────────────────────── -->
+  <line x1="80" y1="430" x2="480" y2="430" stroke="#222" stroke-width="1"/>
+  <text x="80" y="470" font-size="18" fill="#444" letter-spacing="0.06em">philparsons.co.uk</text>
+</svg>

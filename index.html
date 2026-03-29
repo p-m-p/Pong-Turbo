@@ -12,6 +12,17 @@
   <link rel="apple-touch-icon" href="/Pong-Turbo/icon-192.svg">
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#000000">
+  <!-- Open Graph / social card -->
+  <meta property="og:type"        content="website">
+  <meta property="og:title"       content="PONG Turbo">
+  <meta property="og:description" content="Pac-Man meets Space Invaders in this retro pong game.">
+  <meta property="og:image"       content="/Pong-Turbo/social-card.svg">
+  <meta property="og:image:width"  content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="PONG Turbo">
+  <meta name="twitter:description" content="Pac-Man meets Space Invaders in this retro pong game.">
+  <meta name="twitter:image"       content="/Pong-Turbo/social-card.svg">
   <link rel="stylesheet" href="styles/pong.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -20,7 +31,10 @@
 <div id="app">
 
   <header>
-    <h1 id="logo">PONG <span>Turbo</span></h1>
+    <h1 id="logo">
+      <img src="./favicon.svg" width="28" height="28" alt="" aria-hidden="true">
+      PONG <span>Turbo</span>
+    </h1>
     <pong-hud lives="5"></pong-hud>
     <pong-sound-toggle soundtrack="soundtrack"></pong-sound-toggle>
   </header>
