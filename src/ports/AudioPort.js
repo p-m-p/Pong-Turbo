@@ -1,6 +1,6 @@
 /**
  * @typedef {Object} AudioPort
- * @property {(name: 'paddle'|'ghost'|'roundEnd'|'levelUp') => void} play
+ * @property {(name: 'paddle'|'ghost'|'roundEnd'|'levelUp'|'mothership') => void} play
  */
 export function assertAudioPort(adapter) {
   if (typeof adapter.play !== 'function')

@@ -273,7 +273,7 @@ export class GameLoop {
 
       const msResult = this.#motherShipSystem.checkBallCollision(this.#ball);
       if (msResult) {
-        this.#audio.play(msResult === 'killed' ? 'ghost' : 'paddle');
+        this.#audio.play(msResult === 'killed' ? 'ghost' : 'mothership');
         if (msResult === 'killed') {
           // Mothership kill clears the level — no respawn
           this.#score += MOTHERSHIP_KILL_SCORE + bonusClearScore(this.#level);

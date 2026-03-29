@@ -110,5 +110,8 @@ export function checkPaddleHit(ball, paddle, gameSpeed, ballSpeed, paddleStunned
   const maxDy = newBallSpeed * 1.5;
   ball.dy     = Math.max(-maxDy, Math.min(maxDy, ball.dy + spin));
 
+  // Push ball clear of the paddle face so it can't trigger 'out' next tick
+  ball.x = paddle.x - ball.w;
+
   return { ballSpeed: newBallSpeed };
 }

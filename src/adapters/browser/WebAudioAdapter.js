@@ -33,13 +33,31 @@ export class WebAudioAdapter {
 
   play(name) {
     const ctx = this.#ctx;
-    const buf = this.#buffers[name];
-    if (!ctx || !buf) return;
+    if (!ctx) return;
     if (ctx.state === 'suspended') ctx.resume();
+    if (name === 'mothership') return this.#playMothership(ctx);
+    const buf = this.#buffers[name];
+    if (!buf) return;
     const src = ctx.createBufferSource();
     src.buffer = buf;
     src.connect(ctx.destination);
     src.start(0);
+  }
+
+  /** Synthesised descending blip — Space Invaders UFO hit. */
+  #playMothership(ctx) {
+    const osc  = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.type = 'square';
+    const t = ctx.currentTime;
+    osc.frequency.setValueAtTime(600, t);
+    osc.frequency.exponentialRampToValueAtTime(80, t + 0.35);
+    gain.gain.setValueAtTime(0.25, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+    osc.start(t);
+    osc.stop(t + 0.35);
   }
 
   #decode(name) {
