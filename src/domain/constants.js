@@ -15,7 +15,6 @@ export const RALLY_INCREMENT = 0.5;
 export const RALLY_CAP = 6;
 export const READY_PAUSE_MS = 600;
 
-
 // ── Paddle ─────────────────────────────────────────────────────────────────
 export const PADDLE_X = VIRTUAL_W - 15;
 export const PADDLE_BASE_H = 60;
@@ -83,4 +82,3 @@ export const LASER_SPEED_MULT = 2; // laser speed = gameSpeed * this
 // ── Scoring ────────────────────────────────────────────────────────────────
 export const BONUS_COMPLETION_SCORE = 2000;
 export const LEVEL_CLEAR_SCORE_MULT = 1000;
-

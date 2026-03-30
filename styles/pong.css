@@ -7,19 +7,19 @@
   --dim: #787878;
   --text-dim: #aaaaaa;
   --text: #ffffff;
-  --accent: #ffff00;          /* primary: logo, buttons, player highlight */
-  --accent-press: #cccc00;    /* button active state                       */
-  --interactive: #00ffff;     /* input fields, secondary highlight          */
-  --positive: #00ff00;        /* lives indicator, score values              */
-  --error: #ff0000;           /* error messages                             */
+  --accent: #ffff00; /* primary: logo, buttons, player highlight */
+  --accent-press: #cccc00; /* button active state                       */
+  --interactive: #00ffff; /* input fields, secondary highlight          */
+  --positive: #00ff00; /* lives indicator, score values              */
+  --error: #ff0000; /* error messages                             */
 
   /* ── Typography ─────────────────────────────────────────────────────────── */
   --font: 'Press Start 2P', monospace;
-  --fs-2xs: 0.55rem;  /* footer, status messages */
-  --fs-xs:  0.625rem; /* table rows, sub-labels  */
-  --fs-sm:  0.75rem;  /* compact UI, small text  */
-  --fs-lg:  1.25rem;  /* score headings           */
-  --fs-xl:  1.5rem;   /* logo, main headings      */
+  --fs-2xs: 0.55rem; /* footer, status messages */
+  --fs-xs: 0.625rem; /* table rows, sub-labels  */
+  --fs-sm: 0.75rem; /* compact UI, small text  */
+  --fs-lg: 1.25rem; /* score headings           */
+  --fs-xl: 1.5rem; /* logo, main headings      */
   --tracking: 0.08em; /* standard letter-spacing  */
 
   /* ── Spacing scale ──────────────────────────────────────────────────────── */
