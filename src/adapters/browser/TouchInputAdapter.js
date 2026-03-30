@@ -2,16 +2,21 @@ import { VIRTUAL_H } from '../../domain/constants.js';
 
 /**
  * Converts touch events on the #touch-control zone into InputPort snapshots.
- * Merges with a secondary adapter (keyboard) so touch and keyboard can coexist.
+ * Merges with keyboard and an optional gamepad adapter so all inputs coexist.
+ *
+ * Priority: touch absoluteY > keyboard (keys + wheel) > gamepad
  *
  * @param {import('./KeyboardInputAdapter.js').KeyboardInputAdapter} keyboardAdapter
+ * @param {import('./GamepadInputAdapter.js').GamepadInputAdapter|null} gamepadAdapter
  */
 export class TouchInputAdapter {
   #keyboard;
+  #gamepad;
   #absoluteY = null;
 
-  constructor(keyboardAdapter) {
+  constructor(keyboardAdapter, gamepadAdapter = null) {
     this.#keyboard = keyboardAdapter;
+    this.#gamepad = gamepadAdapter;
   }
 
   init(zone, paddleH) {
@@ -37,10 +42,12 @@ export class TouchInputAdapter {
 
   /** @returns {import('../../ports/InputPort.js').InputSnapshot} */
   read() {
-    const base = this.#keyboard.read();
+    const kb = this.#keyboard.read();
+    const gp = this.#gamepad?.read();
     return {
-      ...base,
-      paddleAbsoluteY: this.#absoluteY,
+      paddleDirection: kb.paddleDirection ?? gp?.paddleDirection ?? null,
+      paddleAbsoluteY: this.#absoluteY ?? kb.paddleAbsoluteY ?? null,
+      restartRequested: kb.restartRequested || (gp?.restartRequested ?? false),
     };
   }
 }

@@ -1,4 +1,5 @@
 import { CanvasRenderAdapter } from '../adapters/browser/CanvasRenderAdapter.js';
+import { GamepadInputAdapter } from '../adapters/browser/GamepadInputAdapter.js';
 import { KeyboardInputAdapter } from '../adapters/browser/KeyboardInputAdapter.js';
 import { TouchInputAdapter } from '../adapters/browser/TouchInputAdapter.js';
 
@@ -112,6 +113,7 @@ template.innerHTML = `
 export class PongCanvas extends HTMLElement {
   #render;
   #keyboard;
+  #gamepad;
   #touch;
 
   connectedCallback() {
@@ -127,7 +129,10 @@ export class PongCanvas extends HTMLElement {
     this.#keyboard = new KeyboardInputAdapter();
     this.#keyboard.init();
 
-    this.#touch = new TouchInputAdapter(this.#keyboard);
+    this.#gamepad = new GamepadInputAdapter();
+    this.#gamepad.init();
+
+    this.#touch = new TouchInputAdapter(this.#keyboard, this.#gamepad);
     this.#render = new CanvasRenderAdapter(canvas, canvasWrap, knob, zone);
     this.#render.init();
 
