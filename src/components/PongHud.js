@@ -57,10 +57,10 @@ export class PongHud extends HTMLElement {
   connectedCallback() {
     if (this.shadowRoot) return;
     const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
-    this.#scoreEl = shadow.getElementById('score');
-    this.#livesEl = shadow.getElementById('lives');
-    this.#buildLives(parseInt(this.getAttribute('lives') ?? 5));
+    shadow.append(template.content.cloneNode(true));
+    this.#scoreEl = shadow.querySelector('#score');
+    this.#livesEl = shadow.querySelector('#lives');
+    this.#buildLives(Number.parseInt(this.getAttribute('lives') ?? 5));
   }
 
   #buildLives(count) {
@@ -76,11 +76,11 @@ export class PongHud extends HTMLElement {
 
   /** @param {number} lives */
   updateLives(lives) {
-    this.shadowRoot?.querySelectorAll('.life').forEach((el, i) => {
+    for (const [i, el] of (this.shadowRoot?.querySelectorAll('.life') ?? []).entries()) {
       const active = i < lives;
       el.classList.toggle('active', active);
       el.setAttribute('aria-label', `Life ${i + 1}${active ? '' : ' (lost)'}`);
-    });
+    }
   }
 
   /** @param {number} lives */

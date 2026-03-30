@@ -21,11 +21,7 @@ export class PowerUpSystem {
   trySpawn(cx, cy, killCount, now, lives = Infinity) {
     if (killCount < 2 && Math.random() >= POWERUP_SINGLE_CHANCE) return;
     let type;
-    if (lives <= 2 && Math.random() < POWERUP_LIFE_CHANCE) {
-      type = 'life';
-    } else {
-      type = TYPES[Math.floor(Math.random() * TYPES.length)];
-    }
+    type = lives <= 2 && Math.random() < POWERUP_LIFE_CHANCE ? 'life' : TYPES[Math.floor(Math.random() * TYPES.length)];
     this.#powerUps.push(new PowerUp(cx, cy, type, now));
   }
 

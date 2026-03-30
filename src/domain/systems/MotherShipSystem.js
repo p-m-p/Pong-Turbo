@@ -81,10 +81,14 @@ export class MotherShipSystem {
     this.#lasers = this.#lasers.filter(l => l.x < fieldW);
 
     switch (this.#state) {
-      case 'entering':   this.#stepEntering(now, timeScale, alienOffsetX, fieldH);                         break;
-      case 'roaming':    this.#stepRoaming(now, timeScale, alienOffsetX, alienOffsetY, aliens, fieldH, fieldW); break;
-      case 'charging':   this.#stepCharging(now, timeScale, fieldH);                                       break;
-      case 'retreating': this.#stepRetreating(now, timeScale, alienOffsetX, fieldH);                       break;
+      case 'entering': {   this.#stepEntering(now, timeScale, alienOffsetX, fieldH);                         break;
+      }
+      case 'roaming': {    this.#stepRoaming(now, timeScale, alienOffsetX, alienOffsetY, aliens, fieldH, fieldW); break;
+      }
+      case 'charging': {   this.#stepCharging(now, timeScale, fieldH);                                       break;
+      }
+      case 'retreating': { this.#stepRetreating(now, timeScale, alienOffsetX, fieldH);                       break;
+      }
     }
   }
 

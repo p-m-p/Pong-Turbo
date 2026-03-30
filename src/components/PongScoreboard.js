@@ -237,14 +237,14 @@ export class PongScoreboard extends HTMLElement {
 
   static get observedAttributes() { return ['api']; }
 
-  attributeChangedCallback(name, _old, val) {
-    if (name === 'api') this.#adapter = new ScoreboardAdapter(val || null);
+  attributeChangedCallback(name, _old, value) {
+    if (name === 'api') this.#adapter = new ScoreboardAdapter(value || null);
   }
 
   connectedCallback() {
     if (this.shadowRoot) return;
     const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
+    shadow.append(template.content.cloneNode(true));
 
     // Create the persistent name input element once
     this.#nameInput = document.createElement('input');
@@ -261,16 +261,16 @@ export class PongScoreboard extends HTMLElement {
   }
 
   #wireEvents(shadow) {
-    shadow.getElementById('play-btn').addEventListener('click', () => {
+    shadow.querySelector('#play-btn').addEventListener('click', () => {
       this.#emitPlay();
     });
 
-    shadow.getElementById('play-again-btn').addEventListener('click', () => {
+    shadow.querySelector('#play-again-btn').addEventListener('click', () => {
       this.#emitPlay();
     });
 
     this.#nameInput.addEventListener('input', () => {
-      this.#nameInput.value = this.#nameInput.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      this.#nameInput.value = this.#nameInput.value.toUpperCase().replaceAll(/[^A-Z0-9]/g, '');
     });
     this.#nameInput.addEventListener('keydown', (ev) => {
       if (ev.key === 'Enter') this.#handleSubmit();
@@ -283,8 +283,8 @@ export class PongScoreboard extends HTMLElement {
     this.#state  = 'start';
     this.hidden  = false;
     const shadow = this.shadowRoot;
-    shadow.getElementById('start-panel').hidden  = false;
-    shadow.getElementById('result-panel').hidden = true;
+    shadow.querySelector('#start-panel').hidden  = false;
+    shadow.querySelector('#result-panel').hidden = true;
     this.#fetchAndRenderTopScores();
   }
 
@@ -295,12 +295,12 @@ export class PongScoreboard extends HTMLElement {
     this.#state = 'result-pending';
     this.hidden = false;
     const shadow = this.shadowRoot;
-    shadow.getElementById('start-panel').hidden      = true;
-    shadow.getElementById('result-panel').hidden     = false;
-    shadow.getElementById('play-again-btn').hidden   = true;
-    shadow.getElementById('submit-status').textContent = '';
-    shadow.getElementById('submit-status').className   = 'status-msg';
-    shadow.getElementById('final-score').textContent   = score.toLocaleString();
+    shadow.querySelector('#start-panel').hidden      = true;
+    shadow.querySelector('#result-panel').hidden     = false;
+    shadow.querySelector('#play-again-btn').hidden   = true;
+    shadow.querySelector('#submit-status').textContent = '';
+    shadow.querySelector('#submit-status').className   = 'status-msg';
+    shadow.querySelector('#final-score').textContent   = score.toLocaleString();
 
     this.#nameInput.value    = '';
     this.#nameInput.disabled = false;
@@ -329,7 +329,7 @@ export class PongScoreboard extends HTMLElement {
 
   async #fetchAndRenderTopScores() {
     const shadow = this.shadowRoot;
-    const status = shadow.getElementById('start-status');
+    const status = shadow.querySelector('#start-status');
     status.textContent = '';
 
     try {
@@ -355,7 +355,7 @@ export class PongScoreboard extends HTMLElement {
   }
 
   #renderTopTable(scores) {
-    const tbody = this.shadowRoot.getElementById('top-tbody');
+    const tbody = this.shadowRoot.querySelector('#top-tbody');
     if (scores.length === 0) {
       tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;color:#444444;padding:1rem">No scores yet — be first!</td></tr>`;
       return;
@@ -371,8 +371,8 @@ export class PongScoreboard extends HTMLElement {
 
   #renderResultTable(topScores, context) {
     const shadow      = this.shadowRoot;
-    const tbody       = shadow.getElementById('result-tbody');
-    const rankPreview = shadow.getElementById('rank-preview');
+    const tbody       = shadow.querySelector('#result-tbody');
+    const rankPreview = shadow.querySelector('#rank-preview');
 
     if (context) {
       // Post-submit: confirmed context window, no input
@@ -396,8 +396,8 @@ export class PongScoreboard extends HTMLElement {
         <td class="name-col"></td>
         <td class="score-col">${this.#score.toLocaleString()}</td>
       `;
-      tr.querySelector('.name-col').appendChild(this.#nameInput);
-      tbody.appendChild(tr);
+      tr.querySelector('.name-col').append(this.#nameInput);
+      tbody.append(tr);
       rankPreview.textContent = 'Rank #1';
       this.#nameInput.focus();
       return;
@@ -413,12 +413,12 @@ export class PongScoreboard extends HTMLElement {
 
     // Build merged list with pending row spliced in
     const allRows = topScores.map(s => ({ ...s, isPending: false }));
-    const insertIdx = Math.min(pendingRank - 1, allRows.length);
-    allRows.splice(insertIdx, 0, { rank: pendingRank, score: playerScore, isPending: true });
-    for (let i = insertIdx + 1; i < allRows.length; i++) allRows[i].rank = i + 1;
+    const insertIndex = Math.min(pendingRank - 1, allRows.length);
+    allRows.splice(insertIndex, 0, { rank: pendingRank, score: playerScore, isPending: true });
+    for (let i = insertIndex + 1; i < allRows.length; i++) allRows[i].rank = i + 1;
 
     // Window of 5 centred on pending
-    const start  = Math.max(0, insertIdx - 2);
+    const start  = Math.max(0, insertIndex - 2);
     const window = allRows.slice(start, start + 5);
 
     // Build rows; pending row gets the live input element
@@ -434,7 +434,7 @@ export class PongScoreboard extends HTMLElement {
       const nameTd = document.createElement('td');
       nameTd.className = 'name-col';
       if (isPending) {
-        nameTd.appendChild(this.#nameInput);
+        nameTd.append(this.#nameInput);
       } else {
         nameTd.textContent = this.#esc(name);
       }
@@ -444,7 +444,7 @@ export class PongScoreboard extends HTMLElement {
       scoreTd.textContent = score.toLocaleString();
 
       tr.append(rankTd, nameTd, scoreTd);
-      tbody.appendChild(tr);
+      tbody.append(tr);
     }
 
     this.#nameInput.focus();
@@ -454,10 +454,10 @@ export class PongScoreboard extends HTMLElement {
     if (this.#state !== 'result-pending') return;
 
     const shadow    = this.shadowRoot;
-    const statusEl  = shadow.getElementById('submit-status');
-    const rankPrev  = shadow.getElementById('rank-preview');
+    const statusEl  = shadow.querySelector('#submit-status');
+    const rankPrev  = shadow.querySelector('#rank-preview');
 
-    const name = this.#nameInput.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 5);
+    const name = this.#nameInput.value.trim().toUpperCase().replaceAll(/[^A-Z0-9]/g, '').slice(0, 5);
     if (!name) {
       statusEl.textContent = 'Enter your name first.';
       statusEl.className   = 'status-msg error';
@@ -481,7 +481,7 @@ export class PongScoreboard extends HTMLElement {
         rankPrev.textContent = rankPrev.textContent.replace(' (est.)', '');
         // Replace pending row with confirmed name
         this.#renderResultTable(null, [{
-          rank: parseInt(rankPrev.textContent.replace('Rank #', ''), 10) || 1,
+          rank: Number.parseInt(rankPrev.textContent.replace('Rank #', ''), 10) || 1,
           name,
           score: this.#score,
           isPlayer: true,
@@ -489,7 +489,7 @@ export class PongScoreboard extends HTMLElement {
       }
 
       statusEl.textContent = '';
-      shadow.getElementById('play-again-btn').hidden = false;
+      shadow.querySelector('#play-again-btn').hidden = false;
       this.#state = 'result-confirmed';
     } catch {
       this.#nameInput.disabled = false;
@@ -500,9 +500,9 @@ export class PongScoreboard extends HTMLElement {
 
   #esc(str) {
     return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;');
   }
 }
 

@@ -8,12 +8,25 @@ export class KeyboardInputAdapter {
 
   init() {
     window.addEventListener('keydown', (ev) => {
-      if (ev.key === 'ArrowUp' || ev.key === '8') {
+      switch (ev.key) {
+      case 'ArrowUp': 
+      case '8': {
         this.#direction = 'up';
-      } else if (ev.key === 'ArrowDown' || ev.key === '2') {
+      
+      break;
+      }
+      case 'ArrowDown': 
+      case '2': {
         this.#direction = 'down';
-      } else if (ev.key === 'Enter') {
+      
+      break;
+      }
+      case 'Enter': {
         this.#restartPending = true;
+      
+      break;
+      }
+      // No default
       }
     });
     window.addEventListener('keyup', () => {

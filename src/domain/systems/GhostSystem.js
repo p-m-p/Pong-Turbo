@@ -3,8 +3,6 @@ import { aabb }          from '../physics/collision.js';
 import {
   GHOST_SIZE,
   GHOST_COUNT,
-  VIRTUAL_H,
-  VIRTUAL_W,
 } from '../constants.js';
 
 // Pac-Man ghost colours — Blinky, Pinky, Inky, Clyde

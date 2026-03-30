@@ -12,8 +12,8 @@ export function movePaddle(paddle, canvasH, baseSpeed) {
   const prevY = paddle.y;
 
   if (paddle.moveY === 'up' || paddle.moveY === 'down') {
-    const dir     = paddle.moveY === 'up' ? -1 : 1;
-    paddle.velocity = Math.max(-1, Math.min(1, paddle.velocity + dir * PADDLE_ACCEL));
+    const direction = paddle.moveY === 'up' ? -1 : 1;
+    paddle.velocity = Math.max(-1, Math.min(1, paddle.velocity + direction * PADDLE_ACCEL));
     paddle.y        = Math.max(0, Math.min(canvasH - paddle.h, paddle.y + paddle.velocity * baseSpeed));
     paddle.vy       = paddle.y - prevY;
   } else {

@@ -147,11 +147,11 @@ export class CanvasRenderAdapter {
     const style = getComputedStyle(wrap);
 
     const availW = wrap.clientWidth
-      - parseFloat(style.paddingLeft)
-      - parseFloat(style.paddingRight);
+      - Number.parseFloat(style.paddingLeft)
+      - Number.parseFloat(style.paddingRight);
     const availH = wrap.clientHeight
-      - parseFloat(style.paddingTop)
-      - parseFloat(style.paddingBottom);
+      - Number.parseFloat(style.paddingTop)
+      - Number.parseFloat(style.paddingBottom);
 
     const physH = Math.min(Math.max(availH, 1), MAX_PHYS_H);
     const physW = Math.min(Math.max(availW, 1), MAX_PHYS_W, physH * MAX_ASPECT);
@@ -332,12 +332,13 @@ export class CanvasRenderAdapter {
       ctx.lineJoin    = 'miter';
 
       switch (p.type) {
-        case 'wide':
+        case 'wide': {
           ctx.beginPath(); ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(cx - 3, cy - 2.5); ctx.lineTo(cx - 6, cy); ctx.lineTo(cx - 3, cy + 2.5); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(cx + 3, cy - 2.5); ctx.lineTo(cx + 6, cy); ctx.lineTo(cx + 3, cy + 2.5); ctx.stroke();
           break;
-        case 'shield':
+        }
+        case 'shield': {
           ctx.beginPath();
           ctx.moveTo(cx,     cy - 5);
           ctx.lineTo(cx + 4, cy);
@@ -346,11 +347,13 @@ export class CanvasRenderAdapter {
           ctx.closePath();
           ctx.stroke();
           break;
-        case 'life':
+        }
+        case 'life': {
           // "+" symbol — classic retro health pickup
           ctx.beginPath(); ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5); ctx.stroke();
           ctx.beginPath(); ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy); ctx.stroke();
           break;
+        }
       }
 
       ctx.restore();
@@ -426,15 +429,15 @@ export class CanvasRenderAdapter {
       for (let k = 0; k < ghostKills; k++) {
         let closest = remaining[0];
         let bestD = Infinity;
-        let bestIdx = 0;
+        let bestIndex = 0;
         for (let i = 0; i < remaining.length; i++) {
           const g = remaining[i];
           const d = (g.x + g.w / 2 - bx) ** 2 + (g.y + g.h / 2 - by) ** 2;
-          if (d < bestD) { bestD = d; closest = g; bestIdx = i; }
+          if (d < bestD) { bestD = d; closest = g; bestIndex = i; }
         }
         if (closest) {
           this.#spawnBurst(bx, by, closest.color, 8, now);
-          remaining.splice(bestIdx, 1);
+          remaining.splice(bestIndex, 1);
         }
       }
     }
@@ -449,17 +452,17 @@ export class CanvasRenderAdapter {
         for (let k = 0; k < alienKills; k++) {
           let closest = remaining[0];
           let bestD = Infinity;
-          let bestIdx = 0;
+          let bestIndex = 0;
           for (let i = 0; i < remaining.length; i++) {
             const a = remaining[i];
             const wx = a.x + oX + a.w / 2;
             const wy = a.y + oY + a.h / 2;
             const d  = (wx - bx) ** 2 + (wy - by) ** 2;
-            if (d < bestD) { bestD = d; closest = a; bestIdx = i; }
+            if (d < bestD) { bestD = d; closest = a; bestIndex = i; }
           }
           if (closest) {
             this.#spawnBurst(bx, by, closest.color, 8, now);
-            remaining.splice(bestIdx, 1);
+            remaining.splice(bestIndex, 1);
           }
         }
       }
@@ -515,9 +518,7 @@ export class CanvasRenderAdapter {
       this.#prevLevel   = level;
     }
 
-    if (this.#fadeStartAt < 0 && this.#fadeAlpha < 1) {
-      if (ball.x > this.#virtualW / 2) this.#fadeStartAt = now;
-    }
+    if (this.#fadeStartAt < 0 && this.#fadeAlpha < 1 && ball.x > this.#virtualW / 2) this.#fadeStartAt = now;
 
     if (this.#fadeStartAt >= 0 && this.#fadeAlpha < 1) {
       this.#fadeAlpha = Math.min(1, (now - this.#fadeStartAt) / FADE_DURATION_MS);
@@ -539,12 +540,12 @@ export class CanvasRenderAdapter {
     if (getComputedStyle(zone).display === 'none') return;
 
     const zoneStyle = getComputedStyle(zone);
-    const padTop    = parseFloat(zoneStyle.paddingTop);
-    const padBot    = parseFloat(zoneStyle.paddingBottom);
+    const padTop    = Number.parseFloat(zoneStyle.paddingTop);
+    const padBot    = Number.parseFloat(zoneStyle.paddingBottom);
     const knobH     = knob.offsetHeight;
     const trackH    = zone.offsetHeight - padTop - padBot;
-    const relY      = paddle.y / (VIRTUAL_H - paddle.h);
-    knob.style.top  = `${padTop + relY * (trackH - knobH)}px`;
-    zone.setAttribute('aria-valuenow', Math.round(relY * 100));
+    const relativeY = paddle.y / (VIRTUAL_H - paddle.h);
+    knob.style.top  = `${padTop + relativeY * (trackH - knobH)}px`;
+    zone.setAttribute('aria-valuenow', Math.round(relativeY * 100));
   }
 }

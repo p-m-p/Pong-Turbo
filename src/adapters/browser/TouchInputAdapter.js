@@ -20,8 +20,8 @@ export class TouchInputAdapter {
     const onTouch = (ev) => {
       const touch = ev.touches[0];
       const rect  = zone.getBoundingClientRect();
-      const relY  = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
-      this.#absoluteY = relY * (VIRTUAL_H - paddleH);
+      const relativeY = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
+      this.#absoluteY = relativeY * (VIRTUAL_H - paddleH);
     };
 
     zone.addEventListener('touchstart', onTouch, { passive: true });

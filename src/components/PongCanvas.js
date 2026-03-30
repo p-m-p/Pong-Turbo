@@ -117,12 +117,12 @@ export class PongCanvas extends HTMLElement {
   connectedCallback() {
     if (this.shadowRoot) return;
     const shadow = this.attachShadow({ mode: 'open' });
-    shadow.appendChild(template.content.cloneNode(true));
+    shadow.append(template.content.cloneNode(true));
 
-    const canvas     = shadow.getElementById('pongBoard');
-    const canvasWrap = shadow.getElementById('canvas-wrap');
-    const knob       = shadow.getElementById('touch-knob');
-    const zone       = shadow.getElementById('touch-control');
+    const canvas     = shadow.querySelector('#pongBoard');
+    const canvasWrap = shadow.querySelector('#canvas-wrap');
+    const knob       = shadow.querySelector('#touch-knob');
+    const zone       = shadow.querySelector('#touch-control');
 
     this.#keyboard = new KeyboardInputAdapter();
     this.#keyboard.init();
@@ -131,9 +131,9 @@ export class PongCanvas extends HTMLElement {
     this.#render = new CanvasRenderAdapter(canvas, canvasWrap, knob, zone);
     this.#render.init();
 
-    shadow.getElementById('startGame').addEventListener('click', () => {
-      shadow.getElementById('start-screen').classList.add('hidden');
-      document.getElementById('soundtrack')?.play().catch(() => {});
+    shadow.querySelector('#startGame').addEventListener('click', () => {
+      shadow.querySelector('#start-screen').classList.add('hidden');
+      document.querySelector('#soundtrack')?.play().catch(() => {});
       this.dispatchEvent(new CustomEvent('game-start', { bubbles: true, composed: true }));
     }, { once: true });
   }
@@ -148,7 +148,7 @@ export class PongCanvas extends HTMLElement {
   /** Wire touch zone events — call after startNewGame sets the paddle height. */
   initInput(paddleH) {
     this.#touch.init(
-      this.shadowRoot.getElementById('touch-control'),
+      this.shadowRoot.querySelector('#touch-control'),
       paddleH,
     );
   }

@@ -69,7 +69,7 @@ export function initGame() {
     canvasEl.setAttribute('playing', '');
     document.body.classList.remove('play-pending');
     document.body.classList.add('game-playing');
-    document.getElementById('soundtrack')?.play().catch(() => {});
+    document.querySelector('#soundtrack')?.play().catch(() => {});
     fetchToken();
     rafId = requestAnimationFrame(gameLoop);
   }
@@ -148,7 +148,7 @@ export function initGame() {
 
   // Pause music when the app is hidden (tab switch, home button, lock screen)
   document.addEventListener('visibilitychange', () => {
-    const soundtrack = document.getElementById('soundtrack');
+    const soundtrack = document.querySelector('#soundtrack');
     if (!soundtrack) return;
     if (document.hidden) {
       soundtrack.pause();

@@ -18,10 +18,7 @@ import {
   VIRTUAL_H,
   INITIAL_SPEED,
   INITIAL_LIVES,
-  TARGET_FRAME_MS,
-  MAX_FRAME_MS,
   BALL_SIZE,
-  PADDLE_X,
   PADDLE_BASE_H,
   PADDLE_W,
   STUN_DURATION_MS,
@@ -138,7 +135,7 @@ export class GameLoop {
     input = input ?? this.#input.read();
 
     // ── Apply input to paddle ──────────────────────────────────────────────
-    this.#applyInput(input, now);
+    this.#applyInput(input);
 
     // ── Ball movement ─────────────────────────────────────────────────────
     if (this.#ballState === 'ready') {
@@ -163,7 +160,7 @@ export class GameLoop {
       if (moveResult === 'out') {
         return this.#handleBallOut(now);
       }
-      this.#handleLiveBallCollisions(now, timeScale);
+      this.#handleLiveBallCollisions(now);
     }
 
     // ── Power-up movement & expiry ────────────────────────────────────────
@@ -186,7 +183,7 @@ export class GameLoop {
     if (this.#isBonusRound) {
       this.#tickBonusRound(now, timeScale);
     } else if (this.#ghostSystem.allDead()) {
-      this.#onLevelClear(now);
+      this.#onLevelClear();
     } else {
       this.#tickNormalRound(now, timeScale);
     }
@@ -199,17 +196,17 @@ export class GameLoop {
 
   // ── Private helpers ─────────────────────────────────────────────────────
 
-  #applyInput(input, now) {
-    if (input.paddleAbsoluteY !== null) {
+  #applyInput(input) {
+    if (input.paddleAbsoluteY === null) {
+      this.#paddle.moveY = input.paddleDirection;
+    } else {
       const newY     = Math.max(0, Math.min(VIRTUAL_H - this.#paddle.h, input.paddleAbsoluteY));
       this.#paddle.vy = Math.max(-this.#gameSpeed * 2, Math.min(this.#gameSpeed * 2, newY - this.#paddle.y));
       this.#paddle.y  = newY;
-    } else {
-      this.#paddle.moveY = input.paddleDirection;
     }
   }
 
-  #handleLiveBallCollisions(now, timeScale) {
+  #handleLiveBallCollisions(now) {
     // Paddle hit
     const hitResult = checkPaddleHit(
       this.#ball,
@@ -285,11 +282,9 @@ export class GameLoop {
       }
     }
 
-    if (this.#motherShipSystem.checkLaserPaddleCollision(this.#paddle)) {
-      if (this.#paddleStunnedUntil < now) {
+    if (this.#motherShipSystem.checkLaserPaddleCollision(this.#paddle) && this.#paddleStunnedUntil < now) {
         this.#paddleStunnedUntil = now + STUN_DURATION_MS;
       }
-    }
 
     if (this.#alienSystem.allDead() || this.#alienSystem.reachedX(this.#paddle.x)) {
       // Aliens cleared — force mothership in if it hasn't appeared yet.
@@ -298,7 +293,7 @@ export class GameLoop {
     }
   }
 
-  #onLevelClear(now) {
+  #onLevelClear() {
     this.#score += levelClearScore(this.#level);
     this.#scoreUpdate();
     this.#audio.play('levelUp');
@@ -327,17 +322,20 @@ export class GameLoop {
 
   #applyPowerUp(type, now) {
     switch (type) {
-      case 'wide':
+      case 'wide': {
         this.#wideUntil = now + WIDE_DURATION_MS;
         this.#paddle.h  = PADDLE_BASE_H * WIDE_SCALE;
         break;
-      case 'shield':
+      }
+      case 'shield': {
         this.#shieldBounces = 10;
         break;
-      case 'life':
+      }
+      case 'life': {
         this.#lives++;
         this.#scorePort.updateLives(this.#lives);
         break;
+      }
     }
   }
 
