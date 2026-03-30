@@ -413,9 +413,15 @@ export class PongScoreboard extends HTMLElement {
         : `Outside top ${topScores.length}`;
 
     // Build merged list with pending row spliced in
+    const outsideTop = pendingRank > topScores.length && topScores.length >= 10;
     const allRows = topScores.map((s) => ({ ...s, isPending: false }));
     const insertIndex = Math.min(pendingRank - 1, allRows.length);
-    allRows.splice(insertIndex, 0, { rank: pendingRank, score: playerScore, isPending: true });
+    // Use '?' when outside the fetched top N — real rank is unknown until saved
+    allRows.splice(insertIndex, 0, {
+      rank: outsideTop ? '?' : pendingRank,
+      score: playerScore,
+      isPending: true,
+    });
     for (let i = insertIndex + 1; i < allRows.length; i++) allRows[i].rank = i + 1;
 
     // Window of 5 centred on pending
