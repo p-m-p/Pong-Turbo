@@ -40,7 +40,7 @@ const GHOST_BOT = [
 ];
 
 // Aliens — 9×7 grid, pixel = 3px (fits in 27×21, centred in 28×22)
-// Drone — rightmost columns (green), octopus-like
+// Drone — cols 3-4 (green), octopus-like
 const DRONE_ROWS = [
   [0, 0, 1, 1, 0, 1, 1, 0, 0],
   [0, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -51,7 +51,7 @@ const DRONE_ROWS = [
   [0, 1, 0, 0, 0, 0, 0, 1, 0],
 ];
 
-// Crab — middle rows (yellow), crab-like
+// Crab — cols 1-2 (yellow), crab-like
 const CRAB_ROWS = [
   [1, 0, 1, 0, 0, 0, 1, 0, 1],
   [0, 1, 1, 1, 1, 1, 1, 1, 0],
@@ -62,7 +62,7 @@ const CRAB_ROWS = [
   [0, 1, 0, 0, 0, 0, 0, 1, 0],
 ];
 
-// Squid — bottom rows (green), squid-like
+// Squid — col 0 (cyan), squid-like
 const SQUID_ROWS = [
   [0, 0, 0, 1, 1, 1, 0, 0, 0],
   [0, 1, 1, 1, 1, 1, 1, 1, 0],

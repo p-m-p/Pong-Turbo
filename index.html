@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -50,14 +50,16 @@
       <header>
         <h1 id="logo">
           <img src="./favicon.svg" width="28" height="28" alt="" aria-hidden="true" />
-          PONG <span>Turbo</span>
+          <span class="logo-title">PONG<span class="logo-sub">Turbo</span></span>
         </h1>
         <pong-hud lives="5"></pong-hud>
         <pong-sound-toggle soundtrack="soundtrack"></pong-sound-toggle>
       </header>
 
-      <pong-canvas></pong-canvas>
-      <pong-scoreboard hidden api="%VITE_SCOREBOARD_API%"></pong-scoreboard>
+      <main>
+        <pong-canvas></pong-canvas>
+        <pong-scoreboard hidden api="%VITE_SCOREBOARD_API%"></pong-scoreboard>
+      </main>
 
       <footer>
         Brought to you by <a href="https://philparsons.co.uk">Phil Parsons</a> with thanks to

@@ -14,7 +14,7 @@ export const SPIN_FACTOR = 0.25;
 export const RALLY_INCREMENT = 0.5;
 export const RALLY_CAP = 6;
 export const READY_PAUSE_MS = 600;
-export const READY_SPEED_FRAC = 0.5; // fraction of gameSpeed used during serve
+
 
 // ── Paddle ─────────────────────────────────────────────────────────────────
 export const PADDLE_X = VIRTUAL_W - 15;
@@ -83,4 +83,4 @@ export const LASER_SPEED_MULT = 2; // laser speed = gameSpeed * this
 // ── Scoring ────────────────────────────────────────────────────────────────
 export const BONUS_COMPLETION_SCORE = 2000;
 export const LEVEL_CLEAR_SCORE_MULT = 1000;
-export const ALIEN_KILL_BASE = 50;
+

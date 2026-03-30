@@ -5,7 +5,7 @@ import {
   POWERUP_ROAM_RIGHT,
 } from '../constants.js';
 
-export const TYPES = ['wide', 'shield'];
+export const TYPES = ['wide', 'shield']; // 'life' is spawned conditionally in PowerUpSystem, not from this array
 
 export class PowerUp {
   #type;
@@ -16,7 +16,7 @@ export class PowerUp {
   /**
    * @param {number} x     - centre x of the spawn point
    * @param {number} y     - centre y of the spawn point
-   * @param {string} type  - 'wide' | 'shield' | 'slow'
+   * @param {string} type  - 'wide' | 'shield'
    * @param {number} born  - timestamp (caller passes performance.now() or test value)
    */
   constructor(x, y, type, born) {

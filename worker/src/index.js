@@ -10,8 +10,8 @@ const ALLOWED_ORIGINS = [
 
 // ── Game constants (must mirror src/domain/constants.js) ──────────────────────
 const INITIAL_SPEED = 16;
-const GHOST_COUNT = 5;
-const ALIEN_COUNT = 18; // 3 cols × 6 rows
+const GHOST_COUNT = 4;
+const ALIEN_COUNT = 30; // 5 cols × 6 rows
 const MOTHERSHIP_KILL_SCORE = 5000; // awarded when mothership is killed (bonus rounds)
 const TOKEN_TTL_MS = 2 * 60 * 60 * 1000; // 2 hours
 const TOKEN_MAX_AGE = 24 * 60 * 60 * 1000; // clean up after 24 hours
@@ -86,14 +86,14 @@ function maxScoreForLevel(level) {
   // rally: 300 hits × gameSpeed (very generous)
   const rallyMax = 300 * g;
   if (isBonus) {
-    // max alien combo: all 18 at once → level × g × 18 × 2^17 (impossible, but we cap generously)
+    // max alien combo: all 30 at once → level × g × 30 × 2^29 (impossible, but we cap generously)
     // realistic generous cap: 9 combos of 2 → level × g × 2 × 2 × 9 = level × g × 36
     // we use ×32 per alien for extra headroom
     const killMax = level * g * ALIEN_COUNT * 32;
     const clearMax = level * 2000 + MOTHERSHIP_KILL_SCORE; // includes mothership kill bonus
     return (killMax + clearMax + rallyMax) * 3;
   } else {
-    // max ghost combo: all 5 at once → level × g × 5 × 2^4 = level × g × 80
+    // max ghost combo: all 4 at once → level × g × 4 × 2^3 = level × g × 32
     const killMax = level * g * GHOST_COUNT * 16;
     const clearMax = level * 1000;
     return (killMax + clearMax + rallyMax) * 3;

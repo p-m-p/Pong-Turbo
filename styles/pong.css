@@ -4,15 +4,31 @@
   --bg-dark: #050505;
   --bg-mid: #0f0f0f;
   --border: #2a2a2a;
-  --dim: #444444;
-  --text-dim: #888888;
+  --dim: #787878;
+  --text-dim: #aaaaaa;
   --text: #ffffff;
-  --yellow: #ffff00;
-  --cyan: #00ffff;
-  --green: #00ff00;
-  --red: #ff0000;
-  --pink: #ffb8ff;
-  --orange: #ff8800;
+  --accent: #ffff00;          /* primary: logo, buttons, player highlight */
+  --accent-press: #cccc00;    /* button active state                       */
+  --interactive: #00ffff;     /* input fields, secondary highlight          */
+  --positive: #00ff00;        /* lives indicator, score values              */
+  --error: #ff0000;           /* error messages                             */
+
+  /* ── Typography ─────────────────────────────────────────────────────────── */
+  --font: 'Press Start 2P', monospace;
+  --fs-2xs: 0.55rem;  /* footer, status messages */
+  --fs-xs:  0.625rem; /* table rows, sub-labels  */
+  --fs-sm:  0.75rem;  /* compact UI, small text  */
+  --fs-lg:  1.25rem;  /* score headings           */
+  --fs-xl:  1.5rem;   /* logo, main headings      */
+  --tracking: 0.08em; /* standard letter-spacing  */
+
+  /* ── Spacing scale ──────────────────────────────────────────────────────── */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
 }
 
 /* ── Reset & base ─────────────────────────────────────────────────────────── */
@@ -32,7 +48,7 @@ body {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Press Start 2P', monospace;
+  font-family: var(--font);
   font-size: 10px;
   /* Extend background into safe-area when status bar is black-translucent */
   padding-top: env(safe-area-inset-top);
@@ -47,7 +63,7 @@ body {
   grid-template-rows: auto 1fr auto;
   height: 100dvh;
   overflow: hidden;
-  padding: 0 1.25rem;
+  padding: 0 var(--space-5);
 }
 
 /* ── Header ───────────────────────────────────────────────────────────────── */
@@ -55,19 +71,19 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.875rem 0;
+  padding: var(--space-4) 0;
   border-bottom: 1px solid var(--border);
-  gap: 1rem;
+  gap: var(--space-4);
 }
 
 #logo {
   display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.5rem;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--fs-xl);
   line-height: 1;
   letter-spacing: 0.04em;
-  color: var(--yellow);
+  color: var(--accent);
   flex-shrink: 0;
 }
 
@@ -76,12 +92,17 @@ header {
   image-rendering: pixelated;
 }
 
-#logo span {
-  font-size: 0.6rem;
+.logo-title {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.logo-sub {
+  font-size: var(--fs-xs);
   color: var(--text-dim);
-  margin-left: 0.5rem;
-  vertical-align: middle;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking);
 }
 
 /* pong-hud fills remaining header space and pushes sound toggle to the right */
@@ -90,10 +111,19 @@ pong-hud {
   justify-content: flex-end;
 }
 
-/* ── Canvas + scoreboard share the same grid cell (row 2) ────────────────── */
+/* ── Main occupies row 2; canvas + scoreboard share that grid cell ────────── */
+main {
+  grid-row: 2;
+  grid-column: 1;
+  display: grid;
+  grid-template-rows: 1fr;
+  grid-template-columns: 1fr;
+  min-height: 0;
+}
+
 pong-canvas,
 pong-scoreboard {
-  grid-row: 2;
+  grid-row: 1;
   grid-column: 1;
   min-height: 0;
   position: relative;
@@ -105,16 +135,16 @@ pong-scoreboard[hidden] {
 
 /* ── Footer ───────────────────────────────────────────────────────────────── */
 footer {
-  padding: 0.75rem 0;
+  padding: var(--space-3) 0;
   text-align: right;
   color: var(--dim);
-  font-size: 0.55rem;
+  font-size: var(--fs-2xs);
   border-top: 1px solid var(--border);
 }
 
 footer a {
   color: var(--text-dim);
-  text-decoration: none;
+  text-decoration: underline;
 }
 footer a:hover {
   color: var(--text);
@@ -130,12 +160,12 @@ footer a:hover {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 1.5rem;
+  gap: var(--space-6);
   color: var(--text-dim);
 }
 
 #rotate-overlay p {
-  font-size: 0.7rem;
+  font-size: var(--fs-sm);
   letter-spacing: 0.05em;
 }
 
@@ -153,7 +183,7 @@ footer a:hover {
 #rotate-overlay .rotate-icon {
   animation: rotate-hint 2.5s ease-in-out infinite;
   transform-origin: center;
-  color: var(--yellow);
+  color: var(--accent);
 }
 
 @media (pointer: coarse) and (orientation: portrait) {
@@ -166,21 +196,20 @@ footer a:hover {
 /* ── Compact landscape (mobile) ──────────────────────────────────────────── */
 @media (max-height: 480px) and (orientation: landscape) {
   #app {
-    padding: 0 0.5rem;
+    padding: 0 var(--space-2);
   }
   header {
     padding: 0.2rem 0;
-    gap: 0.5rem;
+    gap: var(--space-2);
     border-bottom: none;
     position: relative;
     z-index: 30;
   }
   #logo {
-    font-size: 0.75rem;
+    font-size: var(--fs-sm);
   }
-  #logo span {
+  .logo-sub {
     font-size: 0.4rem;
-    margin-left: 0.25rem;
   }
   footer {
     display: none;

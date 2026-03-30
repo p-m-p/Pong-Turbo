@@ -4,19 +4,19 @@ template.innerHTML = `
     :host {
       display: flex;
       align-items: flex-start;
-      gap: 1.25rem;
+      gap: var(--space-5);
     }
     #score-display {
       display: flex;
       flex-direction: column;
       align-items: flex-end;
-      gap: 0.5rem;
+      gap: var(--space-2);
     }
     #score {
-      font-family: 'Press Start 2P', monospace;
-      font-size: clamp(0.875rem, 3vw, 1.5rem);
+      font-family: var(--font);
+      font-size: clamp(0.875rem, 3vw, var(--fs-xl));
       line-height: 1;
-      color: #ffff00;
+      color: var(--accent);
       min-width: 5ch;
       text-align: right;
     }
@@ -31,15 +31,15 @@ template.innerHTML = `
       width: 10px;
       height: 10px;
       background: transparent;
-      border: 2px solid #00ff00;
+      border: 2px solid var(--positive);
     }
     .life.active {
-      background: #00ff00;
+      background: var(--positive);
     }
     @media (max-height: 480px) and (orientation: landscape) {
-      :host          { align-items: center; gap: 0.5rem; }
-      #score-display { flex-direction: row; align-items: center; gap: 0.5rem; }
-      #score         { font-size: 0.7rem; min-width: auto; }
+      :host          { align-items: center; gap: var(--space-2); }
+      #score-display { flex-direction: row; align-items: center; gap: var(--space-2); }
+      #score         { font-size: var(--fs-sm); min-width: auto; }
       #lives         { gap: 3px; }
       .life          { width: 6px; height: 6px; border-width: 1.5px; }
     }

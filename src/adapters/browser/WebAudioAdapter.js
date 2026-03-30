@@ -1,4 +1,4 @@
-const SFX = ['paddle', 'ghost', 'roundEnd', 'levelUp'];
+const SFX = ['paddle', 'ghost', 'roundEnd', 'levelUp']; // 'mothership' is synthesized on-demand, not pre-fetched
 
 export class WebAudioAdapter {
   #ctx = null;

@@ -29,7 +29,7 @@ When a new life begins (or the game starts) the ball appears on the left side of
 
 ### Levels
 
-Each level contains five ghosts roaming the left 45 % of the canvas. Destroy all five to advance to the next level. On each level-up:
+Each level contains four ghosts roaming the left 45 % of the canvas. Destroy all four to advance to the next level. On each level-up:
 
 - Ball base speed increases by 2 units.
 - A level-clear bonus is added to your score.
@@ -43,13 +43,13 @@ Ghosts patrol the left section of the canvas, bouncing diagonally. Occasionally 
 
 ### Bonus Round (every 3rd level)
 
-A 3 × 6 formation of Space Invader-style aliens enters from the left. The formation marches vertically — bouncing between the top and bottom walls — while slowly advancing rightward toward your paddle. Speed increases as aliens are killed.
+A 5 × 6 formation of Space Invader-style aliens enters from the left. The formation marches vertically — bouncing between the top and bottom walls — while slowly advancing rightward toward your paddle. Speed increases as aliens are killed.
 
 - The ball **bounces off** aliens (Ball Blast style) without losing a life.
 - Each alien takes **2 hits** to destroy, dimming after the first hit.
 - **Lives are still lost** if the ball exits the right edge during a bonus round.
 - If the formation reaches the paddle before all aliens are cleared, the round ends — the level advances but no completion bonus is awarded.
-- Clearing all aliens earns the full completion bonus and continues normal play.
+- Clear all aliens to spawn the **Mothership**. Destroy it to earn the full completion bonus and advance.
 
 ---
 
@@ -83,11 +83,10 @@ Power-ups drop when ghosts are killed: **always** on a simultaneous multi-kill, 
 
 The orb **pulses for 2 seconds** after spawning — it cannot be collected during this grace period. After that it is live; intercept it with the ball to collect it. The orb begins a faster warning pulse in the final 3 seconds before expiry.
 
-| Orb colour | Type       | Effect                                               |
-| ---------- | ---------- | ---------------------------------------------------- |
-| Green      | **Wide**   | Paddle height grows to 1.75× for 8 seconds           |
-| Sky blue   | **Shield** | Absorbs the next ghost stun (consumed on contact)    |
-| Yellow     | **Slow**   | Resets the rally speed ramp back to base `gameSpeed` |
+| Orb colour | Type       | Effect                                            |
+| ---------- | ---------- | ------------------------------------------------- |
+| Green      | **Wide**   | Paddle height grows to 1.75× for 8 seconds        |
+| Sky blue   | **Shield** | Absorbs the next ghost stun (consumed on contact) |
 
 When the shield is active a pulsing cyan outline appears around the paddle.
 

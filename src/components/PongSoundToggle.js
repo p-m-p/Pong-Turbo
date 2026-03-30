@@ -5,33 +5,39 @@ template.innerHTML = `
   <style>
     :host { display: block; }
     button {
-      width: 36px;
-      height: 36px;
-      flex-shrink: 0;
       display: flex;
       align-items: center;
-      justify-content: center;
-      background: #111111;
-      border: 2px solid #333333;
-      border-radius: 0;
-      padding: 6px;
+      flex-shrink: 0;
+      background: transparent;
+      border: none;
+      padding: 4px 0;
       cursor: pointer;
-      color: #888888;
-      transition: color 0.05s, border-color 0.05s;
+      color: var(--text-dim);
+      transition: color 0.05s;
     }
-    button svg  { display: block; width: 100%; height: 100%; }
-    button:hover { color: #ffffff; border-color: #ffff00; }
-    button.muted { color: #444444; }
-    .mute-slash { display: none; }
-    button.muted .mute-slash { display: block; }
+    button svg { display: block; width: 32px; height: 32px; flex-shrink: 0; }
+    button:hover { color: var(--accent); }
+    button.muted { color: var(--dim); }
+    .sound-waves { display: block; }
+    .mute-x { display: none; }
+    button.muted .sound-waves { display: none; }
+    button.muted .mute-x { display: block; }
     @media (max-height: 480px) and (orientation: landscape) {
-      button { width: 26px; height: 26px; padding: 4px; }
+      button svg { width: 22px; height: 22px; }
     }
   </style>
   <button aria-label="Mute sound">
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false">
-      <path fill-rule="evenodd" d="M19.952 1.651a.75.75 0 01.298.599V16.303a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.403-4.909l2.311-.66a1.5 1.5 0 001.088-1.442V6.994l-9 2.572v9.737a3 3 0 01-2.176 2.884l-1.32.377a2.553 2.553 0 11-1.402-4.909l2.31-.66a1.5 1.5 0 001.088-1.442V9.994a.75.75 0 01.544-.721l10.5-3a.75.75 0 01.658.096z" clip-rule="evenodd"/>
-      <line class="mute-slash" x1="3" y1="21" x2="21" y2="3" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <!-- Speaker body -->
+      <rect x="1" y="8" width="5" height="8" rx="0"/>
+      <!-- Cone -->
+      <polygon points="6,8 13,3 13,21 6,16"/>
+      <!-- Sound waves -->
+      <path class="sound-waves" d="M16 8.5 Q19.5 12 16 15.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path class="sound-waves" d="M18.5 5.5 Q23.5 12 18.5 18.5" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <!-- Muted X -->
+      <line class="mute-x" x1="15" y1="9" x2="22" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <line class="mute-x" x1="22" y1="9" x2="15" y2="16" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
     </svg>
   </button>
 `;
