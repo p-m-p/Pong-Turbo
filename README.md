@@ -1,5 +1,4 @@
-PONG _Turbo_
-===
+# PONG _Turbo_
 
 > First there was Space Invaders...
 > Then there was Pac-Man...
@@ -12,11 +11,11 @@ A browser-based arcade game that mashes Pong, Space Invaders and Ball Blast into
 
 ## How to Play
 
-| Control | Keyboard | Mobile |
-|---|---|---|
-| Move paddle up | `↑` or `8` | Drag the right-edge strip |
-| Move paddle down | `↓` or `2` | Drag the right-edge strip |
-| Restart (game over) | `Enter` | — |
+| Control             | Keyboard   | Mobile                    |
+| ------------------- | ---------- | ------------------------- |
+| Move paddle up      | `↑` or `8` | Drag the right-edge strip |
+| Move paddle down    | `↓` or `2` | Drag the right-edge strip |
+| Restart (game over) | `Enter`    | —                         |
 
 The paddle is on the **right** side. The ball bounces off the left wall, top wall, and bottom wall, and off your paddle. Let it exit the right edge and you lose a life.
 
@@ -56,23 +55,23 @@ A 3 × 6 formation of Space Invader-style aliens enters from the left. The forma
 
 ## Scoring
 
-| Event | Points |
-|---|---|
-| Paddle hit | `gameSpeed` |
-| Ghost kill (single) | `level × gameSpeed` |
+| Event                   | Points                                                         |
+| ----------------------- | -------------------------------------------------------------- |
+| Paddle hit              | `gameSpeed`                                                    |
+| Ghost kill (single)     | `level × gameSpeed`                                            |
 | Ghost kill (multi-kill) | `level × gameSpeed × n × 2^(n−1)` where n = simultaneous kills |
-| Level clear | `level × 1000` |
-| Alien kill | `50 × level × 2` (maxHp per alien = 2) |
-| Bonus round clear | `2000 × level` |
+| Level clear             | `level × 1000`                                                 |
+| Alien kill              | `50 × level × 2` (maxHp per alien = 2)                         |
+| Bonus round clear       | `2000 × level`                                                 |
 
 ### Multi-kill multiplier examples
 
 | Simultaneous kills | Multiplier vs single kill |
-|---|---|
-| 1 | ×1 |
-| 2 | ×4 |
-| 3 | ×12 |
-| 4 | ×32 |
+| ------------------ | ------------------------- |
+| 1                  | ×1                        |
+| 2                  | ×4                        |
+| 3                  | ×12                       |
+| 4                  | ×32                       |
 
 Ball speed ramps up by **0.5 units per paddle return** within a rally (capped at `gameSpeed + 6`), rewarding long rallies. Speed resets to `gameSpeed` on each new rally.
 
@@ -84,11 +83,11 @@ Power-ups drop when ghosts are killed: **always** on a simultaneous multi-kill, 
 
 The orb **pulses for 2 seconds** after spawning — it cannot be collected during this grace period. After that it is live; intercept it with the ball to collect it. The orb begins a faster warning pulse in the final 3 seconds before expiry.
 
-| Orb colour | Type | Effect |
-|---|---|---|
-| Green | **Wide** | Paddle height grows to 1.75× for 8 seconds |
-| Sky blue | **Shield** | Absorbs the next ghost stun (consumed on contact) |
-| Yellow | **Slow** | Resets the rally speed ramp back to base `gameSpeed` |
+| Orb colour | Type       | Effect                                               |
+| ---------- | ---------- | ---------------------------------------------------- |
+| Green      | **Wide**   | Paddle height grows to 1.75× for 8 seconds           |
+| Sky blue   | **Shield** | Absorbs the next ghost stun (consumed on contact)    |
+| Yellow     | **Slow**   | Resets the rally speed ramp back to base `gameSpeed` |
 
 When the shield is active a pulsing cyan outline appears around the paddle.
 

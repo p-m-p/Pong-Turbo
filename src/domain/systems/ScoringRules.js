@@ -1,7 +1,4 @@
-import {
-  BONUS_COMPLETION_SCORE,
-  LEVEL_CLEAR_SCORE_MULT,
-} from '../constants.js';
+import { BONUS_COMPLETION_SCORE, LEVEL_CLEAR_SCORE_MULT } from '../constants.js';
 
 /**
  * Score awarded for a ball-hit rally.

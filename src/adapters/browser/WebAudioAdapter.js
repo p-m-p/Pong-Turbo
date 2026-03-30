@@ -1,9 +1,9 @@
 const SFX = ['paddle', 'ghost', 'roundEnd', 'levelUp'];
 
 export class WebAudioAdapter {
-  #ctx     = null;
+  #ctx = null;
   #buffers = {};
-  #raw     = {}; // pre-fetched ArrayBuffers, decoded once ctx exists
+  #raw = {}; // pre-fetched ArrayBuffers, decoded once ctx exists
 
   init() {
     // Fetch raw bytes now so they're ready to decode on first user gesture.
@@ -11,8 +11,8 @@ export class WebAudioAdapter {
     // a user gesture and also blocks <audio> elements from playing.
     for (const name of SFX) {
       fetch(`sound/mp3/${name}.mp3`)
-        .then(r => r.arrayBuffer())
-        .then(ab => {
+        .then((r) => r.arrayBuffer())
+        .then((ab) => {
           this.#raw[name] = ab;
           if (this.#ctx) this.#decode(name);
         })
@@ -25,7 +25,9 @@ export class WebAudioAdapter {
     if (!this.#ctx) {
       try {
         this.#ctx = new (window.AudioContext || window.webkitAudioContext)();
-      } catch { return; }
+      } catch {
+        return;
+      }
       for (const name of Object.keys(this.#raw)) this.#decode(name);
     }
     if (this.#ctx.state === 'suspended') this.#ctx.resume();
@@ -46,7 +48,7 @@ export class WebAudioAdapter {
 
   /** Synthesised descending blip — Space Invaders UFO hit. */
   #playMothership(ctx) {
-    const osc  = ctx.createOscillator();
+    const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -64,8 +66,11 @@ export class WebAudioAdapter {
     const raw = this.#raw[name];
     if (!raw || !this.#ctx) return;
     this.#raw[name] = null; // ArrayBuffer is transferred on decode — prevent double-decode
-    this.#ctx.decodeAudioData(raw)
-      .then(buf => { this.#buffers[name] = buf; })
+    this.#ctx
+      .decodeAudioData(raw)
+      .then((buf) => {
+        this.#buffers[name] = buf;
+      })
       .catch(() => {});
   }
 }

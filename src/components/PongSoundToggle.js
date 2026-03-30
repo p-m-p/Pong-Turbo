@@ -44,8 +44,10 @@ export class PongSoundToggle extends HTMLElement {
     if (this.shadowRoot) return;
     const shadow = this.attachShadow({ mode: 'open' });
     shadow.append(template.content.cloneNode(true));
-    this.#btn        = shadow.querySelector('button');
-    this.#soundtrack = document.querySelector(`#${this.getAttribute('soundtrack') ?? 'soundtrack'}`);
+    this.#btn = shadow.querySelector('button');
+    this.#soundtrack = document.querySelector(
+      `#${this.getAttribute('soundtrack') ?? 'soundtrack'}`,
+    );
 
     if (localStorage.getItem(STORAGE_KEY) === 'true') {
       if (this.#soundtrack) this.#soundtrack.muted = true;

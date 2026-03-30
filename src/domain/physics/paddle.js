@@ -14,11 +14,12 @@ export function movePaddle(paddle, canvasH, baseSpeed) {
   if (paddle.moveY === 'up' || paddle.moveY === 'down') {
     const direction = paddle.moveY === 'up' ? -1 : 1;
     paddle.velocity = Math.max(-1, Math.min(1, paddle.velocity + direction * PADDLE_ACCEL));
-    paddle.y        = Math.max(0, Math.min(canvasH - paddle.h, paddle.y + paddle.velocity * baseSpeed));
-    paddle.vy       = paddle.y - prevY;
+    paddle.y = Math.max(0, Math.min(canvasH - paddle.h, paddle.y + paddle.velocity * baseSpeed));
+    paddle.vy = paddle.y - prevY;
   } else {
-    const abs       = Math.abs(paddle.velocity);
-    paddle.velocity = abs <= PADDLE_DECEL ? 0 : paddle.velocity - Math.sign(paddle.velocity) * PADDLE_DECEL;
+    const abs = Math.abs(paddle.velocity);
+    paddle.velocity =
+      abs <= PADDLE_DECEL ? 0 : paddle.velocity - Math.sign(paddle.velocity) * PADDLE_DECEL;
 
     if (paddle.velocity !== 0) {
       paddle.y = Math.max(0, Math.min(canvasH - paddle.h, paddle.y + paddle.velocity * baseSpeed));

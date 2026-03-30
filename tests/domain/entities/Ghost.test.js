@@ -2,10 +2,10 @@ import { describe, it, expect } from 'vitest';
 import { Ghost } from '../../../src/domain/entities/Ghost.js';
 import { VIRTUAL_H, GHOST_SIZE } from '../../../src/domain/constants.js';
 
-const CANVAS_W  = 600;
-const CANVAS_H  = VIRTUAL_H;
-const PADDLE_X  = 585;
-const SPEED     = 16;
+const CANVAS_W = 600;
+const CANVAS_H = VIRTUAL_H;
+const PADDLE_X = 585;
+const SPEED = 16;
 
 function makeGhost(x = 50, y = 100) {
   return new Ghost(x, y, GHOST_SIZE, '#fff');

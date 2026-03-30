@@ -1,9 +1,6 @@
-import { Ghost }         from '../entities/Ghost.js';
-import { aabb }          from '../physics/collision.js';
-import {
-  GHOST_SIZE,
-  GHOST_COUNT,
-} from '../constants.js';
+import { Ghost } from '../entities/Ghost.js';
+import { aabb } from '../physics/collision.js';
+import { GHOST_SIZE, GHOST_COUNT } from '../constants.js';
 
 // Pac-Man ghost colours — Blinky, Pinky, Inky, Clyde
 const GHOST_COLOURS = [
@@ -24,9 +21,13 @@ export class GhostSystem {
     }
   }
 
-  get ghosts() { return this.#ghosts; }
+  get ghosts() {
+    return this.#ghosts;
+  }
 
-  allDead() { return this.#ghosts.length === 0; }
+  allDead() {
+    return this.#ghosts.length === 0;
+  }
 
   /**
    * @param {number} canvasH  - virtual height
@@ -35,7 +36,7 @@ export class GhostSystem {
    * @param {number} speed    - pre-scaled speed (timeScale already applied)
    */
   move(canvasH, canvasW, paddleX, speed) {
-    let chargingCount = this.#ghosts.filter(g => g.isCharging).length;
+    let chargingCount = this.#ghosts.filter((g) => g.isCharging).length;
 
     for (const ghost of this.#ghosts) {
       const wasCharging = ghost.isCharging;

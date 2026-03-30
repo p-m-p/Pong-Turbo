@@ -21,8 +21,8 @@ import { aabb } from './collision.js';
  */
 export function moveBall(ball, timeScale, fieldW = VIRTUAL_W) {
   // Top / bottom wall bounce
-  if (ball.y <= 0)                   ball.dy =  Math.abs(ball.dy);
-  if (ball.y + ball.h >= VIRTUAL_H)  ball.dy = -Math.abs(ball.dy);
+  if (ball.y <= 0) ball.dy = Math.abs(ball.dy);
+  if (ball.y + ball.h >= VIRTUAL_H) ball.dy = -Math.abs(ball.dy);
 
   // Left wall bounce
   if (ball.x <= 0) ball.dx = Math.abs(ball.dx);
@@ -103,12 +103,12 @@ export function checkPaddleHit(ball, paddle, gameSpeed, ballSpeed, paddleStunned
   const newBallSpeed = Math.min(gameSpeed + RALLY_CAP, ballSpeed + RALLY_INCREMENT);
 
   const x = Math.max(newBallSpeed / 2, Math.abs(Math.round(newBallSpeed * Math.random())));
-  ball.dy  = ball.dy < 0 ? -(newBallSpeed - x) : (newBallSpeed - x);
-  ball.dx  = -x;
+  ball.dy = ball.dy < 0 ? -(newBallSpeed - x) : newBallSpeed - x;
+  ball.dx = -x;
 
-  const spin  = Math.max(-newBallSpeed * 0.6, Math.min(newBallSpeed * 0.6, paddle.vy * SPIN_FACTOR));
+  const spin = Math.max(-newBallSpeed * 0.6, Math.min(newBallSpeed * 0.6, paddle.vy * SPIN_FACTOR));
   const maxDy = newBallSpeed * 1.5;
-  ball.dy     = Math.max(-maxDy, Math.min(maxDy, ball.dy + spin));
+  ball.dy = Math.max(-maxDy, Math.min(maxDy, ball.dy + spin));
 
   // Push ball clear of the paddle face so it can't trigger 'out' next tick
   ball.x = paddle.x - ball.w;

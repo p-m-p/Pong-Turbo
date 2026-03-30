@@ -1,4 +1,4 @@
-import { GameLoop }        from './domain/GameLoop.js';
+import { GameLoop } from './domain/GameLoop.js';
 import { WebAudioAdapter } from './adapters/browser/WebAudioAdapter.js';
 import { TARGET_FRAME_MS, MAX_FRAME_MS, PADDLE_BASE_H } from './domain/constants.js';
 import './components/PongCanvas.js';
@@ -32,26 +32,28 @@ function initFullscreenOnLandscape() {
 
 export function initGame() {
   initFullscreenOnLandscape();
-  const canvasEl     = document.querySelector('pong-canvas');
-  const hudEl        = document.querySelector('pong-hud');
+  const canvasEl = document.querySelector('pong-canvas');
+  const hudEl = document.querySelector('pong-hud');
   const scoreboardEl = document.querySelector('pong-scoreboard');
-  const audio        = new WebAudioAdapter();
+  const audio = new WebAudioAdapter();
   audio.init();
 
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
   const loop = new GameLoop(canvasEl.renderAdapter, audio, canvasEl.inputAdapter, hudEl);
 
-  let rafId         = null;
+  let rafId = null;
   let lastTimestamp = null;
-  let gameToken     = null;
-  let checkpoints   = [];
-  let trackedLevel  = 1;
+  let gameToken = null;
+  let checkpoints = [];
+  let trackedLevel = 1;
 
   async function fetchToken() {
     try {
-      gameToken = await scoreboardEl?.fetchToken() ?? null;
-    } catch { gameToken = null; }
+      gameToken = (await scoreboardEl?.fetchToken()) ?? null;
+    } catch {
+      gameToken = null;
+    }
   }
 
   function startNewGame() {
@@ -60,16 +62,19 @@ export function initGame() {
       rafId = null;
     }
     lastTimestamp = null;
-    gameToken     = null;
-    checkpoints   = [];
-    trackedLevel  = 1;
+    gameToken = null;
+    checkpoints = [];
+    trackedLevel = 1;
     loop.setFieldW(canvasEl.renderAdapter.virtualW);
     loop.startNewGame(performance.now());
     canvasEl.initInput(PADDLE_BASE_H);
     canvasEl.setAttribute('playing', '');
     document.body.classList.remove('play-pending');
     document.body.classList.add('game-playing');
-    document.querySelector('#soundtrack')?.play().catch(() => {});
+    document
+      .querySelector('#soundtrack')
+      ?.play()
+      .catch(() => {});
     fetchToken();
     rafId = requestAnimationFrame(gameLoop);
   }
@@ -77,8 +82,10 @@ export function initGame() {
   // When a touch device rotates to landscape while play is pending, start the game
   if (isTouchDevice) {
     const onLandscapeForPending = () => {
-      if (window.matchMedia('(orientation: landscape)').matches &&
-          document.body.classList.contains('play-pending')) {
+      if (
+        window.matchMedia('(orientation: landscape)').matches &&
+        document.body.classList.contains('play-pending')
+      ) {
         audio.unlock();
         requestFullscreen();
         scoreboardEl?.hide();

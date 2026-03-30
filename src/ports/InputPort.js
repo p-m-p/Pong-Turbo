@@ -8,6 +8,5 @@
  * @property {boolean}          restartRequested
  */
 export function assertInputPort(adapter) {
-  if (typeof adapter.read !== 'function')
-    throw new Error('InputPort: missing read()');
+  if (typeof adapter.read !== 'function') throw new Error('InputPort: missing read()');
 }

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { AlienSystem } from '../../../src/domain/systems/AlienSystem.js';
-import { makeBall }     from '../../helpers/builders.js';
+import { makeBall } from '../../helpers/builders.js';
 import { VIRTUAL_H, ALIEN_COLS, ALIEN_ROWS } from '../../../src/domain/constants.js';
 
 let sys;
@@ -30,9 +30,9 @@ describe('AlienSystem spawn', () => {
     const col0 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 0);
     const col1 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 1);
     const col3 = sys.aliens.filter((_, i) => i % ALIEN_COLS === 3);
-    expect(col0.every(a => a.type === 'squid')).toBe(true);
-    expect(col1.every(a => a.type === 'crab')).toBe(true);
-    expect(col3.every(a => a.type === 'drone')).toBe(true);
+    expect(col0.every((a) => a.type === 'squid')).toBe(true);
+    expect(col1.every((a) => a.type === 'crab')).toBe(true);
+    expect(col3.every((a) => a.type === 'drone')).toBe(true);
   });
 
   it('each alien has a type and color', () => {
@@ -81,7 +81,7 @@ describe('AlienSystem checkCollision', () => {
   });
 
   it('returns 1 on a kill and removes the alien', () => {
-    const a    = sys.aliens[0];
+    const a = sys.aliens[0];
     // Position ball directly on alien (account for offset)
     const ball = makeBall({
       x: a.x + sys.offsetX,
@@ -102,12 +102,12 @@ describe('AlienSystem checkCollision', () => {
   });
 
   it('reverses ball dx on hit', () => {
-    const a    = sys.aliens[0];
+    const a = sys.aliens[0];
     const ball = makeBall({
-      x:  a.x + sys.offsetX,
-      y:  a.y + sys.offsetY,
-      w:  a.w,
-      h:  a.h,
+      x: a.x + sys.offsetX,
+      y: a.y + sys.offsetY,
+      w: a.w,
+      h: a.h,
       dx: 5,
     });
     const originalDx = ball.dx;

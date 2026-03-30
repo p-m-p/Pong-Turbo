@@ -1,11 +1,13 @@
-import { PowerUp, TYPES }                        from '../entities/PowerUp.js';
-import { aabb }                                   from '../physics/collision.js';
+import { PowerUp, TYPES } from '../entities/PowerUp.js';
+import { aabb } from '../physics/collision.js';
 import { POWERUP_SINGLE_CHANCE, POWERUP_LIFE_CHANCE } from '../constants.js';
 
 export class PowerUpSystem {
   #powerUps = [];
 
-  get powerUps() { return this.#powerUps; }
+  get powerUps() {
+    return this.#powerUps;
+  }
 
   /**
    * Conditionally spawn a power-up at (cx, cy).
@@ -21,7 +23,10 @@ export class PowerUpSystem {
   trySpawn(cx, cy, killCount, now, lives = Infinity) {
     if (killCount < 2 && Math.random() >= POWERUP_SINGLE_CHANCE) return;
     let type;
-    type = lives <= 2 && Math.random() < POWERUP_LIFE_CHANCE ? 'life' : TYPES[Math.floor(Math.random() * TYPES.length)];
+    type =
+      lives <= 2 && Math.random() < POWERUP_LIFE_CHANCE
+        ? 'life'
+        : TYPES[Math.floor(Math.random() * TYPES.length)];
     this.#powerUps.push(new PowerUp(cx, cy, type, now));
   }
 

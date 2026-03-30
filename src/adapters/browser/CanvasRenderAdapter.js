@@ -1,23 +1,27 @@
 import {
-  VIRTUAL_W, VIRTUAL_H, TARGET_FRAME_MS,
-  POWERUP_GRACE_MS, POWERUP_WARN_AT_MS, POWERUP_LIFESPAN_MS,
+  VIRTUAL_W,
+  VIRTUAL_H,
+  TARGET_FRAME_MS,
+  POWERUP_GRACE_MS,
+  POWERUP_WARN_AT_MS,
+  POWERUP_LIFESPAN_MS,
   STUN_PULSE_ANGULAR_FREQ,
 } from '../../domain/constants.js';
 
 // ── 8-bit colour palette ────────────────────────────────────────────────────
-const CLR_BALL   = '#ffffff'; // white (original Pong)
+const CLR_BALL = '#ffffff'; // white (original Pong)
 const CLR_PADDLE = '#ffffff'; // white
-const CLR_TEXT   = '#ffffff';
+const CLR_TEXT = '#ffffff';
 const CLR_SHIELD = '#00ffff'; // cyan
 
-const MAX_PHYS_W  = 1200;
-const MAX_PHYS_H  = 800;
-const MAX_ASPECT  = 1.6;
+const MAX_PHYS_W = 1200;
+const MAX_PHYS_H = 800;
+const MAX_ASPECT = 1.6;
 
-const FADE_DURATION_MS     = 500;
+const FADE_DURATION_MS = 500;
 const PARTICLE_DURATION_MS = 800;
-const PARTICLE_SPEED_MS    = 1 / TARGET_FRAME_MS;
-const PARTICLE_GRAV_MS2    = 0.04 / (TARGET_FRAME_MS * TARGET_FRAME_MS);
+const PARTICLE_SPEED_MS = 1 / TARGET_FRAME_MS;
+const PARTICLE_GRAV_MS2 = 0.04 / (TARGET_FRAME_MS * TARGET_FRAME_MS);
 
 // ── Pixel-art bitmaps ───────────────────────────────────────────────────────
 // Values: 0=transparent, 1=body colour, 2=white, 3=dark (black)
@@ -25,58 +29,58 @@ const PARTICLE_GRAV_MS2    = 0.04 / (TARGET_FRAME_MS * TARGET_FRAME_MS);
 // Ghost — 8×8 grid, pixel = size/8 (4px at GHOST_SIZE=32)
 // Rows 3-4 are the eyes; pupils (3) shift left/right based on travel direction.
 const GHOST_TOP = [
-  [0,0,1,1,1,1,0,0],
-  [0,1,1,1,1,1,1,0],
-  [1,1,1,1,1,1,1,1],
+  [0, 0, 1, 1, 1, 1, 0, 0],
+  [0, 1, 1, 1, 1, 1, 1, 0],
+  [1, 1, 1, 1, 1, 1, 1, 1],
 ];
 const GHOST_BOT = [
-  [1,1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1,1],
-  [1,0,1,1,0,1,1,0], // bumpy skirt
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 1, 1, 0, 1, 1, 0], // bumpy skirt
 ];
 
 // Aliens — 9×7 grid, pixel = 3px (fits in 27×21, centred in 28×22)
 // Drone — rightmost columns (green), octopus-like
 const DRONE_ROWS = [
-  [0,0,1,1,0,1,1,0,0],
-  [0,1,1,1,1,1,1,1,0],
-  [1,1,0,1,1,1,0,1,1],
-  [1,1,1,1,1,1,1,1,1],
-  [1,0,1,1,1,1,1,0,1],
-  [0,1,0,0,0,0,0,1,0],
-  [0,1,0,0,0,0,0,1,0],
+  [0, 0, 1, 1, 0, 1, 1, 0, 0],
+  [0, 1, 1, 1, 1, 1, 1, 1, 0],
+  [1, 1, 0, 1, 1, 1, 0, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [1, 0, 1, 1, 1, 1, 1, 0, 1],
+  [0, 1, 0, 0, 0, 0, 0, 1, 0],
+  [0, 1, 0, 0, 0, 0, 0, 1, 0],
 ];
 
 // Crab — middle rows (yellow), crab-like
 const CRAB_ROWS = [
-  [1,0,1,0,0,0,1,0,1],
-  [0,1,1,1,1,1,1,1,0],
-  [1,1,0,1,0,1,0,1,1],
-  [1,1,1,1,1,1,1,1,1],
-  [0,1,1,1,1,1,1,1,0],
-  [0,0,1,0,0,0,1,0,0],
-  [0,1,0,0,0,0,0,1,0],
+  [1, 0, 1, 0, 0, 0, 1, 0, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 0],
+  [1, 1, 0, 1, 0, 1, 0, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 0, 1, 0, 0, 0, 1, 0, 0],
+  [0, 1, 0, 0, 0, 0, 0, 1, 0],
 ];
 
 // Squid — bottom rows (green), squid-like
 const SQUID_ROWS = [
-  [0,0,0,1,1,1,0,0,0],
-  [0,1,1,1,1,1,1,1,0],
-  [1,1,0,1,1,1,0,1,1],
-  [1,1,1,1,1,1,1,1,1],
-  [0,1,1,1,1,1,1,1,0],
-  [0,1,0,0,0,0,0,1,0],
-  [1,0,0,0,0,0,0,0,1],
+  [0, 0, 0, 1, 1, 1, 0, 0, 0],
+  [0, 1, 1, 1, 1, 1, 1, 1, 0],
+  [1, 1, 0, 1, 1, 1, 0, 1, 1],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 1, 1, 1, 1, 1, 1, 0],
+  [0, 1, 0, 0, 0, 0, 0, 1, 0],
+  [1, 0, 0, 0, 0, 0, 0, 0, 1],
 ];
 
 // Mothership — 13×5 grid, pixel = 4px (52×20 = MOTHERSHIP_W×MOTHERSHIP_H)
 // 2 = dark window
 const MOTHERSHIP_ROWS = [
-  [0,0,0,1,1,1,1,1,1,1,0,0,0],
-  [0,0,1,1,1,1,1,1,1,1,1,0,0],
-  [0,1,1,2,1,2,1,2,1,2,1,1,0],
-  [1,1,1,1,1,1,1,1,1,1,1,1,1],
-  [0,1,0,1,0,1,0,1,0,1,0,1,0],
+  [0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0],
+  [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0],
+  [0, 1, 1, 2, 1, 2, 1, 2, 1, 2, 1, 1, 0],
+  [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0],
 ];
 
 /** Draw a pixel-art bitmap at (x, y) with the given pixel size. */
@@ -98,24 +102,24 @@ export class CanvasRenderAdapter {
   #knob;
   #zone;
   #ctx;
-  #scale    = 1;
+  #scale = 1;
   #virtualW = VIRTUAL_W;
-  #dpr      = 1;
+  #dpr = 1;
 
   // ── Particle system ────────────────────────────────────────────────────
-  #particles    = [];
+  #particles = [];
 
   // ── Kill-event detection ───────────────────────────────────────────────
-  #prevGhostCount  = 0;
-  #prevGhosts      = [];
-  #prevAlienCount  = 0;
-  #prevAliens      = [];
-  #prevMotherShip  = null;
+  #prevGhostCount = 0;
+  #prevGhosts = [];
+  #prevAlienCount = 0;
+  #prevAliens = [];
+  #prevMotherShip = null;
 
   // ── Level-fade transition ──────────────────────────────────────────────
-  #prevLevel    = 1;
-  #fadeAlpha    = 1;
-  #fadeStartAt  = -1;
+  #prevLevel = 1;
+  #fadeAlpha = 1;
+  #fadeStartAt = -1;
 
   /**
    * @param {HTMLCanvasElement} canvas
@@ -125,9 +129,9 @@ export class CanvasRenderAdapter {
    */
   constructor(canvas, wrap, knob = null, zone = null) {
     this.#canvas = canvas;
-    this.#wrap   = wrap;
-    this.#knob   = knob;
-    this.#zone   = zone;
+    this.#wrap = wrap;
+    this.#knob = knob;
+    this.#zone = zone;
   }
 
   init() {
@@ -139,30 +143,36 @@ export class CanvasRenderAdapter {
     this.#resize();
   }
 
-  get drawScale() { return this.#scale; }
-  get virtualW()  { return this.#virtualW; }
+  get drawScale() {
+    return this.#scale;
+  }
+  get virtualW() {
+    return this.#virtualW;
+  }
 
   #resize() {
-    const wrap  = this.#wrap;
+    const wrap = this.#wrap;
     const style = getComputedStyle(wrap);
 
-    const availW = wrap.clientWidth
-      - Number.parseFloat(style.paddingLeft)
-      - Number.parseFloat(style.paddingRight);
-    const availH = wrap.clientHeight
-      - Number.parseFloat(style.paddingTop)
-      - Number.parseFloat(style.paddingBottom);
+    const availW =
+      wrap.clientWidth -
+      Number.parseFloat(style.paddingLeft) -
+      Number.parseFloat(style.paddingRight);
+    const availH =
+      wrap.clientHeight -
+      Number.parseFloat(style.paddingTop) -
+      Number.parseFloat(style.paddingBottom);
 
     const physH = Math.min(Math.max(availH, 1), MAX_PHYS_H);
     const physW = Math.min(Math.max(availW, 1), MAX_PHYS_W, physH * MAX_ASPECT);
 
-    this.#dpr     = window.devicePixelRatio || 1;
-    this.#scale   = physH / VIRTUAL_H;
+    this.#dpr = window.devicePixelRatio || 1;
+    this.#scale = physH / VIRTUAL_H;
     this.#virtualW = physW / this.#scale;
 
-    this.#canvas.width  = Math.round(physW * this.#dpr);
+    this.#canvas.width = Math.round(physW * this.#dpr);
     this.#canvas.height = Math.round(physH * this.#dpr);
-    this.#canvas.style.width  = `${physW}px`;
+    this.#canvas.style.width = `${physW}px`;
     this.#canvas.style.height = `${physH}px`;
   }
 
@@ -171,7 +181,7 @@ export class CanvasRenderAdapter {
    */
   drawFrame(snapshot) {
     const ctx = this.#ctx;
-    const s   = this.#scale;
+    const s = this.#scale;
     const dpr = this.#dpr;
     const now = snapshot.now;
 
@@ -208,7 +218,7 @@ export class CanvasRenderAdapter {
 
   drawGameOver() {
     const ctx = this.#ctx;
-    const s   = this.#scale;
+    const s = this.#scale;
     const dpr = this.#dpr;
 
     ctx.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
@@ -217,9 +227,9 @@ export class CanvasRenderAdapter {
     ctx.imageSmoothingEnabled = false;
     ctx.fillStyle = '#000000';
     ctx.fillRect(0, 0, this.#virtualW, VIRTUAL_H);
-    ctx.fillStyle    = CLR_TEXT;
-    ctx.font         = `11px 'Press Start 2P', monospace`;
-    ctx.textAlign    = 'center';
+    ctx.fillStyle = CLR_TEXT;
+    ctx.font = `11px 'Press Start 2P', monospace`;
+    ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('GAME OVER', this.#virtualW / 2, VIRTUAL_H / 2 - 10);
     ctx.font = `7px 'Press Start 2P', monospace`;
@@ -231,22 +241,19 @@ export class CanvasRenderAdapter {
   // ── Draw helpers ───────────────────────────────────────────────────────
 
   #drawBall(ctx, { ball, ballState, ballReadySince }, now) {
-    const alpha = ballState === 'ready'
-      ? 0.25 + 0.75 * Math.abs(Math.sin((now - ballReadySince) * 0.005))
-      : 1;
+    const alpha =
+      ballState === 'ready' ? 0.25 + 0.75 * Math.abs(Math.sin((now - ballReadySince) * 0.005)) : 1;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle   = CLR_BALL;
+    ctx.fillStyle = CLR_BALL;
     ctx.fillRect(ball.x, ball.y, ball.w, ball.h);
     ctx.globalAlpha = 1;
   }
 
   #drawPaddle(ctx, { paddle, paddleStunnedUntil }, now) {
     const stunned = paddleStunnedUntil > now;
-    const alpha   = stunned
-      ? 0.55 + 0.45 * Math.sin(now * STUN_PULSE_ANGULAR_FREQ)
-      : 1;
+    const alpha = stunned ? 0.55 + 0.45 * Math.sin(now * STUN_PULSE_ANGULAR_FREQ) : 1;
     ctx.globalAlpha = alpha;
-    ctx.fillStyle   = CLR_PADDLE;
+    ctx.fillStyle = CLR_PADDLE;
     ctx.fillRect(paddle.x, paddle.y, paddle.w, paddle.h);
     ctx.globalAlpha = 1;
   }
@@ -271,18 +278,18 @@ export class CanvasRenderAdapter {
     // Pupils sit in the corner of the 2×2 eye that points toward travel direction:
     //   vy < 0 → top row of eye;  vy >= 0 → bottom row
     //   vx < 0 → left col of eye; vx >= 0 → right col
-    const pupilRow = vy < 0 ? 0 : 1;   // 0 = top eye-row, 1 = bottom eye-row
-    const pupilCol = vx < 0 ? 0 : 1;   // 0 = left eye-col, 1 = right eye-col
+    const pupilRow = vy < 0 ? 0 : 1; // 0 = top eye-row, 1 = bottom eye-row
+    const pupilCol = vx < 0 ? 0 : 1; // 0 = left eye-col, 1 = right eye-col
 
-    const eyeRow1 = [1,1,2,2,1,1,2,2]; // both eyes white
-    const eyeRow2 = [1,1,2,2,1,1,2,2];
+    const eyeRow1 = [1, 1, 2, 2, 1, 1, 2, 2]; // both eyes white
+    const eyeRow2 = [1, 1, 2, 2, 1, 1, 2, 2];
     const targetRow = pupilRow === 0 ? eyeRow1 : eyeRow2;
     targetRow[2 + pupilCol] = 3; // left eye pupil
     targetRow[6 + pupilCol] = 3; // right eye pupil
 
     const eyeY = gy + GHOST_TOP.length * px;
-    drawBitmap(ctx, [eyeRow1], gx, eyeY,          px, color);
-    drawBitmap(ctx, [eyeRow2], gx, eyeY + px,     px, color);
+    drawBitmap(ctx, [eyeRow1], gx, eyeY, px, color);
+    drawBitmap(ctx, [eyeRow2], gx, eyeY + px, px, color);
 
     // Lower body + skirt
     drawBitmap(ctx, GHOST_BOT, gx, eyeY + 2 * px, px, color);
@@ -303,14 +310,18 @@ export class CanvasRenderAdapter {
         alpha = 1;
       }
 
-      const color = p.type === 'wide'   ? '#00ff00'
-                  : p.type === 'shield' ? '#00ffff'
-                  : p.type === 'life'   ? '#ff00ff'
-                  :                       '#ffff00';
+      const color =
+        p.type === 'wide'
+          ? '#00ff00'
+          : p.type === 'shield'
+            ? '#00ffff'
+            : p.type === 'life'
+              ? '#ff00ff'
+              : '#ffff00';
 
       const cx = p.x + p.w / 2;
       const cy = p.y + p.h / 2;
-      const r  = p.w / 2;
+      const r = p.w / 2;
 
       ctx.save();
       ctx.globalAlpha = alpha;
@@ -318,31 +329,42 @@ export class CanvasRenderAdapter {
       // 8-bit style: draw as a diamond (rotated square)
       ctx.fillStyle = color;
       ctx.beginPath();
-      ctx.moveTo(cx,     cy - r);
+      ctx.moveTo(cx, cy - r);
       ctx.lineTo(cx + r, cy);
-      ctx.lineTo(cx,     cy + r);
+      ctx.lineTo(cx, cy + r);
       ctx.lineTo(cx - r, cy);
       ctx.closePath();
       ctx.fill();
 
       // Symbol — hard lines, no shadow
       ctx.strokeStyle = '#000000';
-      ctx.lineWidth   = 1.5;
-      ctx.lineCap     = 'square';
-      ctx.lineJoin    = 'miter';
+      ctx.lineWidth = 1.5;
+      ctx.lineCap = 'square';
+      ctx.lineJoin = 'miter';
 
       switch (p.type) {
         case 'wide': {
-          ctx.beginPath(); ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx - 3, cy - 2.5); ctx.lineTo(cx - 6, cy); ctx.lineTo(cx - 3, cy + 2.5); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx + 3, cy - 2.5); ctx.lineTo(cx + 6, cy); ctx.lineTo(cx + 3, cy + 2.5); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(cx - 5, cy);
+          ctx.lineTo(cx + 5, cy);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(cx - 3, cy - 2.5);
+          ctx.lineTo(cx - 6, cy);
+          ctx.lineTo(cx - 3, cy + 2.5);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(cx + 3, cy - 2.5);
+          ctx.lineTo(cx + 6, cy);
+          ctx.lineTo(cx + 3, cy + 2.5);
+          ctx.stroke();
           break;
         }
         case 'shield': {
           ctx.beginPath();
-          ctx.moveTo(cx,     cy - 5);
+          ctx.moveTo(cx, cy - 5);
           ctx.lineTo(cx + 4, cy);
-          ctx.lineTo(cx,     cy + 5);
+          ctx.lineTo(cx, cy + 5);
           ctx.lineTo(cx - 4, cy);
           ctx.closePath();
           ctx.stroke();
@@ -350,8 +372,14 @@ export class CanvasRenderAdapter {
         }
         case 'life': {
           // "+" symbol — classic retro health pickup
-          ctx.beginPath(); ctx.moveTo(cx, cy - 5); ctx.lineTo(cx, cy + 5); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx - 5, cy); ctx.lineTo(cx + 5, cy); ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(cx, cy - 5);
+          ctx.lineTo(cx, cy + 5);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(cx - 5, cy);
+          ctx.lineTo(cx + 5, cy);
+          ctx.stroke();
           break;
         }
       }
@@ -365,10 +393,8 @@ export class CanvasRenderAdapter {
     ctx.translate(alienOffsetX, alienOffsetY);
     for (const a of aliens) {
       ctx.globalAlpha = (0.4 + 0.6 * (a.hp / a.maxHp)) * this.#fadeAlpha;
-      const rows = a.type === 'drone' ? DRONE_ROWS
-                 : a.type === 'crab'  ? CRAB_ROWS
-                 :                      SQUID_ROWS;
-      const px   = 3;
+      const rows = a.type === 'drone' ? DRONE_ROWS : a.type === 'crab' ? CRAB_ROWS : SQUID_ROWS;
+      const px = 3;
       const offX = Math.round((a.w - rows[0].length * px) / 2);
       const offY = Math.round((a.h - rows.length * px) / 2);
       drawBitmap(ctx, rows, a.x + offX, a.y + offY, px, a.color);
@@ -378,9 +404,9 @@ export class CanvasRenderAdapter {
   }
 
   #drawMotherShip(ctx, ms) {
-    const CLR  = '#ff0000';
+    const CLR = '#ff0000';
     const { x, y } = ms;
-    const px   = 4;                        // 13×4=52=MOTHERSHIP_W, 5×4=20=MOTHERSHIP_H
+    const px = 4; // 13×4=52=MOTHERSHIP_W, 5×4=20=MOTHERSHIP_H
     const alpha = this.#fadeAlpha;
 
     ctx.save();
@@ -388,11 +414,9 @@ export class CanvasRenderAdapter {
     drawBitmap(ctx, MOTHERSHIP_ROWS, x, y, px, CLR, CLR, '#000000');
 
     // HP bar above mothership
-    const barY   = y - 5;
+    const barY = y - 5;
     const hpFrac = ms.hp / ms.maxHp;
-    const barClr = hpFrac > 2 / 3 ? '#00ff00'
-                 : hpFrac > 1 / 3 ? '#ffff00'
-                 :                  '#ff0000';
+    const barClr = hpFrac > 2 / 3 ? '#00ff00' : hpFrac > 1 / 3 ? '#ffff00' : '#ff0000';
     ctx.globalAlpha = 1;
     ctx.fillStyle = '#333333';
     ctx.fillRect(x, barY, ms.w, 3);
@@ -410,7 +434,7 @@ export class CanvasRenderAdapter {
   #drawShield(ctx, { paddle }, now) {
     ctx.globalAlpha = 0.55 + 0.45 * Math.abs(Math.sin(now * 0.004));
     ctx.strokeStyle = CLR_SHIELD;
-    ctx.lineWidth   = 2;
+    ctx.lineWidth = 2;
     ctx.strokeRect(paddle.x - 3, paddle.y - 3, paddle.w + 6, paddle.h + 6);
     ctx.globalAlpha = 1;
   }
@@ -433,7 +457,11 @@ export class CanvasRenderAdapter {
         for (let i = 0; i < remaining.length; i++) {
           const g = remaining[i];
           const d = (g.x + g.w / 2 - bx) ** 2 + (g.y + g.h / 2 - by) ** 2;
-          if (d < bestD) { bestD = d; closest = g; bestIndex = i; }
+          if (d < bestD) {
+            bestD = d;
+            closest = g;
+            bestIndex = i;
+          }
         }
         if (closest) {
           this.#spawnBurst(bx, by, closest.color, 8, now);
@@ -457,8 +485,12 @@ export class CanvasRenderAdapter {
             const a = remaining[i];
             const wx = a.x + oX + a.w / 2;
             const wy = a.y + oY + a.h / 2;
-            const d  = (wx - bx) ** 2 + (wy - by) ** 2;
-            if (d < bestD) { bestD = d; closest = a; bestIndex = i; }
+            const d = (wx - bx) ** 2 + (wy - by) ** 2;
+            if (d < bestD) {
+              bestD = d;
+              closest = a;
+              bestIndex = i;
+            }
           }
           if (closest) {
             this.#spawnBurst(bx, by, closest.color, 8, now);
@@ -477,14 +509,14 @@ export class CanvasRenderAdapter {
 
   #spawnBurst(cx, cy, color, count, now) {
     for (let i = 0; i < count; i++) {
-      const angle  = Math.random() * Math.PI * 2;
+      const angle = Math.random() * Math.PI * 2;
       const spdPxF = 1.5 + Math.random() * 2.5;
-      const spd    = spdPxF * PARTICLE_SPEED_MS;
+      const spd = spdPxF * PARTICLE_SPEED_MS;
       this.#particles.push({
-        x0:   cx,
-        y0:   cy,
-        vx:   Math.cos(angle) * spd,
-        vy:   Math.sin(angle) * spd,
+        x0: cx,
+        y0: cy,
+        vx: Math.cos(angle) * spd,
+        vy: Math.sin(angle) * spd,
         color,
         born: now,
         size: Math.random() < 0.5 ? 2 : 3,
@@ -494,16 +526,19 @@ export class CanvasRenderAdapter {
 
   #tickAndDrawParticles(ctx, now) {
     for (let i = this.#particles.length - 1; i >= 0; i--) {
-      const p   = this.#particles[i];
+      const p = this.#particles[i];
       const age = now - p.born;
-      if (age >= PARTICLE_DURATION_MS) { this.#particles.splice(i, 1); continue; }
+      if (age >= PARTICLE_DURATION_MS) {
+        this.#particles.splice(i, 1);
+        continue;
+      }
 
-      const x     = p.x0 + p.vx * age;
-      const y     = p.y0 + p.vy * age + 0.5 * PARTICLE_GRAV_MS2 * age * age;
+      const x = p.x0 + p.vx * age;
+      const y = p.y0 + p.vy * age + 0.5 * PARTICLE_GRAV_MS2 * age * age;
       const alpha = 1 - age / PARTICLE_DURATION_MS;
 
       ctx.globalAlpha = alpha;
-      ctx.fillStyle   = p.color;
+      ctx.fillStyle = p.color;
       ctx.fillRect(Math.round(x) - p.size / 2, Math.round(y) - p.size / 2, p.size, p.size);
     }
     ctx.globalAlpha = 1;
@@ -513,12 +548,13 @@ export class CanvasRenderAdapter {
     const { level, ball, now } = snapshot;
 
     if (level > this.#prevLevel) {
-      this.#fadeAlpha   = 0;
+      this.#fadeAlpha = 0;
       this.#fadeStartAt = ball.x > this.#virtualW / 2 ? now : -1;
-      this.#prevLevel   = level;
+      this.#prevLevel = level;
     }
 
-    if (this.#fadeStartAt < 0 && this.#fadeAlpha < 1 && ball.x > this.#virtualW / 2) this.#fadeStartAt = now;
+    if (this.#fadeStartAt < 0 && this.#fadeAlpha < 1 && ball.x > this.#virtualW / 2)
+      this.#fadeStartAt = now;
 
     if (this.#fadeStartAt >= 0 && this.#fadeAlpha < 1) {
       this.#fadeAlpha = Math.min(1, (now - this.#fadeStartAt) / FADE_DURATION_MS);
@@ -527,9 +563,21 @@ export class CanvasRenderAdapter {
 
   #saveFrameState(snapshot) {
     this.#prevGhostCount = snapshot.ghosts.length;
-    this.#prevGhosts     = snapshot.ghosts.map(g => ({ x: g.x, y: g.y, w: g.w, h: g.h, color: g.color }));
+    this.#prevGhosts = snapshot.ghosts.map((g) => ({
+      x: g.x,
+      y: g.y,
+      w: g.w,
+      h: g.h,
+      color: g.color,
+    }));
     this.#prevAlienCount = snapshot.aliens.length;
-    this.#prevAliens     = snapshot.aliens.map(a => ({ x: a.x, y: a.y, w: a.w, h: a.h, color: a.color }));
+    this.#prevAliens = snapshot.aliens.map((a) => ({
+      x: a.x,
+      y: a.y,
+      w: a.w,
+      h: a.h,
+      color: a.color,
+    }));
     this.#prevMotherShip = snapshot.motherShip ? { ...snapshot.motherShip } : null;
   }
 
@@ -540,12 +588,12 @@ export class CanvasRenderAdapter {
     if (getComputedStyle(zone).display === 'none') return;
 
     const zoneStyle = getComputedStyle(zone);
-    const padTop    = Number.parseFloat(zoneStyle.paddingTop);
-    const padBot    = Number.parseFloat(zoneStyle.paddingBottom);
-    const knobH     = knob.offsetHeight;
-    const trackH    = zone.offsetHeight - padTop - padBot;
+    const padTop = Number.parseFloat(zoneStyle.paddingTop);
+    const padBot = Number.parseFloat(zoneStyle.paddingBottom);
+    const knobH = knob.offsetHeight;
+    const trackH = zone.offsetHeight - padTop - padBot;
     const relativeY = paddle.y / (VIRTUAL_H - paddle.h);
-    knob.style.top  = `${padTop + relativeY * (trackH - knobH)}px`;
+    knob.style.top = `${padTop + relativeY * (trackH - knobH)}px`;
     zone.setAttribute('aria-valuenow', Math.round(relativeY * 100));
   }
 }

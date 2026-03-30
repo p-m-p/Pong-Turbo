@@ -8,7 +8,7 @@ import { VIRTUAL_H } from '../../domain/constants.js';
  */
 export class TouchInputAdapter {
   #keyboard;
-  #absoluteY  = null;
+  #absoluteY = null;
 
   constructor(keyboardAdapter) {
     this.#keyboard = keyboardAdapter;
@@ -19,14 +19,20 @@ export class TouchInputAdapter {
 
     const onTouch = (ev) => {
       const touch = ev.touches[0];
-      const rect  = zone.getBoundingClientRect();
+      const rect = zone.getBoundingClientRect();
       const relativeY = Math.max(0, Math.min(1, (touch.clientY - rect.top) / rect.height));
       this.#absoluteY = relativeY * (VIRTUAL_H - paddleH);
     };
 
     zone.addEventListener('touchstart', onTouch, { passive: true });
-    zone.addEventListener('touchmove',  onTouch, { passive: true });
-    zone.addEventListener('touchend',   () => { this.#absoluteY = null; }, { passive: true });
+    zone.addEventListener('touchmove', onTouch, { passive: true });
+    zone.addEventListener(
+      'touchend',
+      () => {
+        this.#absoluteY = null;
+      },
+      { passive: true },
+    );
   }
 
   /** @returns {import('../../ports/InputPort.js').InputSnapshot} */

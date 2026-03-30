@@ -1,6 +1,6 @@
-import { CanvasRenderAdapter }  from '../adapters/browser/CanvasRenderAdapter.js';
+import { CanvasRenderAdapter } from '../adapters/browser/CanvasRenderAdapter.js';
 import { KeyboardInputAdapter } from '../adapters/browser/KeyboardInputAdapter.js';
-import { TouchInputAdapter }    from '../adapters/browser/TouchInputAdapter.js';
+import { TouchInputAdapter } from '../adapters/browser/TouchInputAdapter.js';
 
 const template = document.createElement('template');
 template.innerHTML = `
@@ -119,27 +119,38 @@ export class PongCanvas extends HTMLElement {
     const shadow = this.attachShadow({ mode: 'open' });
     shadow.append(template.content.cloneNode(true));
 
-    const canvas     = shadow.querySelector('#pongBoard');
+    const canvas = shadow.querySelector('#pongBoard');
     const canvasWrap = shadow.querySelector('#canvas-wrap');
-    const knob       = shadow.querySelector('#touch-knob');
-    const zone       = shadow.querySelector('#touch-control');
+    const knob = shadow.querySelector('#touch-knob');
+    const zone = shadow.querySelector('#touch-control');
 
     this.#keyboard = new KeyboardInputAdapter();
     this.#keyboard.init();
 
-    this.#touch  = new TouchInputAdapter(this.#keyboard);
+    this.#touch = new TouchInputAdapter(this.#keyboard);
     this.#render = new CanvasRenderAdapter(canvas, canvasWrap, knob, zone);
     this.#render.init();
 
-    shadow.querySelector('#startGame').addEventListener('click', () => {
-      shadow.querySelector('#start-screen').classList.add('hidden');
-      document.querySelector('#soundtrack')?.play().catch(() => {});
-      this.dispatchEvent(new CustomEvent('game-start', { bubbles: true, composed: true }));
-    }, { once: true });
+    shadow.querySelector('#startGame').addEventListener(
+      'click',
+      () => {
+        shadow.querySelector('#start-screen').classList.add('hidden');
+        document
+          .querySelector('#soundtrack')
+          ?.play()
+          .catch(() => {});
+        this.dispatchEvent(new CustomEvent('game-start', { bubbles: true, composed: true }));
+      },
+      { once: true },
+    );
   }
 
-  get renderAdapter() { return this.#render; }
-  get inputAdapter()  { return this.#touch; }
+  get renderAdapter() {
+    return this.#render;
+  }
+  get inputAdapter() {
+    return this.#touch;
+  }
 
   hideStartScreen() {
     this.shadowRoot?.getElementById('start-screen')?.classList.add('hidden');
@@ -147,10 +158,7 @@ export class PongCanvas extends HTMLElement {
 
   /** Wire touch zone events — call after startNewGame sets the paddle height. */
   initInput(paddleH) {
-    this.#touch.init(
-      this.shadowRoot.querySelector('#touch-control'),
-      paddleH,
-    );
+    this.#touch.init(this.shadowRoot.querySelector('#touch-control'), paddleH);
   }
 }
 

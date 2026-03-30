@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { PowerUpSystem } from '../../../src/domain/systems/PowerUpSystem.js';
-import { makeBall }       from '../../helpers/builders.js';
+import { makeBall } from '../../helpers/builders.js';
 import { POWERUP_GRACE_MS, POWERUP_LIFESPAN_MS, VIRTUAL_H } from '../../../src/domain/constants.js';
 
 let sys;
-beforeEach(() => { sys = new PowerUpSystem(); });
+beforeEach(() => {
+  sys = new PowerUpSystem();
+});
 
 describe('PowerUpSystem trySpawn', () => {
   it('always spawns on 2+ kills', () => {
@@ -52,7 +54,7 @@ describe('PowerUpSystem checkCollision', () => {
 
   it('returns the power-up type and removes it when collected', () => {
     sys.trySpawn(100, 100, 2, 0);
-    const p    = sys.powerUps[0];
+    const p = sys.powerUps[0];
     const ball = makeBall({ x: p.x, y: p.y, w: p.w, h: p.h });
     const type = sys.checkCollision(ball, POWERUP_GRACE_MS + 1);
     expect(type).toMatch(/^(wide|shield)$/);

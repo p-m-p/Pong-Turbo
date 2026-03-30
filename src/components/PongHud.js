@@ -64,8 +64,9 @@ export class PongHud extends HTMLElement {
   }
 
   #buildLives(count) {
-    this.#livesEl.innerHTML = Array.from({ length: count }, (_, i) =>
-      `<li class="life active" aria-label="Life ${i + 1}"></li>`
+    this.#livesEl.innerHTML = Array.from(
+      { length: count },
+      (_, i) => `<li class="life active" aria-label="Life ${i + 1}"></li>`,
     ).join('');
   }
 

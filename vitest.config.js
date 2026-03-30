@@ -6,7 +6,7 @@ export default defineConfig({
     include: ['tests/**/*.test.js'],
     coverage: {
       provider: 'v8',
-      include:  ['src/domain/**'],
+      include: ['src/domain/**'],
       thresholds: { lines: 85, functions: 85 },
     },
   },

@@ -1,11 +1,11 @@
-import { createBall }    from './entities/Ball.js';
-import { createPaddle }  from './entities/Paddle.js';
-import { GhostSystem }     from './systems/GhostSystem.js';
-import { AlienSystem }     from './systems/AlienSystem.js';
-import { PowerUpSystem }   from './systems/PowerUpSystem.js';
+import { createBall } from './entities/Ball.js';
+import { createPaddle } from './entities/Paddle.js';
+import { GhostSystem } from './systems/GhostSystem.js';
+import { AlienSystem } from './systems/AlienSystem.js';
+import { PowerUpSystem } from './systems/PowerUpSystem.js';
 import { MotherShipSystem } from './systems/MotherShipSystem.js';
 import { moveBall, launchBall, checkPaddleHit, updateReadyBall } from './physics/ball.js';
-import { movePaddle }    from './physics/paddle.js';
+import { movePaddle } from './physics/paddle.js';
 import {
   ghostKillScore,
   alienKillScore,
@@ -55,58 +55,76 @@ export class GameLoop {
   // ── Per-game state ──────────────────────────────────────────────────────
   #ball;
   #paddle;
-  #score       = 0;
-  #lives       = 0;
-  #level       = 1;
-  #gameSpeed   = INITIAL_SPEED;
-  #ballSpeed   = INITIAL_SPEED;
+  #score = 0;
+  #lives = 0;
+  #level = 1;
+  #gameSpeed = INITIAL_SPEED;
+  #ballSpeed = INITIAL_SPEED;
 
   // ── Ball serve state ────────────────────────────────────────────────────
-  #ballState      = 'live'; // 'ready' | 'live'
+  #ballState = 'live'; // 'ready' | 'live'
   #ballReadySince = 0;
 
   // ── Stun / power-up state ───────────────────────────────────────────────
   #paddleStunnedUntil = 0;
-  #wideUntil          = 0;
-  #shieldBounces      = 0;   // ball-paddle hits remaining; 0 = no shield
-  #isBonusRound       = false;
+  #wideUntil = 0;
+  #shieldBounces = 0; // ball-paddle hits remaining; 0 = no shield
+  #isBonusRound = false;
 
   constructor(render, audio, input, score) {
-    this.#render       = render;
-    this.#audio        = audio;
-    this.#input        = input;
-    this.#scorePort    = score;
-    this.#ghostSystem  = new GhostSystem();
-    this.#alienSystem     = new AlienSystem();
-    this.#powerUpSystem   = new PowerUpSystem();
+    this.#render = render;
+    this.#audio = audio;
+    this.#input = input;
+    this.#scorePort = score;
+    this.#ghostSystem = new GhostSystem();
+    this.#alienSystem = new AlienSystem();
+    this.#powerUpSystem = new PowerUpSystem();
     this.#motherShipSystem = new MotherShipSystem();
   }
 
   /** Set the virtual field width before starting a new game. */
-  setFieldW(w) { this.#fieldW = w; }
+  setFieldW(w) {
+    this.#fieldW = w;
+  }
 
   /** Getters expose state to tests without mutation risk */
-  get lives()       { return this.#lives; }
-  get scoreValue()  { return this.#score; }
-  get level()       { return this.#level; }
-  get gameSpeed()   { return this.#gameSpeed; }
-  get ballState()   { return this.#ballState; }
-  get isBonusRound(){ return this.#isBonusRound; }
-  get ball()        { return this.#ball; }
-  get paddle()      { return this.#paddle; }
+  get lives() {
+    return this.#lives;
+  }
+  get scoreValue() {
+    return this.#score;
+  }
+  get level() {
+    return this.#level;
+  }
+  get gameSpeed() {
+    return this.#gameSpeed;
+  }
+  get ballState() {
+    return this.#ballState;
+  }
+  get isBonusRound() {
+    return this.#isBonusRound;
+  }
+  get ball() {
+    return this.#ball;
+  }
+  get paddle() {
+    return this.#paddle;
+  }
 
   // ── Game lifecycle ───────────────────────────────────────────────────────
 
   startNewGame(now) {
-    this.#score              = 0;
-    this.#lives              = INITIAL_LIVES;
-    this.#level              = 1;
-    this.#gameSpeed          = INITIAL_SPEED;
-    this.#ballSpeed          = INITIAL_SPEED;
+    this.#score = 0;
+    this.#lives = INITIAL_LIVES;
+    this.#level = 1;
+    this.#gameSpeed = INITIAL_SPEED;
+    this.#ballSpeed = INITIAL_SPEED;
     this.#paddleStunnedUntil = 0;
-    this.#wideUntil          = 0;
-    this.#shieldBounces      = 0;
-    this.#isBonusRound       = false;
+    this.#wideUntil = 0;
+    this.#shieldBounces = 0;
+    this.#isBonusRound = false;
     this.#powerUpSystem.clear();
     this.#motherShipSystem.reset();
 
@@ -117,7 +135,7 @@ export class GameLoop {
       PADDLE_BASE_H,
     );
 
-    this.#ball    = createBall(40, VIRTUAL_H / 2, BALL_SIZE, BALL_SIZE, 0, 0);
+    this.#ball = createBall(40, VIRTUAL_H / 2, BALL_SIZE, BALL_SIZE, 0, 0);
     this.#ballState = 'live'; // resetBall sets 'ready'
     this.#resetBall(now);
 
@@ -148,8 +166,8 @@ export class GameLoop {
         timeScale,
       );
       if (readyResult === 'launched') {
-        this.#ballState  = 'live';
-        this.#ballSpeed  = this.#gameSpeed;
+        this.#ballState = 'live';
+        this.#ballSpeed = this.#gameSpeed;
         launchBall(this.#ball, this.#gameSpeed);
         this.#audio.play('paddle');
       } else if (readyResult === 'reset') {
@@ -172,8 +190,8 @@ export class GameLoop {
 
     // Expire wide paddle
     if (this.#wideUntil > 0 && now > this.#wideUntil) {
-      this.#wideUntil  = 0;
-      this.#paddle.h   = PADDLE_BASE_H;
+      this.#wideUntil = 0;
+      this.#paddle.h = PADDLE_BASE_H;
     }
 
     // ── Paddle movement ───────────────────────────────────────────────────
@@ -200,9 +218,12 @@ export class GameLoop {
     if (input.paddleAbsoluteY === null) {
       this.#paddle.moveY = input.paddleDirection;
     } else {
-      const newY     = Math.max(0, Math.min(VIRTUAL_H - this.#paddle.h, input.paddleAbsoluteY));
-      this.#paddle.vy = Math.max(-this.#gameSpeed * 2, Math.min(this.#gameSpeed * 2, newY - this.#paddle.y));
-      this.#paddle.y  = newY;
+      const newY = Math.max(0, Math.min(VIRTUAL_H - this.#paddle.h, input.paddleAbsoluteY));
+      this.#paddle.vy = Math.max(
+        -this.#gameSpeed * 2,
+        Math.min(this.#gameSpeed * 2, newY - this.#paddle.y),
+      );
+      this.#paddle.y = newY;
     }
   }
 
@@ -218,7 +239,7 @@ export class GameLoop {
     );
     if (hitResult) {
       this.#ballSpeed = hitResult.ballSpeed;
-      this.#score    += rallyScore(this.#gameSpeed);
+      this.#score += rallyScore(this.#gameSpeed);
       this.#scoreUpdate();
       this.#audio.play('paddle');
       if (this.#shieldBounces > 0) this.#shieldBounces--;
@@ -237,7 +258,12 @@ export class GameLoop {
   }
 
   #tickNormalRound(now, timeScale) {
-    this.#ghostSystem.move(VIRTUAL_H, this.#fieldW, this.#paddle.x, (this.#gameSpeed / 4) * timeScale);
+    this.#ghostSystem.move(
+      VIRTUAL_H,
+      this.#fieldW,
+      this.#paddle.x,
+      (this.#gameSpeed / 4) * timeScale,
+    );
 
     if (this.#ghostSystem.checkPaddleCollision(this.#paddle)) {
       if (this.#shieldBounces > 0) {
@@ -251,7 +277,8 @@ export class GameLoop {
   #tickBonusRound(now, timeScale) {
     this.#alienSystem.move(VIRTUAL_H, timeScale);
     this.#motherShipSystem.move(
-      now, timeScale,
+      now,
+      timeScale,
       this.#alienSystem.offsetX,
       this.#alienSystem.offsetY,
       this.#alienSystem.aliens,
@@ -282,9 +309,12 @@ export class GameLoop {
       }
     }
 
-    if (this.#motherShipSystem.checkLaserPaddleCollision(this.#paddle) && this.#paddleStunnedUntil < now) {
-        this.#paddleStunnedUntil = now + STUN_DURATION_MS;
-      }
+    if (
+      this.#motherShipSystem.checkLaserPaddleCollision(this.#paddle) &&
+      this.#paddleStunnedUntil < now
+    ) {
+      this.#paddleStunnedUntil = now + STUN_DURATION_MS;
+    }
 
     if (this.#alienSystem.allDead() || this.#alienSystem.reachedX(this.#paddle.x)) {
       // Aliens cleared — force mothership in if it hasn't appeared yet.
@@ -299,7 +329,7 @@ export class GameLoop {
     this.#audio.play('levelUp');
     this.#level++;
     this.#gameSpeed += 2;
-    this.#ballSpeed  = this.#gameSpeed;
+    this.#ballSpeed = this.#gameSpeed;
 
     if (this.#level % 3 === 0) {
       this.#isBonusRound = true;
@@ -315,7 +345,7 @@ export class GameLoop {
     this.#audio.play('levelUp');
     this.#level++;
     this.#gameSpeed += 2;
-    this.#ballSpeed  = this.#gameSpeed;
+    this.#ballSpeed = this.#gameSpeed;
     this.#motherShipSystem.reset();
     this.#ghostSystem.spawn();
   }
@@ -324,7 +354,7 @@ export class GameLoop {
     switch (type) {
       case 'wide': {
         this.#wideUntil = now + WIDE_DURATION_MS;
-        this.#paddle.h  = PADDLE_BASE_H * WIDE_SCALE;
+        this.#paddle.h = PADDLE_BASE_H * WIDE_SCALE;
         break;
       }
       case 'shield': {
@@ -352,12 +382,12 @@ export class GameLoop {
   }
 
   #resetBall(now) {
-    this.#ball.x         = 40;
-    this.#ball.y         = VIRTUAL_H / 2 - this.#ball.h / 2;
-    this.#ball.dx        = 0;
-    this.#ball.dy        = 0;
-    this.#ballSpeed      = this.#gameSpeed;
-    this.#ballState      = 'ready';
+    this.#ball.x = 40;
+    this.#ball.y = VIRTUAL_H / 2 - this.#ball.h / 2;
+    this.#ball.dx = 0;
+    this.#ball.dy = 0;
+    this.#ballSpeed = this.#gameSpeed;
+    this.#ballState = 'ready';
     this.#ballReadySince = now;
   }
 
@@ -368,35 +398,54 @@ export class GameLoop {
   /** Build a plain snapshot passed to the render adapter. */
   #buildSnapshot(now) {
     return {
-      ball:          { ...this.#ball },
-      paddle:        { ...this.#paddle },
-      ghosts:        this.#ghostSystem.ghosts.map(g => ({
-        x: g.x, y: g.y, w: g.w, h: g.h, color: g.color, state: g.state, vx: g.vx, vy: g.vy,
+      ball: { ...this.#ball },
+      paddle: { ...this.#paddle },
+      ghosts: this.#ghostSystem.ghosts.map((g) => ({
+        x: g.x,
+        y: g.y,
+        w: g.w,
+        h: g.h,
+        color: g.color,
+        state: g.state,
+        vx: g.vx,
+        vy: g.vy,
       })),
-      powerUps:      this.#powerUpSystem.powerUps.map(p => ({
-        x: p.x, y: p.y, w: p.w, h: p.h, type: p.type, born: p.born,
+      powerUps: this.#powerUpSystem.powerUps.map((p) => ({
+        x: p.x,
+        y: p.y,
+        w: p.w,
+        h: p.h,
+        type: p.type,
+        born: p.born,
       })),
-      aliens:        this.#alienSystem.aliens.map(a => ({
-        x: a.x, y: a.y, w: a.w, h: a.h, color: a.color, type: a.type, hp: a.hp, maxHp: a.maxHp,
+      aliens: this.#alienSystem.aliens.map((a) => ({
+        x: a.x,
+        y: a.y,
+        w: a.w,
+        h: a.h,
+        color: a.color,
+        type: a.type,
+        hp: a.hp,
+        maxHp: a.maxHp,
       })),
-      alienOffsetX:  this.#alienSystem.offsetX,
-      alienOffsetY:  this.#alienSystem.offsetY,
-      ballState:     this.#ballState,
+      alienOffsetX: this.#alienSystem.offsetX,
+      alienOffsetY: this.#alienSystem.offsetY,
+      ballState: this.#ballState,
       ballReadySince: this.#ballReadySince,
       paddleStunnedUntil: this.#paddleStunnedUntil,
-      shieldActive:  this.#shieldBounces > 0,
-      isBonusRound:  this.#isBonusRound,
+      shieldActive: this.#shieldBounces > 0,
+      isBonusRound: this.#isBonusRound,
       motherShip: this.#motherShipSystem.active
         ? {
-            x:     this.#motherShipSystem.x,
-            y:     this.#motherShipSystem.y,
-            w:     this.#motherShipSystem.w,
-            h:     this.#motherShipSystem.h,
-            hp:    this.#motherShipSystem.hp,
+            x: this.#motherShipSystem.x,
+            y: this.#motherShipSystem.y,
+            w: this.#motherShipSystem.w,
+            h: this.#motherShipSystem.h,
+            hp: this.#motherShipSystem.hp,
             maxHp: this.#motherShipSystem.maxHp,
           }
         : null,
-      motherShipLasers: this.#motherShipSystem.lasers.map(l => ({ ...l })),
+      motherShipLasers: this.#motherShipSystem.lasers.map((l) => ({ ...l })),
       now,
     };
   }

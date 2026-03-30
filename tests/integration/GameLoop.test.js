@@ -1,12 +1,12 @@
 import { describe, it, expect, afterEach, vi } from 'vitest';
-import { GameLoop }                  from '../../src/domain/GameLoop.js';
-import { RecordingRenderAdapter }    from '../../src/adapters/test/RecordingRenderAdapter.js';
-import { NullAudioAdapter }          from '../../src/adapters/test/NullAudioAdapter.js';
-import { ScriptedInputAdapter }      from '../../src/adapters/test/ScriptedInputAdapter.js';
-import { MemoryScoreAdapter }        from '../../src/adapters/test/MemoryScoreAdapter.js';
-import { PowerUpSystem }             from '../../src/domain/systems/PowerUpSystem.js';
-import { PowerUp }                   from '../../src/domain/entities/PowerUp.js';
-import { GhostSystem }               from '../../src/domain/systems/GhostSystem.js';
+import { GameLoop } from '../../src/domain/GameLoop.js';
+import { RecordingRenderAdapter } from '../../src/adapters/test/RecordingRenderAdapter.js';
+import { NullAudioAdapter } from '../../src/adapters/test/NullAudioAdapter.js';
+import { ScriptedInputAdapter } from '../../src/adapters/test/ScriptedInputAdapter.js';
+import { MemoryScoreAdapter } from '../../src/adapters/test/MemoryScoreAdapter.js';
+import { PowerUpSystem } from '../../src/domain/systems/PowerUpSystem.js';
+import { PowerUp } from '../../src/domain/entities/PowerUp.js';
+import { GhostSystem } from '../../src/domain/systems/GhostSystem.js';
 import {
   VIRTUAL_W,
   VIRTUAL_H,
@@ -26,9 +26,9 @@ import {
 function makeAdapters() {
   return {
     render: new RecordingRenderAdapter(),
-    audio:  new NullAudioAdapter(),
-    input:  new ScriptedInputAdapter(),
-    score:  new MemoryScoreAdapter(),
+    audio: new NullAudioAdapter(),
+    input: new ScriptedInputAdapter(),
+    score: new MemoryScoreAdapter(),
   };
 }
 
@@ -70,8 +70,8 @@ function killAllGhosts(loop, adapters, startNow) {
   loop.tick(now++, 1);
   while (loop.level === startLevel && adapters.render.lastFrame().ghosts.length > 0) {
     const g = adapters.render.lastFrame().ghosts[0];
-    loop.ball.x  = g.x + 2;
-    loop.ball.y  = g.y + 5;
+    loop.ball.x = g.x + 2;
+    loop.ball.y = g.y + 5;
     loop.ball.dx = 0;
     loop.ball.dy = 0;
     loop.tick(now++, 1);
@@ -90,8 +90,8 @@ function killAllAliens(loop, adapters, startNow) {
     const frame = adapters.render.lastFrame();
     if (frame.aliens.length === 0) break;
     const al = frame.aliens[0];
-    loop.ball.x  = al.x + frame.alienOffsetX + 5;
-    loop.ball.y  = al.y + frame.alienOffsetY + 5;
+    loop.ball.x = al.x + frame.alienOffsetX + 5;
+    loop.ball.y = al.y + frame.alienOffsetY + 5;
     loop.ball.dx = 0;
     loop.ball.dy = 0;
     loop.tick(now++, 1);
@@ -125,7 +125,7 @@ describe('GameLoop startNewGame', () => {
     const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
-    expect(a.score.history.some(e => e.event === 'reset')).toBe(true);
+    expect(a.score.history.some((e) => e.event === 'reset')).toBe(true);
   });
 });
 
@@ -168,9 +168,9 @@ describe('GameLoop tick — life loss', () => {
     const loop = makeLoop(a);
     loop.startNewGame(0);
     // Force ball live with high rightward speed — will exit quickly
-    loop.ball.dx    = VIRTUAL_W;
-    loop.ball.x     = VIRTUAL_W - 50;
-    loop.ball.dy    = 0;
+    loop.ball.dx = VIRTUAL_W;
+    loop.ball.x = VIRTUAL_W - 50;
+    loop.ball.dy = 0;
     // @ts-ignore — bypass ballState check via property write
     Object.defineProperty(loop, 'ballState', { get: () => 'live', configurable: true });
     // Directly call tick — the ball will exit
@@ -212,14 +212,14 @@ describe('GameLoop integration — score adapter', () => {
 
 describe('GameLoop — gameover', () => {
   it('returns gameover when all lives are exhausted', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let result = 'playing';
-    let now    = 0;
+    let now = 0;
     for (let life = 0; life < INITIAL_LIVES; life++) {
-      now    = waitForLaunch(loop, now);
-      loop.ball.x  = VIRTUAL_W;
+      now = waitForLaunch(loop, now);
+      loop.ball.x = VIRTUAL_W;
       loop.ball.dx = 1;
       loop.ball.dy = 0;
       result = loop.tick(now++, 1);
@@ -231,7 +231,7 @@ describe('GameLoop — gameover', () => {
 
 describe('GameLoop — touch input', () => {
   it('positions paddle directly via paddleAbsoluteY', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     loop.tick(TARGET_FRAME_MS, 1, { paddleAbsoluteY: 120, paddleDirection: null });
@@ -241,14 +241,14 @@ describe('GameLoop — touch input', () => {
 
 describe('GameLoop — ghost scoring', () => {
   it('awards score when a ghost is killed', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
     loop.tick(now++, 1);
     const g = a.render.lastFrame().ghosts[0];
-    loop.ball.x  = g.x + 2;
-    loop.ball.y  = g.y + 5;
+    loop.ball.x = g.x + 2;
+    loop.ball.y = g.y + 5;
     loop.ball.dx = 0;
     loop.ball.dy = 0;
     loop.tick(now++, 1);
@@ -259,7 +259,7 @@ describe('GameLoop — ghost scoring', () => {
 
 describe('GameLoop — level progression', () => {
   it('increments level when all ghosts are cleared', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -268,7 +268,7 @@ describe('GameLoop — level progression', () => {
   });
 
   it('plays levelUp audio on level clear', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -277,7 +277,7 @@ describe('GameLoop — level progression', () => {
   });
 
   it('triggers bonus round on 3rd level clear', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -289,7 +289,7 @@ describe('GameLoop — level progression', () => {
 
 describe('GameLoop — bonus round', () => {
   it('stays in bonus round after all aliens are killed (mothership must be destroyed)', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -313,8 +313,8 @@ function waitForMothership(loop, adapters, startNow) {
     if (loop.ballState === 'live') {
       // Park below the visible field (y > VIRTUAL_H) so the ball cannot collide
       // with the entering mothership and drain its HP before it becomes visible.
-      loop.ball.x  = 10;
-      loop.ball.y  = VIRTUAL_H + 100;
+      loop.ball.x = 10;
+      loop.ball.y = VIRTUAL_H + 100;
       loop.ball.dx = 0;
       loop.ball.dy = 0;
     }
@@ -335,8 +335,8 @@ function killMothership(loop, adapters, startNow) {
   for (let hit = 0; hit < MOTHERSHIP_HP; hit++) {
     const ms = adapters.render.lastFrame().motherShip;
     if (!ms) break;
-    loop.ball.x  = ms.x + 5;
-    loop.ball.y  = ms.y + 5;
+    loop.ball.x = ms.x + 5;
+    loop.ball.y = ms.y + 5;
     loop.ball.dx = 5;
     loop.ball.dy = 0;
     loop.tick(now, 1);
@@ -347,7 +347,7 @@ function killMothership(loop, adapters, startNow) {
 
 describe('GameLoop — mothership', () => {
   it('killing the mothership ends the bonus round', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -359,7 +359,7 @@ describe('GameLoop — mothership', () => {
   });
 
   it('level advances after mothership kill', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -370,7 +370,7 @@ describe('GameLoop — mothership', () => {
   });
 
   it('plays levelUp when mothership is killed', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -382,7 +382,7 @@ describe('GameLoop — mothership', () => {
   });
 
   it('awards MOTHERSHIP_KILL_SCORE + bonusClearScore on kill', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     let now = waitForLaunch(loop, 0);
@@ -402,11 +402,11 @@ describe('GameLoop — mothership', () => {
  * immediately collectible (born = now - POWERUP_GRACE_MS).
  */
 function spyShield() {
-  return vi.spyOn(PowerUpSystem.prototype, 'trySpawn').mockImplementation(
-    function spawnShield(cx, cy, _killCount, now) {
+  return vi
+    .spyOn(PowerUpSystem.prototype, 'trySpawn')
+    .mockImplementation(function spawnShield(cx, cy, _killCount, now) {
       this.powerUps.push(new PowerUp(cx, cy, 'shield', now - POWERUP_GRACE_MS));
-    },
-  );
+    });
 }
 
 /**
@@ -419,8 +419,8 @@ function collectShield(loop, adapters, startNow) {
   // Kill a ghost — spy guarantees a shield drop at the ghost's centre
   const g = adapters.render.lastFrame().ghosts[0];
   if (!g) throw new Error('no ghosts available');
-  loop.ball.x  = g.x + 2;
-  loop.ball.y  = g.y + 5;
+  loop.ball.x = g.x + 2;
+  loop.ball.y = g.y + 5;
   loop.ball.dx = 0;
   loop.ball.dy = 0;
   loop.tick(now++, 1);
@@ -428,8 +428,8 @@ function collectShield(loop, adapters, startNow) {
   const pu = adapters.render.lastFrame().powerUps[0];
   if (pu) {
     // Power-up still live — move ball onto it and collect
-    loop.ball.x  = pu.x + 1;
-    loop.ball.y  = pu.y + 1;
+    loop.ball.x = pu.x + 1;
+    loop.ball.y = pu.y + 1;
     loop.ball.dx = 0;
     loop.ball.dy = 0;
     loop.tick(now++, 1);
@@ -439,10 +439,12 @@ function collectShield(loop, adapters, startNow) {
 }
 
 describe('GameLoop — shield power-up', () => {
-  afterEach(() => { vi.restoreAllMocks(); });
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
 
   it('activates after collecting a shield power-up', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     spyShield();
@@ -453,7 +455,7 @@ describe('GameLoop — shield power-up', () => {
   });
 
   it('remains active after 9 ball-paddle bounces', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     spyShield();
@@ -463,8 +465,8 @@ describe('GameLoop — shield power-up', () => {
 
     // Simulate 9 paddle hits by positioning ball on paddle each tick
     for (let i = 0; i < 9; i++) {
-      loop.ball.x  = loop.paddle.x - BALL_SIZE + 1;
-      loop.ball.y  = loop.paddle.y + loop.paddle.h / 2;
+      loop.ball.x = loop.paddle.x - BALL_SIZE + 1;
+      loop.ball.y = loop.paddle.y + loop.paddle.h / 2;
       loop.ball.dx = INITIAL_SPEED;
       loop.ball.dy = 0;
       loop.tick(now++, 1);
@@ -473,7 +475,7 @@ describe('GameLoop — shield power-up', () => {
   });
 
   it('expires after 10 ball-paddle bounces', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     spyShield();
@@ -483,8 +485,8 @@ describe('GameLoop — shield power-up', () => {
 
     // Simulate 10 paddle hits
     for (let i = 0; i < 10; i++) {
-      loop.ball.x  = loop.paddle.x - BALL_SIZE + 1;
-      loop.ball.y  = loop.paddle.y + loop.paddle.h / 2;
+      loop.ball.x = loop.paddle.x - BALL_SIZE + 1;
+      loop.ball.y = loop.paddle.y + loop.paddle.h / 2;
       loop.ball.dx = INITIAL_SPEED;
       loop.ball.dy = 0;
       loop.tick(now++, 1);
@@ -493,7 +495,7 @@ describe('GameLoop — shield power-up', () => {
   });
 
   it('drains instantly on a ghost-paddle collision (no stun)', () => {
-    const a    = makeAdapters();
+    const a = makeAdapters();
     const loop = makeLoop(a);
     loop.startNewGame(0);
     spyShield();
@@ -502,7 +504,9 @@ describe('GameLoop — shield power-up', () => {
     now = collectShield(loop, a, now);
 
     // Force a ghost-paddle collision by spying on GhostSystem
-    const ghostSpy = vi.spyOn(GhostSystem.prototype, 'checkPaddleCollision').mockReturnValueOnce(true);
+    const ghostSpy = vi
+      .spyOn(GhostSystem.prototype, 'checkPaddleCollision')
+      .mockReturnValueOnce(true);
     loop.tick(now++, 1);
     ghostSpy.mockRestore();
 

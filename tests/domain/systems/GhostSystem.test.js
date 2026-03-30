@@ -62,7 +62,7 @@ describe('GhostSystem checkCollision', () => {
   });
 
   it('removes hit ghost and returns kill info', () => {
-    const g    = sys.ghosts[0];
+    const g = sys.ghosts[0];
     const ball = makeBall({ x: g.x, y: g.y, w: g.w, h: g.h });
     const before = sys.ghosts.length;
     const result = sys.checkCollision(ball);
@@ -75,7 +75,7 @@ describe('GhostSystem checkCollision', () => {
     // Place two ghosts on top of each other
     sys.ghosts[1].x = sys.ghosts[0].x;
     sys.ghosts[1].y = sys.ghosts[0].y;
-    const g    = sys.ghosts[0];
+    const g = sys.ghosts[0];
     const ball = makeBall({ x: g.x, y: g.y, w: g.w, h: g.h });
     const result = sys.checkCollision(ball);
     expect(result.count).toBeGreaterThanOrEqual(2);

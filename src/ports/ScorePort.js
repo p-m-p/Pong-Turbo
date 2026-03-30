@@ -6,7 +6,6 @@
  */
 export function assertScorePort(adapter) {
   for (const m of ['updateScore', 'updateLives', 'reset']) {
-    if (typeof adapter[m] !== 'function')
-      throw new Error(`ScorePort: missing ${m}()`);
+    if (typeof adapter[m] !== 'function') throw new Error(`ScorePort: missing ${m}()`);
   }
 }

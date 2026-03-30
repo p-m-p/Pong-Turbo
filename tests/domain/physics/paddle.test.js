@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { movePaddle }   from '../../../src/domain/physics/paddle.js';
-import { makePaddle }   from '../../helpers/builders.js';
-import { VIRTUAL_H }    from '../../../src/domain/constants.js';
+import { movePaddle } from '../../../src/domain/physics/paddle.js';
+import { makePaddle } from '../../helpers/builders.js';
+import { VIRTUAL_H } from '../../../src/domain/constants.js';
 
 const SPEED = 16;
 

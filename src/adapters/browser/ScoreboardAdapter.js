@@ -5,7 +5,9 @@ export class ScoreboardAdapter {
     this.#api = apiUrl ?? null;
   }
 
-  get available() { return this.#api !== null; }
+  get available() {
+    return this.#api !== null;
+  }
 
   /** @returns {Promise<Array<{rank:number, name:string, score:number}>>} */
   async getTopScores() {
@@ -31,9 +33,9 @@ export class ScoreboardAdapter {
   async submitScore(name, score, token, checkpoints = []) {
     if (!this.#api) return null;
     const res = await fetch(`${this.#api}/scores`, {
-      method:  'POST',
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ name, score, token, checkpoints }),
+      body: JSON.stringify({ name, score, token, checkpoints }),
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();

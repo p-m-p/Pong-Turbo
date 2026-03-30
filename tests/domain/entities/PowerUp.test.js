@@ -1,10 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { PowerUp } from '../../../src/domain/entities/PowerUp.js';
-import {
-  POWERUP_GRACE_MS,
-  POWERUP_LIFESPAN_MS,
-  VIRTUAL_H,
-} from '../../../src/domain/constants.js';
+import { POWERUP_GRACE_MS, POWERUP_LIFESPAN_MS, VIRTUAL_H } from '../../../src/domain/constants.js';
 
 function makePowerUp(type = 'wide', born = 0) {
   return new PowerUp(100, 100, type, born);

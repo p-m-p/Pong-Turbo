@@ -42,57 +42,60 @@ export default [
       'unicorn/no-array-callback-reference': 'off',
 
       // Abbreviations that are idiomatic in this codebase or established Web APIs.
-      'unicorn/prevent-abbreviations': ['error', {
-        allowList: {
-          // Web Components lifecycle (browser API naming — not our choice)
-          connectedCallback: true,
-          attributeChangedCallback: true,
-          // Canvas / rendering
-          ctx: true,
-          dpr: true,
-          px: true,
-          // Game physics vectors
-          vx: true,
-          vy: true,
-          dx: true,
-          dy: true,
-          cx: true,
-          cy: true,
-          // DOM shorthand conventional in this codebase
-          el: true,
-          // Loop variables
-          i: true,
-          j: true,
-          k: true,
-          // Single-letter geometry
-          r: true,
-          g: true,
-          s: true,
-          w: true,
-          h: true,
-          x: true,
-          y: true,
-          // Event handler param (extremely common shorthand)
-          ev: true,
-          // HTTP response (common in fetch patterns)
-          res: true,
-          // Audio nodes
-          osc: true,
-          src: true,
-          // ArrayBuffer
-          ab: true,
-          // DOM element suffix — canvasEl, hudEl, scoreboardEl, statusEl etc.
-          El: true,
-          el: true,
-          // prev suffix — rankPrev, prevLevel etc.
-          Prev: true,
-          prev: true,
-          // str param in #esc() — renaming to string_ would be worse
-          str: true,
-          // Single-letter catch / error param
-          e: true,
+      'unicorn/prevent-abbreviations': [
+        'error',
+        {
+          allowList: {
+            // Web Components lifecycle (browser API naming — not our choice)
+            connectedCallback: true,
+            attributeChangedCallback: true,
+            // Canvas / rendering
+            ctx: true,
+            dpr: true,
+            px: true,
+            // Game physics vectors
+            vx: true,
+            vy: true,
+            dx: true,
+            dy: true,
+            cx: true,
+            cy: true,
+            // DOM shorthand conventional in this codebase
+            el: true,
+            // Loop variables
+            i: true,
+            j: true,
+            k: true,
+            // Single-letter geometry
+            r: true,
+            g: true,
+            s: true,
+            w: true,
+            h: true,
+            x: true,
+            y: true,
+            // Event handler param (extremely common shorthand)
+            ev: true,
+            // HTTP response (common in fetch patterns)
+            res: true,
+            // Audio nodes
+            osc: true,
+            src: true,
+            // ArrayBuffer
+            ab: true,
+            // DOM element suffix — canvasEl, hudEl, scoreboardEl, statusEl etc.
+            El: true,
+            el: true,
+            // prev suffix — rankPrev, prevLevel etc.
+            Prev: true,
+            prev: true,
+            // str param in #esc() — renaming to string_ would be worse
+            str: true,
+            // Single-letter catch / error param
+            e: true,
+          },
         },
-      }],
+      ],
     },
   },
 

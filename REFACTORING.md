@@ -120,12 +120,12 @@ tests/
 
 Each entity splits into two responsibilities:
 
-| Current file | Domain module (logic) | Render (moves to CanvasRenderAdapter) |
-|---|---|---|
-| `entities/ball.js` | `domain/entities/Ball.js` | `drawBall(ctx, ball)` |
-| `entities/paddle.js` | `domain/entities/Paddle.js` | `drawPaddle(ctx, paddle)` |
-| `entities/ghost.js` | `domain/entities/Ghost.js` | `drawGhost(ctx, ghost, drawScale)` |
-| `entities/alien.js` | `domain/entities/Alien.js` | `drawAlien(ctx, alien, offset, drawScale)` |
+| Current file          | Domain module (logic)        | Render (moves to CanvasRenderAdapter)       |
+| --------------------- | ---------------------------- | ------------------------------------------- |
+| `entities/ball.js`    | `domain/entities/Ball.js`    | `drawBall(ctx, ball)`                       |
+| `entities/paddle.js`  | `domain/entities/Paddle.js`  | `drawPaddle(ctx, paddle)`                   |
+| `entities/ghost.js`   | `domain/entities/Ghost.js`   | `drawGhost(ctx, ghost, drawScale)`          |
+| `entities/alien.js`   | `domain/entities/Alien.js`   | `drawAlien(ctx, alien, offset, drawScale)`  |
 | `entities/powerup.js` | `domain/entities/PowerUp.js` | `drawPowerUp(ctx, powerUp, now, drawScale)` |
 
 ### Fixing the time problem
@@ -191,8 +191,7 @@ export function assertRenderPort(adapter) {
  * @property {(name: 'paddle'|'ghost'|'roundEnd'|'levelUp') => void} play
  */
 export function assertAudioPort(adapter) {
-  if (typeof adapter.play !== 'function')
-    throw new Error('AudioPort: missing play(name)');
+  if (typeof adapter.play !== 'function') throw new Error('AudioPort: missing play(name)');
 }
 ```
 
@@ -209,8 +208,7 @@ export function assertAudioPort(adapter) {
  * @property {boolean}          restartRequested
  */
 export function assertInputPort(adapter) {
-  if (typeof adapter.read !== 'function')
-    throw new Error('InputPort: missing read()');
+  if (typeof adapter.read !== 'function') throw new Error('InputPort: missing read()');
 }
 ```
 
@@ -225,8 +223,7 @@ export function assertInputPort(adapter) {
  */
 export function assertScorePort(adapter) {
   for (const m of ['updateScore', 'updateLives', 'reset']) {
-    if (typeof adapter[m] !== 'function')
-      throw new Error(`ScorePort: missing ${m}()`);
+    if (typeof adapter[m] !== 'function') throw new Error(`ScorePort: missing ${m}()`);
   }
 }
 ```
@@ -241,26 +238,26 @@ Replaces the closure variables in `game.js`. The complete snapshot of all game s
 // src/domain/GameState.js
 export function createGameState() {
   return {
-    ball:    null,     // Ball
-    paddle:  null,     // Paddle
+    ball: null, // Ball
+    paddle: null, // Paddle
 
-    score:      0,
-    lives:      5,
-    level:      1,
-    gameSpeed:  16,
-    ballSpeed:  16,
+    score: 0,
+    lives: 5,
+    level: 1,
+    gameSpeed: 16,
+    ballSpeed: 16,
 
-    ballState:      'live',  // 'ready' | 'live'
+    ballState: 'live', // 'ready' | 'live'
     ballReadySince: 0,
 
     paddleStunnedUntil: 0,
-    wideUntil:    0,
+    wideUntil: 0,
     shieldActive: false,
     isBonusRound: false,
 
     // System snapshots (populated by systems, read by render adapter)
-    ghosts:   [],
-    aliens:   [],
+    ghosts: [],
+    aliens: [],
     powerUps: [],
   };
 }
@@ -318,10 +315,18 @@ export class RecordingRenderAdapter {
     this.frames.push(structuredClone(state));
   }
 
-  lastFrame()           { return this.frames.at(-1); }
-  frameCount()          { return this.frames.length; }
-  ballPositions()       { return this.frames.map(f => ({ x: f.ball.x, y: f.ball.y })); }
-  findFrameWhere(pred)  { return this.frames.find(pred); }
+  lastFrame() {
+    return this.frames.at(-1);
+  }
+  frameCount() {
+    return this.frames.length;
+  }
+  ballPositions() {
+    return this.frames.map((f) => ({ x: f.ball.x, y: f.ball.y }));
+  }
+  findFrameWhere(pred) {
+    return this.frames.find(pred);
+  }
 }
 ```
 
@@ -330,9 +335,15 @@ export class RecordingRenderAdapter {
 ```js
 export class NullAudioAdapter {
   calls = [];
-  play(name)          { this.calls.push(name); }
-  played(name)        { return this.calls.includes(name); }
-  callCount(name)     { return this.calls.filter(n => n === name).length; }
+  play(name) {
+    this.calls.push(name);
+  }
+  played(name) {
+    return this.calls.includes(name);
+  }
+  callCount(name) {
+    return this.calls.filter((n) => n === name).length;
+  }
 }
 ```
 
@@ -340,17 +351,17 @@ export class NullAudioAdapter {
 
 ```js
 export class ScriptedInputAdapter {
-  #queue   = [];
-  #tick    = 0;
+  #queue = [];
+  #tick = 0;
   #current = { paddleDirection: null, paddleAbsoluteY: null, restartRequested: false };
 
   at(tick, snapshot) {
     this.#queue.push({ tick, snapshot });
-    return this;  // fluent
+    return this; // fluent
   }
 
   read() {
-    const event = this.#queue.find(e => e.tick === this.#tick);
+    const event = this.#queue.find((e) => e.tick === this.#tick);
     if (event) this.#current = event.snapshot;
     this.#tick++;
     return this.#current;
@@ -362,13 +373,22 @@ export class ScriptedInputAdapter {
 
 ```js
 export class MemoryScoreAdapter {
-  score   = 0;
-  lives   = 5;
+  score = 0;
+  lives = 5;
   history = [];
 
-  updateScore(score) { this.score = score; this.history.push({ event: 'score', value: score }); }
-  updateLives(lives) { this.lives = lives; this.history.push({ event: 'lives', value: lives }); }
-  reset(lives)       { this.score = 0; this.lives = lives; }
+  updateScore(score) {
+    this.score = score;
+    this.history.push({ event: 'score', value: score });
+  }
+  updateLives(lives) {
+    this.lives = lives;
+    this.history.push({ event: 'lives', value: lives });
+  }
+  reset(lives) {
+    this.score = 0;
+    this.lives = lives;
+  }
 }
 ```
 
@@ -382,17 +402,17 @@ All scoring formulae extracted into one pure module:
 // src/domain/systems/ScoringRules.js
 
 // Paddle return
-export const paddleHitScore  = (gameSpeed)           => gameSpeed;
+export const paddleHitScore = (gameSpeed) => gameSpeed;
 
 // Ghost kill — exponential multi-kill multiplier
-export const ghostKillScore  = (level, gameSpeed, n) => level * gameSpeed * n * 2 ** (n - 1);
+export const ghostKillScore = (level, gameSpeed, n) => level * gameSpeed * n * 2 ** (n - 1);
 
 // Bonus round
-export const alienKillScore  = (level, maxHp)        => 50 * level * maxHp;
-export const bonusClearScore = (level)               => 2000 * level;
+export const alienKillScore = (level, maxHp) => 50 * level * maxHp;
+export const bonusClearScore = (level) => 2000 * level;
 
 // Level clear
-export const levelClearScore = (level)               => level * 1000;
+export const levelClearScore = (level) => level * 1000;
 ```
 
 ---
@@ -405,12 +425,12 @@ import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
   test: {
-    environment: 'node',   // domain has zero DOM dependencies
+    environment: 'node', // domain has zero DOM dependencies
     include: ['tests/**/*.test.js'],
     coverage: {
       provider: 'v8',
-      include:  ['src/domain/**', 'src/adapters/test/**'],
-      exclude:  ['src/adapters/browser/**'],
+      include: ['src/domain/**', 'src/adapters/test/**'],
+      exclude: ['src/adapters/browser/**'],
       thresholds: { lines: 85, functions: 85 },
     },
   },
@@ -442,11 +462,11 @@ export default defineConfig({
 import { aabb } from '../../src/domain/physics/collision.js';
 
 it('returns true when boxes overlap', () => {
-  expect(aabb({ x:0, y:0, w:10, h:10 }, { x:5, y:5, w:10, h:10 })).toBe(true);
+  expect(aabb({ x: 0, y: 0, w: 10, h: 10 }, { x: 5, y: 5, w: 10, h: 10 })).toBe(true);
 });
 
 it('returns false for adjacent boxes (touching edge is not overlap)', () => {
-  expect(aabb({ x:0, y:0, w:10, h:10 }, { x:10, y:0, w:10, h:10 })).toBe(false);
+  expect(aabb({ x: 0, y: 0, w: 10, h: 10 }, { x: 10, y: 0, w: 10, h: 10 })).toBe(false);
 });
 ```
 
@@ -460,7 +480,7 @@ it('single kill = level × gameSpeed', () => {
 });
 
 it('double kill is 4× not 2× a single kill', () => {
-  expect(ghostKillScore(1, 16, 2)).toBe(64);  // 1 × 16 × 2 × 2¹
+  expect(ghostKillScore(1, 16, 2)).toBe(64); // 1 × 16 × 2 × 2¹
 });
 ```
 
@@ -471,7 +491,7 @@ import { PowerUp } from '../../src/domain/entities/PowerUp.js';
 
 it('is not collectable during 2s grace period', () => {
   const pu = new PowerUp(100, 200, 'wide', /* born= */ 0);
-  expect(pu.isLive(1000)).toBe(false);  // 1 s < 2 s grace
+  expect(pu.isLive(1000)).toBe(false); // 1 s < 2 s grace
   expect(pu.isLive(2001)).toBe(true);
 });
 
@@ -497,7 +517,7 @@ it('removes ghost and returns centroid on ball hit', () => {
   const gs = new GhostSystem();
   gs.spawn();
   // Ghost 0 spawns at x=30, y=0, size=32
-  const ball = { x:30, y:0, w:10, h:10 };
+  const ball = { x: 30, y: 0, w: 10, h: 10 };
   const result = gs.checkCollision(ball);
   expect(result.count).toBe(1);
   expect(gs.ghostCount()).toBe(4);
@@ -510,16 +530,16 @@ it('removes ghost and returns centroid on ball hit', () => {
 import { updateReadyBall } from '../../src/domain/physics/ball.js';
 
 it('does not move ball during pause window', () => {
-  const ball   = { x:40, y:195, w:10, h:10, dx:0, dy:0 };
-  const paddle = { x:585, y:170, w:10, h:60 };
-  const result = updateReadyBall(ball, paddle, 16, /*readySince=*/0, /*now=*/100, 1);
+  const ball = { x: 40, y: 195, w: 10, h: 10, dx: 0, dy: 0 };
+  const paddle = { x: 585, y: 170, w: 10, h: 60 };
+  const result = updateReadyBall(ball, paddle, 16, /*readySince=*/ 0, /*now=*/ 100, 1);
   expect(result).toBe('drifting');
   expect(ball.x).toBe(40);
 });
 
 it('launches when ball arrives at paddle with Y overlap', () => {
-  const ball   = { x:580, y:175, w:10, h:10, dx:0, dy:0 };
-  const paddle = { x:585, y:170, w:10, h:60 };
+  const ball = { x: 580, y: 175, w: 10, h: 10, dx: 0, dy: 0 };
+  const paddle = { x: 585, y: 170, w: 10, h: 60 };
   const result = updateReadyBall(ball, paddle, 16, 0, 700, 1);
   expect(result).toBe('launched');
 });
@@ -528,27 +548,36 @@ it('launches when ball arrives at paddle with Y overlap', () => {
 ### Integration — life loss with full harness
 
 ```js
-import { GameLoop }             from '../../src/domain/GameLoop.js';
-import { createGameState }      from '../../src/domain/GameState.js';
-import { NullAudioAdapter }     from '../../src/adapters/test/NullAudioAdapter.js';
-import { MemoryScoreAdapter }   from '../../src/adapters/test/MemoryScoreAdapter.js';
+import { GameLoop } from '../../src/domain/GameLoop.js';
+import { createGameState } from '../../src/domain/GameState.js';
+import { NullAudioAdapter } from '../../src/adapters/test/NullAudioAdapter.js';
+import { MemoryScoreAdapter } from '../../src/adapters/test/MemoryScoreAdapter.js';
 
 function makeHarness() {
-  const audio  = new NullAudioAdapter();
-  const score  = new MemoryScoreAdapter();
-  const loop   = new GameLoop({ ghostSystem: new GhostSystem(), alienSystem: new AlienSystem(),
-                                 powerUpSystem: new PowerUpSystem(), audio, score });
-  const state  = createGameState();
+  const audio = new NullAudioAdapter();
+  const score = new MemoryScoreAdapter();
+  const loop = new GameLoop({
+    ghostSystem: new GhostSystem(),
+    alienSystem: new AlienSystem(),
+    powerUpSystem: new PowerUpSystem(),
+    audio,
+    score,
+  });
+  const state = createGameState();
   return { loop, state, audio, score };
 }
 
 it('decrements lives and plays roundEnd when ball exits right edge', () => {
   const { loop, state, audio, score } = makeHarness();
-  state.ball      = { x:595, y:195, w:10, h:10, dx:8, dy:0 };
+  state.ball = { x: 595, y: 195, w: 10, h: 10, dx: 8, dy: 0 };
   state.ballState = 'live';
-  state.lives     = 3;
+  state.lives = 3;
 
-  loop.update(state, 1, 1000, { paddleDirection: null, paddleAbsoluteY: null, restartRequested: false });
+  loop.update(state, 1, 1000, {
+    paddleDirection: null,
+    paddleAbsoluteY: null,
+    restartRequested: false,
+  });
 
   expect(state.lives).toBe(2);
   expect(score.lives).toBe(2);

@@ -1,4 +1,4 @@
-import { createBall }   from '../../src/domain/entities/Ball.js';
+import { createBall } from '../../src/domain/entities/Ball.js';
 import { createPaddle } from '../../src/domain/entities/Paddle.js';
 import {
   VIRTUAL_W,
@@ -16,10 +16,10 @@ import {
  */
 export function makeBall(overrides = {}) {
   return createBall(
-    overrides.x  ?? 40,
-    overrides.y  ?? VIRTUAL_H / 2,
-    overrides.w  ?? BALL_SIZE,
-    overrides.h  ?? BALL_SIZE,
+    overrides.x ?? 40,
+    overrides.y ?? VIRTUAL_H / 2,
+    overrides.w ?? BALL_SIZE,
+    overrides.h ?? BALL_SIZE,
     overrides.dx ?? 0,
     overrides.dy ?? 0,
   );
@@ -36,9 +36,9 @@ export function makePaddle(overrides = {}) {
     overrides.w ?? PADDLE_W,
     overrides.h ?? PADDLE_BASE_H,
   );
-  if (overrides.moveY    !== undefined) p.moveY    = overrides.moveY;
+  if (overrides.moveY !== undefined) p.moveY = overrides.moveY;
   if (overrides.velocity !== undefined) p.velocity = overrides.velocity;
-  if (overrides.vy       !== undefined) p.vy       = overrides.vy;
+  if (overrides.vy !== undefined) p.vy = overrides.vy;
   return p;
 }
 
@@ -50,7 +50,7 @@ export function makeBallAtPaddle(paddle, overrides = {}) {
   return makeBall({
     // Overlap the paddle by 2px so aabb() returns true
     x: paddle.x - BALL_SIZE + 2,
-    y: paddle.y + (paddle.h / 2) - (BALL_SIZE / 2),
+    y: paddle.y + paddle.h / 2 - BALL_SIZE / 2,
     dx: INITIAL_SPEED,
     dy: 0,
     ...overrides,

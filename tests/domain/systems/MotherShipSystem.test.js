@@ -3,16 +3,20 @@ import { MotherShipSystem } from '../../../src/domain/systems/MotherShipSystem.j
 import { makeBall, makePaddle } from '../../helpers/builders.js';
 import {
   VIRTUAL_H,
-  MOTHERSHIP_HP, MOTHERSHIP_W, MOTHERSHIP_H,
-  MOTHERSHIP_APPEAR_OFFSET, MOTHERSHIP_FIRE_MS,
+  MOTHERSHIP_HP,
+  MOTHERSHIP_W,
+  MOTHERSHIP_H,
+  MOTHERSHIP_APPEAR_OFFSET,
+  MOTHERSHIP_FIRE_MS,
 } from '../../../src/domain/constants.js';
 
-const FIELD_W    = 600;
+const FIELD_W = 600;
 const GAME_SPEED = 16;
 
 /** All rows occupied — no gap for charge trigger. */
 function makeAliens() {
-  const ALIEN_H_LOCAL = 22, ALIEN_V_GAP_LOCAL = 10;
+  const ALIEN_H_LOCAL = 22,
+    ALIEN_V_GAP_LOCAL = 10;
   return Array.from({ length: 6 }, (_, row) => ({
     y: row * (ALIEN_H_LOCAL + ALIEN_V_GAP_LOCAL),
   }));

@@ -20,52 +20,63 @@ import {
 //   cols 3-4  → drone  (green)  — 2 cols, like SI's 2 octopus rows
 const COL_TIERS = [
   { type: 'squid', color: '#00ffff' }, // col 0
-  { type: 'crab',  color: '#ffff00' }, // col 1
-  { type: 'crab',  color: '#ffff00' }, // col 2
+  { type: 'crab', color: '#ffff00' }, // col 1
+  { type: 'crab', color: '#ffff00' }, // col 2
   { type: 'drone', color: '#00ff00' }, // col 3
   { type: 'drone', color: '#00ff00' }, // col 4
 ];
 
 export class AlienSystem {
-  #aliens      = [];
-  #offsetX     = 0;
-  #offsetY     = 0;
-  #vy          = ALIEN_VERT_SPEED;
+  #aliens = [];
+  #offsetX = 0;
+  #offsetY = 0;
+  #vy = ALIEN_VERT_SPEED;
   #totalAliens = 0;
 
-  get active()  { return this.#aliens.length > 0; }
-  get aliens()  { return this.#aliens; }
-  get offsetX() { return this.#offsetX; }
-  get offsetY() { return this.#offsetY; }
+  get active() {
+    return this.#aliens.length > 0;
+  }
+  get aliens() {
+    return this.#aliens;
+  }
+  get offsetX() {
+    return this.#offsetX;
+  }
+  get offsetY() {
+    return this.#offsetY;
+  }
 
   spawn(canvasH = VIRTUAL_H) {
-    this.#aliens      = [];
-    this.#offsetX     = 0;
-    this.#offsetY     = (canvasH - ALIEN_FORM_H) / 2;
-    this.#vy          = ALIEN_VERT_SPEED;
+    this.#aliens = [];
+    this.#offsetX = 0;
+    this.#offsetY = (canvasH - ALIEN_FORM_H) / 2;
+    this.#vy = ALIEN_VERT_SPEED;
     this.#totalAliens = ALIEN_COLS * ALIEN_ROWS;
 
     for (let row = 0; row < ALIEN_ROWS; row++) {
       for (let col = 0; col < ALIEN_COLS; col++) {
-        const x     = ALIEN_SPAWN_X + col * (ALIEN_W + ALIEN_H_GAP);
-        const y     = row * (ALIEN_H + ALIEN_V_GAP);
+        const x = ALIEN_SPAWN_X + col * (ALIEN_W + ALIEN_H_GAP);
+        const y = row * (ALIEN_H + ALIEN_V_GAP);
         const { type, color } = COL_TIERS[col];
         this.#aliens.push(new Alien(x, y, ALIEN_HP, color, type));
       }
     }
   }
 
-  allDead() { return this.#aliens.length === 0; }
+  allDead() {
+    return this.#aliens.length === 0;
+  }
 
   /** True when the right edge of the formation has reached paddleX. */
   reachedX(paddleX) {
     if (this.#aliens.length === 0) return false;
-    const formRight = ALIEN_SPAWN_X + ALIEN_COLS * (ALIEN_W + ALIEN_H_GAP) - ALIEN_H_GAP + this.#offsetX;
+    const formRight =
+      ALIEN_SPAWN_X + ALIEN_COLS * (ALIEN_W + ALIEN_H_GAP) - ALIEN_H_GAP + this.#offsetX;
     return formRight >= paddleX;
   }
 
   move(canvasH, timeScale) {
-    const alive     = this.#aliens.length;
+    const alive = this.#aliens.length;
     const speedMult = 1 + (this.#totalAliens - alive) / this.#totalAliens;
 
     // speedMult only on horizontal advance — vertical stays smooth
@@ -75,11 +86,11 @@ export class AlienSystem {
     // Reflect overshoot instead of hard-clamping (eliminates positional snap)
     if (this.#offsetY < 0) {
       this.#offsetY = -this.#offsetY;
-      this.#vy      =  Math.abs(this.#vy);
+      this.#vy = Math.abs(this.#vy);
     }
     if (this.#offsetY + ALIEN_FORM_H > canvasH) {
       this.#offsetY = 2 * (canvasH - ALIEN_FORM_H) - this.#offsetY;
-      this.#vy      = -Math.abs(this.#vy);
+      this.#vy = -Math.abs(this.#vy);
     }
   }
 
@@ -92,14 +103,11 @@ export class AlienSystem {
   checkCollision(ball) {
     let killed = 0;
     for (let i = this.#aliens.length - 1; i >= 0; i--) {
-      const a  = this.#aliens[i];
+      const a = this.#aliens[i];
       const ax = a.x + this.#offsetX;
       const ay = a.y + this.#offsetY;
 
-      if (
-        ball.x + ball.w > ax && ball.x < ax + a.w &&
-        ball.y + ball.h > ay && ball.y < ay + a.h
-      ) {
+      if (ball.x + ball.w > ax && ball.x < ax + a.w && ball.y + ball.h > ay && ball.y < ay + a.h) {
         ball.dx = -ball.dx;
         a.hit();
         if (a.dead) {
