@@ -96,12 +96,14 @@ export class AlienSystem {
 
   /**
    * Ball bounces horizontally off aliens and damages them.
-   * Returns the number of aliens killed this frame (caller calculates score).
+   * Returns { count, cx, cy } for kills this frame, or null if none.
    * @param {{ x,y,w,h,dx,dy }} ball
-   * @returns {number}
+   * @returns {{ count: number, cx: number, cy: number }|null}
    */
   checkCollision(ball) {
     let killed = 0;
+    let cx = 0;
+    let cy = 0;
     for (let i = this.#aliens.length - 1; i >= 0; i--) {
       const a = this.#aliens[i];
       const ax = a.x + this.#offsetX;
@@ -111,11 +113,13 @@ export class AlienSystem {
         ball.dx = -ball.dx;
         a.hit();
         if (a.dead) {
+          cx = ax + a.w / 2;
+          cy = ay + a.h / 2;
           this.#aliens.splice(i, 1);
           killed++;
         }
       }
     }
-    return killed;
+    return killed > 0 ? { count: killed, cx, cy } : null;
   }
 }

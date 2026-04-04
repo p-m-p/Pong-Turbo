@@ -288,11 +288,13 @@ export class GameLoop {
     );
 
     if (this.#ballState === 'live') {
-      const killed = this.#alienSystem.checkCollision(this.#ball);
-      if (killed > 0) {
-        this.#score += alienKillScore(this.#level, this.#gameSpeed, killed);
+      const alienKill = this.#alienSystem.checkCollision(this.#ball);
+      if (alienKill) {
+        const { count, cx, cy } = alienKill;
+        this.#score += alienKillScore(this.#level, this.#gameSpeed, count);
         this.#scoreUpdate();
         this.#audio.play('ghost');
+        this.#powerUpSystem.trySpawn(cx, cy, count, now, this.#lives);
       }
 
       const msResult = this.#motherShipSystem.checkBallCollision(this.#ball);

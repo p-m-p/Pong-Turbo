@@ -11,11 +11,12 @@ A browser-based arcade game that mashes Pong, Space Invaders and Ball Blast into
 
 ## How to Play
 
-| Control             | Keyboard   | Mobile                    |
-| ------------------- | ---------- | ------------------------- |
-| Move paddle up      | `↑` or `8` | Drag the right-edge strip |
-| Move paddle down    | `↓` or `2` | Drag the right-edge strip |
-| Restart (game over) | `Enter`    | —                         |
+| Control             | Keyboard                    | Mouse / Touch             | Gamepad                  |
+| ------------------- | --------------------------- | ------------------------- | ------------------------ |
+| Move paddle up      | `↑`, `8`, `w`, or `W`       | Drag the right-edge strip | Left stick up / D-pad up |
+| Move paddle down    | `↓`, `2`, `s`, or `S`       | Drag the right-edge strip | Left stick down / D-pad down |
+| Move paddle         | —                           | Scroll wheel              | —                        |
+| Restart (game over) | `Enter`                     | —                         | A / B / X / Y            |
 
 The paddle is on the **right** side. The ball bounces off the left wall, top wall, and bottom wall, and off your paddle. Let it exit the right edge and you lose a life.
 
@@ -61,7 +62,8 @@ A 5 × 6 formation of Space Invader-style aliens enters from the left. The forma
 | Ghost kill (single)     | `level × gameSpeed`                                            |
 | Ghost kill (multi-kill) | `level × gameSpeed × n × 2^(n−1)` where n = simultaneous kills |
 | Level clear             | `level × 1000`                                                 |
-| Alien kill              | `50 × level × 2` (maxHp per alien = 2)                         |
+| Alien kill              | `level × gameSpeed × n × 2^(n−1)` where n = simultaneous kills |
+| Mothership kill         | 5000                                                           |
 | Bonus round clear       | `2000 × level`                                                 |
 
 ### Multi-kill multiplier examples
@@ -87,6 +89,7 @@ The orb **pulses for 2 seconds** after spawning — it cannot be collected durin
 | ---------- | ---------- | ------------------------------------------------- |
 | Green      | **Wide**   | Paddle height grows to 1.75× for 8 seconds        |
 | Sky blue   | **Shield** | Absorbs the next ghost stun (consumed on contact) |
+| Magenta    | **Life**   | Grants an extra life (drops when lives ≤ 2)       |
 
 When the shield is active a pulsing cyan outline appears around the paddle.
 
