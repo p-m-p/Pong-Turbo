@@ -75,12 +75,12 @@ describe('AlienSystem reachedX', () => {
 });
 
 describe('AlienSystem checkCollision', () => {
-  it('returns 0 when ball does not hit any alien', () => {
+  it('returns null when ball does not hit any alien', () => {
     const ball = makeBall({ x: 550, y: 350 });
-    expect(sys.checkCollision(ball)).toBe(0);
+    expect(sys.checkCollision(ball)).toBeNull();
   });
 
-  it('returns 1 on a kill and removes the alien', () => {
+  it('returns { count, cx, cy } on a kill and removes the alien', () => {
     const a = sys.aliens[0];
     // Position ball directly on alien (account for offset)
     const ball = makeBall({
@@ -96,8 +96,8 @@ describe('AlienSystem checkCollision', () => {
     ball.x = a.x + sys.offsetX;
     ball.y = a.y + sys.offsetY;
     ball.dx = 5;
-    const killed = sys.checkCollision(ball);
-    expect(killed).toBe(1);
+    const result = sys.checkCollision(ball);
+    expect(result).toMatchObject({ count: 1 });
     expect(sys.aliens.length).toBe(before - 1);
   });
 
