@@ -311,11 +311,12 @@ export class GameLoop {
       }
     }
 
-    if (
-      this.#motherShipSystem.checkLaserPaddleCollision(this.#paddle) &&
-      this.#paddleStunnedUntil < now
-    ) {
-      this.#paddleStunnedUntil = now + STUN_DURATION_MS;
+    if (this.#motherShipSystem.checkLaserPaddleCollision(this.#paddle)) {
+      if (this.#shieldBounces > 0) {
+        this.#shieldBounces = 0;
+      } else if (this.#paddleStunnedUntil < now) {
+        this.#paddleStunnedUntil = now + STUN_DURATION_MS;
+      }
     }
 
     if (this.#alienSystem.allDead() || this.#alienSystem.reachedX(this.#paddle.x)) {
