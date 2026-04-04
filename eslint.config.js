@@ -32,7 +32,7 @@ export default [
   {
     rules: {
       // Correctness
-      'eqeqeq': ['error', 'always', { null: 'ignore' }],
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
       'no-unused-vars': ['error', { argsIgnorePattern: '^_', caughtErrors: 'none' }],
 
       // Modern JS

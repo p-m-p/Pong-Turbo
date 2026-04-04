@@ -11,12 +11,12 @@ A browser-based arcade game that mashes Pong, Space Invaders and Ball Blast into
 
 ## How to Play
 
-| Control             | Keyboard                    | Mouse / Touch             | Gamepad                  |
-| ------------------- | --------------------------- | ------------------------- | ------------------------ |
-| Move paddle up      | `↑`, `8`, `w`, or `W`       | Drag the right-edge strip | Left stick up / D-pad up |
-| Move paddle down    | `↓`, `2`, `s`, or `S`       | Drag the right-edge strip | Left stick down / D-pad down |
-| Move paddle         | —                           | Scroll wheel              | —                        |
-| Restart (game over) | `Enter`                     | —                         | A / B / X / Y            |
+| Control             | Keyboard              | Mouse / Touch             | Gamepad                      |
+| ------------------- | --------------------- | ------------------------- | ---------------------------- |
+| Move paddle up      | `↑`, `8`, `w`, or `W` | Drag the right-edge strip | Left stick up / D-pad up     |
+| Move paddle down    | `↓`, `2`, `s`, or `S` | Drag the right-edge strip | Left stick down / D-pad down |
+| Move paddle         | —                     | Scroll wheel              | —                            |
+| Restart (game over) | `Enter`               | —                         | A / B / X / Y                |
 
 The paddle is on the **right** side. The ball bounces off the left wall, top wall, and bottom wall, and off your paddle. Let it exit the right edge and you lose a life.
 
