@@ -23,7 +23,7 @@
   "author": "",
   "type": "module",
   "license": "ISC",
-  "packageManager": "pnpm@12.11.2",
+  "packageManager": "pnpm@12.14.0",
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@vitest/coverage-v8": "^5.0.0",
